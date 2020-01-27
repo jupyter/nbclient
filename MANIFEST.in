@@ -5,6 +5,7 @@ include requirements-dev.txt
 include *.md
 include .bumpversion.cfg
 include tox.ini
+include pyproject.toml
 
 # Code and test files
 recursive-include nbclient *.ipynb

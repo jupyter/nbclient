@@ -361,7 +361,7 @@ while True: continue
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
 
-        executor = Executor(input_nb, timeout=1, shell_timeout_interval=1)
+        executor = Executor(input_nb, timeout=1)
 
         with pytest.raises(TimeoutError):
             output_nb = executor.execute()
