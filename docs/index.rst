@@ -27,7 +27,7 @@ drop support in the future.
 Documentation
 -------------
 
-These pages guide you through the installation and usage of papermill.
+These pages guide you through the installation and usage of nbclient.
 
 .. toctree::
    :maxdepth: 1

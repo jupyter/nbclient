@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# papermill documentation build configuration file, created by
-# sphinx-quickstart on Mon Jan 15 09:50:01 2018.
+# nbclient documentation build configuration file, created by
+# sphinx-quickstart on Mon Jan 26 16:00:00 2020.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
