@@ -1,0 +1,3 @@
+traitlets>=4.2
+jupyter_client>=5.3.4
+nbformat>=5.0

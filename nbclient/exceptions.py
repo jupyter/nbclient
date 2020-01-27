@@ -2,11 +2,16 @@ class CellTimeoutError(TimeoutError):
     """
     A custom exception to capture when a cell has timed out during execution.
     """
+
     @classmethod
     def error_from_timeout_and_cell(cls, msg, timeout, cell):
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
-            src = cell.source if len(src_by_lines) < 11 else "{}\n...\n{}".format(src_by_lines[:5], src_by_lines[-5:])
+            src = (
+                cell.source
+                if len(src_by_lines) < 11
+                else "{}\n...\n{}".format(src_by_lines[:5], src_by_lines[-5:])
+            )
         else:
             src = "Cell contents not found."
         return cls(timeout_err_msg.format(timeout=timeout, msg=msg, cell_contents=src))
@@ -15,6 +20,7 @@ class CellTimeoutError(TimeoutError):
 class DeadKernelError(RuntimeError):
     pass
 
+
 class CellExecutionComplete(Exception):
     """
     Used as a control signal for cell execution across run_cell and
@@ -22,6 +28,7 @@ class CellExecutionComplete(Exception):
     are completed and no further messages are expected from the kernel
     over zeromq channels.
     """
+
     pass
 
 
@@ -32,6 +39,7 @@ class CellExecutionError(Exception):
     using nbconvert as a library, since it allows to deal with
     failures gracefully.
     """
+
     def __init__(self, traceback):
         super(CellExecutionError, self).__init__(traceback)
         self.traceback = traceback
@@ -51,10 +59,15 @@ class CellExecutionError(Exception):
         (message is either execute_reply or error)
         """
         tb = '\n'.join(msg.get('traceback', []))
-        return cls(exec_err_msg.format(cell=cell, traceback=tb,
-                                       ename=msg.get('ename', '<Error>'),
-                                       evalue=msg.get('evalue', '')
-                                      ))
+        return cls(
+            exec_err_msg.format(
+                cell=cell,
+                traceback=tb,
+                ename=msg.get('ename', '<Error>'),
+                evalue=msg.get('evalue', ''),
+            )
+        )
+
 
 exec_err_msg = u"""\
 An error occurred while executing the following cell:
