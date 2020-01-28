@@ -1,0 +1,34 @@
+include LICENSE
+include MANIFEST.in
+include requirements.txt
+include requirements-dev.txt
+include *.md
+include .bumpversion.cfg
+include tox.ini
+include pyproject.toml
+
+# Code and test files
+recursive-include nbclient *.ipynb
+recursive-include nbclient *.png
+recursive-include nbclient *.py
+
+# Documentation
+graft docs
+exclude docs/\#*
+exclude .readthedocs.yml
+exclude codecov.yml
+
+# Examples
+graft examples
+
+# docs subdirs we want to skip
+prune docs/build
+prune docs/gh-pages
+prune docs/dist
+
+# Patterns to exclude from any directory
+global-exclude *~
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude .ipynb_checkpoints
