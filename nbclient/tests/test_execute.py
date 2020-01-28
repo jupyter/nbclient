@@ -1,20 +1,19 @@
 from base64 import b64encode, b64decode
 import copy
-import glob
 import io
 import os
 import re
 import threading
-import multiprocessing as mp
 
 import nbformat
 import sys
 import pytest
 import functools
+import xmltodict
 
 from .base import ExecutorTestsBase
 from ..execute import Executor, executenb
-from ..exceptions import CellExecutionError, DeadKernelError
+from ..exceptions import CellExecutionError
 
 import IPython
 from traitlets import TraitError
@@ -136,7 +135,10 @@ def normalize_output(output):
     """
     Normalizes outputs for comparison.
     """
+    from pprint import pprint
+    pprint(output)
     output = dict(output)
+    pprint(output)
     if 'metadata' in output:
         del output['metadata']
     if 'text' in output:
@@ -145,10 +147,10 @@ def normalize_output(output):
         output['data']['text/plain'] = re.sub(addr_pat, '<HEXADDR>', output['data']['text/plain'])
     if 'application/vnd.jupyter.widget-view+json' in output.get('data', {}):
         output['data']['application/vnd.jupyter.widget-view+json']['model_id'] = '<MODEL_ID>'
+    if 'image/svg+xml' in output.get('data', {}):
+        output['data']['image/svg+xml'] = xmltodict.parse(output['data']['image/svg+xml'])
     for key, value in output.get('data', {}).items():
         if isinstance(value, string_types):
-            if sys.version_info.major == 2:
-                value = value.replace('u\'', '\'')
             output['data'][key] = normalize_base64(value)
     if 'traceback' in output:
         tb = [
@@ -157,6 +159,7 @@ def normalize_output(output):
         ]
         output['traceback'] = tb
 
+    pprint(output)
     return output
 
 
@@ -168,7 +171,9 @@ def assert_notebooks_equal(expected, actual):
     for expected_cell, actual_cell in zip(expected_cells, actual_cells):
         expected_outputs = expected_cell.get('outputs', [])
         actual_outputs = actual_cell.get('outputs', [])
+        print('expected')
         normalized_expected_outputs = list(map(normalize_output, expected_outputs))
+        print('actual')
         normalized_actual_outputs = list(map(normalize_output, actual_outputs))
         assert normalized_expected_outputs == normalized_actual_outputs
 
@@ -178,7 +183,10 @@ def assert_notebooks_equal(expected, actual):
 
 
 def notebook_resources():
-    """Prepare a notebook resources dictionary for executing test notebooks in the `files` folder."""
+    """
+    Prepare a notebook resources dictionary for executing test
+    notebooks in the `files` folder.
+    """
     return {'metadata': {'path': os.path.join(current_dir, 'files')}}
 
 
@@ -369,7 +377,9 @@ while True: continue
 
         with patch.object(km, "is_alive") as alive_mock:
             alive_mock.return_value = False
-            with pytest.raises(DeadKernelError):
+            # Will be a RuntimeError or subclass DeadKernelError depending
+            # on if jupyter_client or nbconvert catches the dead client first
+            with pytest.raises(RuntimeError):
                 input_nb, output_nb = executor.execute()
 
     def test_allow_errors(self):
@@ -425,7 +435,7 @@ while True: continue
 
         # Override terminal size to standardise traceback format
         with modified_env({'COLUMNS': '80', 'LINES': '24'}):
-            output_nb = executor.execute()
+            executor.execute()
 
         expected = FakeCustomKernelManager.expected_methods.items()
 

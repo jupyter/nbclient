@@ -49,7 +49,7 @@ Usually you don't need to set these options, but these and other options are
 available to control execution context. Note that ``path`` specifies
 in which folder to execute the notebook.
 
-**Execute/Run (preprocess)**: To actually run the notebook we call the method
+**Execute/Run**: To actually run the notebook we call the method
 ``execute``::
 
     executor.execute()
@@ -61,8 +61,7 @@ each cell.
 
 **Save**: Finally, save the resulting notebook with::
 
-    with open('executed_notebook.ipynb', 'w', encoding='utf-8') as f:
-        nbformat.write(nb, f)
+    nbformat.write(nb, 'executed_notebook.ipynb')
 
 That's all. Your executed notebook will be saved in the current folder
 in the file ``executed_notebook.ipynb``.

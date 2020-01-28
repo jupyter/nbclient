@@ -188,9 +188,8 @@ class Executor(LoggingConfigurable):
         will create a history file for each kernel.
 
         When running kernels simultaneously (e.g. via multiprocessing) saving history a single
-        SQLite file can result in database errors, so using `:memory:` is recommended in non-interactive
-        contexts.
-
+        SQLite file can result in database errors, so using `:memory:` is recommended in
+        non-interactive contexts.
         """,
     ).tag(config=True)
 
