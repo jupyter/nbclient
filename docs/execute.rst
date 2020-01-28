@@ -50,12 +50,14 @@ available to control execution context. Note that ``path`` specifies
 in which folder to execute the notebook.
 
 **Execute/Run (preprocess)**: To actually run the notebook we call the method
-``preprocess``::
+``execute``::
 
     executor.execute()
 
 Hopefully, we will not get any errors during the notebook execution
-(see the last section for error handling).
+(see the last section for error handling). This notebook will
+now have its cell outputs populated with the result of running
+each cell.
 
 **Save**: Finally, save the resulting notebook with::
 
