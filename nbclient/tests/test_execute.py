@@ -4,6 +4,7 @@ import io
 import os
 import re
 import threading
+import asyncio
 
 import nbformat
 import sys
@@ -64,6 +65,31 @@ def run_notebook(filename, opts, resources=None):
     # Override terminal size to standardise traceback format
     with modified_env({'COLUMNS': '80', 'LINES': '24'}):
         output_nb = executor.execute()
+
+    return input_nb, output_nb
+
+
+async def async_run_notebook(filename, opts, resources=None):
+    """Loads and runs a notebook, returning both the version prior to
+    running it and the version after running it.
+
+    """
+    with io.open(filename) as f:
+        input_nb = nbformat.read(f, 4)
+
+    cleaned_input_nb = copy.deepcopy(input_nb)
+    for cell in cleaned_input_nb.cells:
+        if 'execution_count' in cell:
+            del cell['execution_count']
+        cell['outputs'] = []
+
+    if resources:
+        opts = {'resources': resources, **opts}
+    executor = Executor(cleaned_input_nb, **opts)
+
+    # Override terminal size to standardise traceback format
+    with modified_env({'COLUMNS': '80', 'LINES': '24'}):
+        output_nb = await executor.async_execute()
 
     return input_nb, output_nb
 
@@ -237,6 +263,29 @@ def test_parallel_notebooks(capfd, tmpdir):
         ]
         [t.start() for t in threads]
         [t.join(timeout=2) for t in threads]
+
+    captured = capfd.readouterr()
+    assert captured.err == ""
+
+
+def test_async_parallel_notebooks(capfd, tmpdir):
+    """Two notebooks should be able to be run simultaneously without problems.
+
+    The two notebooks spawned here use the filesystem to check that the other notebook
+    wrote to the filesystem."""
+
+    opts = dict(kernel_name="python")
+    input_name = "Parallel Execute {label}.ipynb"
+    input_file = os.path.join(current_dir, "files", input_name)
+    res = notebook_resources()
+
+    with modified_env({"NBEXECUTE_TEST_PARALLEL_TMPDIR": str(tmpdir)}):
+        tasks = [
+            async_run_notebook(input_file.format(label=label), opts, res)
+            for label in ("A", "B")
+        ]
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.wait_for(asyncio.gather(*tasks), timeout=2))
 
     captured = capfd.readouterr()
     assert captured.err == ""
