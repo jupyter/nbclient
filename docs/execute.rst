@@ -27,13 +27,13 @@ Example
 Let's start with a complete quick example, leaving detailed explanations
 to the following sections.
 
-**Import**: First we import nbclient and the :class:`Executor`
+**Import**: First we import nbformat and the :class:`Executor`
 class::
 
-    import nbclient
+    import nbformat
     from nbclient.execute import Executor
 
-**Load**: Assuming that ``notebook_filename`` contains the path of a notebook,
+**Load**: Assuming that ``notebook_filename`` contains the path to a notebook,
 we can load it with::
 
     with open(notebook_filename) as f:
