@@ -309,7 +309,7 @@ def test_many_parallel_notebooks(capfd):
     with ProcessPool(max_workers=4) as pool:
         futures = [
             # Travis needs a lot more time even though 10s is enough on most dev machines
-            pool.schedule(run_notebook, args=(input_file, opts, res), timeout=30)
+            pool.schedule(run_notebook, args=(input_file, opts, res))
             for i in range(0, 8)
         ]
         for index, future in enumerate(futures):
