@@ -348,29 +348,20 @@ class Executor(LoggingConfigurable):
     # TODO: Remove non-kwarg arguments
     def execute(self, **kwargs):
         """
-        Executes each code cell.
+        Executes each code cell (blocking).
 
         Returns
         -------
         nb : NotebookNode
             The executed notebook.
         """
-        self.reset_execution_trackers()
-
-        with self.setup_kernel(**kwargs):
-            self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
-            for index, cell in enumerate(self.nb.cells):
-                self.execute_cell(cell, index)
-            info_msg = self._wait_for_reply(self.kc.kernel_info())
-            self.nb.metadata['language_info'] = info_msg['content']['language_info']
-            self.set_widgets_metadata()
-
-        return self.nb
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(self.async_execute(**kwargs))
 
     # TODO: Remove non-kwarg arguments
     async def async_execute(self, **kwargs):
         """
-        Executes each code cell.
+        Executes each code cell asynchronously.
 
         Returns
         -------
@@ -408,30 +399,6 @@ class Executor(LoggingConfigurable):
                 buffers = self.widget_buffers.get(key)
                 if buffers:
                     widget['buffers'] = buffers
-
-    def execute_cell(self, cell, cell_index, store_history=True):
-        """
-        Executes a single code cell.
-
-        To execute all cells see :meth:`execute`.
-        """
-        if cell.cell_type != 'code' or not cell.source.strip():
-            return cell
-
-        reply, outputs = self.run_cell(cell, cell_index, store_history)
-        # Backwards compatibility for processes that wrap run_cell
-        cell.outputs = outputs
-
-        cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
-            "tags", []
-        )
-
-        if self.force_raise_errors or not cell_allows_errors:
-            if (reply is not None) and reply['content']['status'] == 'error':
-                raise CellExecutionError.from_cell_and_msg(cell, reply['content'])
-
-        self.nb['cells'][cell_index] = cell
-        return cell
 
     async def async_execute_cell(self, cell, cell_index, store_history=True):
         """
@@ -548,89 +515,18 @@ class Executor(LoggingConfigurable):
             return True
         return False
 
-    def run_cell(self, cell, cell_index=0, store_history=False):
-        parent_msg_id = self.kc.execute(
-            cell.source, store_history=store_history, stop_on_error=not self.allow_errors
-        )
-        self.log.debug("Executing cell:\n%s", cell.source)
-        exec_timeout = self._get_timeout(cell)
-        deadline = None
-        if exec_timeout is not None:
-            deadline = monotonic() + exec_timeout
-
-        cell.outputs = []
-        self.clear_before_next_output = False
-
-        # This loop resolves nbconvert#659. By polling iopub_channel's and shell_channel's
-        # output we avoid dropping output and important signals (like idle) from
-        # iopub_channel. Prior to this change, iopub_channel wasn't polled until
-        # after exec_reply was obtained from shell_channel, leading to the
-        # aforementioned dropped data.
-
-        # These two variables are used to track what still needs polling:
-        # more_output=true => continue to poll the iopub_channel
-        more_output = True
-        # polling_exec_reply=true => continue to poll the shell_channel
-        polling_exec_reply = True
-
-        while more_output or polling_exec_reply:
-            if polling_exec_reply:
-                if self._passed_deadline(deadline):
-                    self._handle_timeout(exec_timeout, cell)
-                    polling_exec_reply = False
-                    continue
-
-                # Avoid exceeding the execution timeout (deadline), but stop
-                # after at most 1s so we can poll output from iopub_channel.
-                timeout = self._timeout_with_deadline(1, deadline)
-                exec_reply = self._poll_for_reply(parent_msg_id, cell, timeout)
-                if exec_reply is not None:
-                    polling_exec_reply = False
-
-            if more_output:
-                try:
-                    timeout = self.iopub_timeout
-                    if polling_exec_reply:
-                        # Avoid exceeding the execution timeout (deadline) while
-                        # polling for output.
-                        timeout = self._timeout_with_deadline(timeout, deadline)
-                    msg = self.kc.iopub_channel.get_msg(timeout=timeout)
-                except Empty:
-                    if polling_exec_reply:
-                        # Still waiting for execution to finish so we expect that
-                        # output may not always be produced yet.
-                        continue
-
-                    if self.raise_on_iopub_timeout:
-                        raise CellTimeoutError.error_from_timeout_and_cell(
-                            "Timeout waiting for IOPub output", self.iopub_timeout, cell
-                        )
-                    else:
-                        self.log.warning("Timeout waiting for IOPub output")
-                        more_output = False
-                        continue
-            if msg['parent_header'].get('msg_id') != parent_msg_id:
-                # not an output from our execution
-                continue
-
-            try:
-                # Will raise CellExecutionComplete when completed
-                self.process_message(msg, cell, cell_index)
-            except CellExecutionComplete:
-                more_output = False
-
-        # Return cell.outputs still for backwards compatibility
-        return exec_reply, cell.outputs
-
     async def async_run_cell(self, cell, cell_index=0, store_history=False):
         parent_msg_id = self.kc.execute(
             cell.source, store_history=store_history, stop_on_error=not self.allow_errors
         )
         self.log.debug("Executing cell:\n%s", cell.source)
         exec_timeout = self._get_timeout(cell)
-        deadline = None
+        exec_deadline = None
         if exec_timeout is not None:
-            deadline = monotonic() + exec_timeout
+            exec_deadline = monotonic() + exec_timeout
+        iopub_deadline = None
+        if self.iopub_timeout is not None:
+            iopub_deadline = monotonic() + self.iopub_timeout
 
         cell.outputs = []
         self.clear_before_next_output = False
@@ -647,43 +543,38 @@ class Executor(LoggingConfigurable):
         # polling_exec_reply=true => continue to poll the shell_channel
         polling_exec_reply = True
 
+        poll_period = 0.1 # in second
+
         while more_output or polling_exec_reply:
             await asyncio.sleep(0)
             if polling_exec_reply:
-                if self._passed_deadline(deadline):
+                if self._passed_deadline(exec_deadline):
                     self._handle_timeout(exec_timeout, cell)
                     polling_exec_reply = False
                     continue
 
-                # Avoid exceeding the execution timeout (deadline), but stop
-                # after at most 1s so we can poll output from iopub_channel.
-                timeout = self._timeout_with_deadline(1, deadline)
-                exec_reply = self._poll_for_reply(parent_msg_id, cell, timeout)
+                exec_reply = self._poll_for_reply(parent_msg_id, cell, poll_period)
                 if exec_reply is not None:
                     polling_exec_reply = False
 
             if more_output:
                 try:
-                    timeout = self.iopub_timeout
-                    if polling_exec_reply:
-                        # Avoid exceeding the execution timeout (deadline) while
-                        # polling for output.
-                        timeout = self._timeout_with_deadline(timeout, deadline)
-                    msg = self.kc.iopub_channel.get_msg(timeout=timeout)
+                    msg = self.kc.iopub_channel.get_msg(timeout=poll_period)
                 except Empty:
                     if polling_exec_reply:
                         # Still waiting for execution to finish so we expect that
                         # output may not always be produced yet.
                         continue
 
-                    if self.raise_on_iopub_timeout:
-                        raise CellTimeoutError.error_from_timeout_and_cell(
-                            "Timeout waiting for IOPub output", self.iopub_timeout, cell
-                        )
-                    else:
-                        self.log.warning("Timeout waiting for IOPub output")
-                        more_output = False
-                        continue
+                    if self._passed_deadline(iopub_deadline):
+                        if self.raise_on_iopub_timeout:
+                            raise CellTimeoutError.error_from_timeout_and_cell(
+                                "Timeout waiting for IOPub output", self.iopub_timeout, cell
+                            )
+                        else:
+                            self.log.warning("Timeout waiting for IOPub output")
+                            more_output = False
+                            continue
             if msg['parent_header'].get('msg_id') != parent_msg_id:
                 # not an output from our execution
                 continue
