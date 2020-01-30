@@ -285,7 +285,7 @@ def test_async_parallel_notebooks(capfd, tmpdir):
             for label in ("A", "B")
         ]
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.wait_for(asyncio.gather(*tasks), timeout=2))
+        loop.run_until_complete(asyncio.wait_for(asyncio.gather(*tasks), timeout=3))
 
     captured = capfd.readouterr()
     assert captured.err == ""
