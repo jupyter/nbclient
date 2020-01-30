@@ -268,6 +268,33 @@ def test_parallel_notebooks(capfd, tmpdir):
     assert captured.err == ""
 
 
+def test_many_parallel_notebooks(capfd):
+    """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
+
+    Specifically, many IPython kernels when run simultaneously would encounter errors
+    due to using the same SQLite history database.
+    """
+    opts = dict(kernel_name="python", timeout=5)
+    input_name = "HelloWorld.ipynb"
+    input_file = os.path.join(current_dir, "files", input_name)
+    res = ExecutorTestsBase().build_resources()
+    res["metadata"]["path"] = os.path.join(current_dir, "files")
+
+    # run once, to trigger creating the original context
+    run_notebook(input_file, opts, res)
+
+    with ProcessPool(max_workers=4) as pool:
+        futures = [
+            pool.schedule(run_notebook, args=(input_file, opts, res))
+            for i in range(8)
+        ]
+        for index, future in enumerate(futures):
+            future.result()
+
+    captured = capfd.readouterr()
+    assert captured.err == ""
+
+
 def test_async_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 
@@ -291,10 +318,10 @@ def test_async_parallel_notebooks(capfd, tmpdir):
     assert captured.err == ""
 
 
-def test_many_parallel_notebooks(capfd):
+def test_many_async_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
 
-    Specifically, many IPython kernels when run simultaneously would enocunter errors
+    Specifically, many IPython kernels when run simultaneously would encounter errors
     due to using the same SQLite history database.
     """
     opts = dict(kernel_name="python", timeout=5)
@@ -306,14 +333,12 @@ def test_many_parallel_notebooks(capfd):
     # run once, to trigger creating the original context
     run_notebook(input_file, opts, res)
 
-    with ProcessPool(max_workers=4) as pool:
-        futures = [
-            # Travis needs a lot more time even though 10s is enough on most dev machines
-            pool.schedule(run_notebook, args=(input_file, opts, res))
-            for i in range(0, 8)
-        ]
-        for index, future in enumerate(futures):
-            future.result()
+    tasks = [
+        async_run_notebook(input_file, opts, res)
+        for i in range(8)
+    ]
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.gather(*tasks))
 
     captured = capfd.readouterr()
     assert captured.err == ""
