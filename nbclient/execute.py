@@ -533,7 +533,7 @@ class Executor(LoggingConfigurable):
         exec_deadline = None
         if exec_timeout is not None:
             exec_deadline = monotonic() + exec_timeout
-        while True: # polling for exec reply
+        while True:  # polling for exec reply
             exec_reply = self._poll_for_reply(parent_msg_id, cell, 0)
             if exec_reply is not None:
                 # cell executed, stop polling
@@ -549,7 +549,7 @@ class Executor(LoggingConfigurable):
 
     async def poll_output_msg(self, poll_period, parent_msg_id, cell, cell_index):
         iopub_deadline = None
-        while True: # polling for output message
+        while True:  # polling for output message
             try:
                 msg = self.kc.iopub_channel.get_msg(timeout=0)
             except Empty:
@@ -598,7 +598,7 @@ class Executor(LoggingConfigurable):
         # after exec_reply was obtained from shell_channel, leading to the
         # aforementioned dropped data.
 
-        poll_period = 0.1 # in second
+        poll_period = 0.1  # in second
         self._polling_exec_reply = True
         tasks = []
         tasks.append(self.poll_exec_reply(poll_period, parent_msg_id, cell))
