@@ -645,7 +645,7 @@ class TestRunCell(ExecutorTestsBase):
     )
     def test_eventual_deadline_iopub(self, executor, cell_mock, message_mock):
         # Process a few messages before raising a timeout from iopub
-        message_mock.side_effect = list(message_mock.side_effect)[:-1] + [Empty()]
+        message_mock.side_effect = list(message_mock.side_effect)[:-1] + [Empty()] * 100
         executor.kc.shell_channel.get_msg = MagicMock(
             return_value={'parent_header': {'msg_id': executor.parent_id}}
         )
@@ -654,7 +654,7 @@ class TestRunCell(ExecutorTestsBase):
         with pytest.raises(TimeoutError):
             executor.run_cell(cell_mock)
 
-        assert message_mock.call_count == 3
+        assert message_mock.call_count >= 3
         # Ensure the output was captured
         self.assertListEqual(
             cell_mock.outputs,
