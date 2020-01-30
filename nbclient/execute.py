@@ -18,7 +18,7 @@ class Executor(LoggingConfigurable):
     """
 
     timeout = Integer(
-        30,
+        None,
         allow_none=True,
         help=dedent(
             """
