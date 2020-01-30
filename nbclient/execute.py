@@ -598,7 +598,7 @@ class Executor(LoggingConfigurable):
         # after exec_reply was obtained from shell_channel, leading to the
         # aforementioned dropped data.
 
-        poll_period = 0.1  # in second
+        poll_period = 0  # in second
         self._polling_exec_reply = True
         tasks = []
         tasks.append(self.poll_exec_reply(poll_period, parent_msg_id, cell))
@@ -754,6 +754,7 @@ def executenb(nb, cwd=None, km=None, **kwargs):
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
     return Executor(nb=nb, resources=resources, km=km, **kwargs).execute()
+
 
 def get_loop():
     try:

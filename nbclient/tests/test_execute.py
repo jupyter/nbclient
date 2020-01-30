@@ -645,7 +645,12 @@ class TestRunCell(ExecutorTestsBase):
     )
     def test_eventual_deadline_iopub(self, executor, cell_mock, message_mock):
         # Process a few messages before raising a timeout from iopub
-        message_mock.side_effect = list(message_mock.side_effect)[:-1] + [Empty()] * 100
+        def message_seq(messages):
+            for message in messages:
+                yield message
+            while True:
+                yield Empty()
+        message_mock.side_effect = message_seq(list(message_mock.side_effect)[:-1])
         executor.kc.shell_channel.get_msg = MagicMock(
             return_value={'parent_header': {'msg_id': executor.parent_id}}
         )
