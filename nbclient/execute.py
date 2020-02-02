@@ -1,6 +1,6 @@
 import base64
 from textwrap import dedent
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import asynccontextmanager
 from time import monotonic
 from queue import Empty
 import asyncio
@@ -467,7 +467,7 @@ class Executor(LoggingConfigurable):
                     return msg
                 else:
                     if timeout is not None:
-                        timeout = max(0, deadline-monotonic())
+                        timeout = max(0, deadline - monotonic())
             except Empty:
                 # received no message, check if kernel is still alive
                 self._check_alive()
@@ -560,7 +560,7 @@ class Executor(LoggingConfigurable):
                 except CellExecutionComplete:
                     return
             if timeout is not None:
-                timeout = max(0, deadline-monotonic())
+                timeout = max(0, deadline - monotonic())
 
     async def async_run_cell(self, cell, cell_index=0, store_history=False):
         parent_msg_id = self.kc.execute(
@@ -578,7 +578,9 @@ class Executor(LoggingConfigurable):
         # aforementioned dropped data.
 
         exec_timeout = self._get_timeout(cell)
-        task_poll_output_msg = asyncio.ensure_future(self.poll_output_msg(parent_msg_id, cell, cell_index))
+        task_poll_output_msg = asyncio.ensure_future(
+            self.poll_output_msg(parent_msg_id, cell, cell_index)
+        )
         exec_reply = await self._poll_for_reply(parent_msg_id, cell, exec_timeout)
         if not task_poll_output_msg.done():
             task_poll_output_msg.cancel()
