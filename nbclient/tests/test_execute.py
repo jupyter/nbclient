@@ -26,7 +26,7 @@ from ipython_genutils.py3compat import string_types
 from pebble import ProcessPool
 
 from queue import Empty
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, AsyncMock, patch
 
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
@@ -109,7 +109,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     def shell_channel_message_mock():
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
-        return MagicMock(
+        return AsyncMock(
             return_value=ExecutorTestsBase.merge_dicts(
                 {'parent_header': {'msg_id': parent_id}}, reply_msg or {}
             )
@@ -118,7 +118,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     def iopub_messages_mock():
         # Return the message generator for
         # self.kc.iopub_channel.get_msg => messages[i]
-        return MagicMock(
+        return AsyncMock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
                 ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
@@ -676,7 +676,7 @@ class TestRunCell(ExecutorTestsBase):
             while True:
                 yield Empty()
         message_mock.side_effect = message_seq(list(message_mock.side_effect)[:-1])
-        executor.kc.shell_channel.get_msg = MagicMock(
+        executor.kc.shell_channel.get_msg = AsyncMock(
             return_value={'parent_header': {'msg_id': executor.parent_id}}
         )
         executor.raise_on_iopub_timeout = True

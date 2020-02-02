@@ -1,6 +1,6 @@
 import base64
 from textwrap import dedent
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 from time import monotonic
 from queue import Empty
 import asyncio
@@ -287,9 +287,10 @@ class Executor(LoggingConfigurable):
             self.km = self.kernel_manager_class(config=self.config)
         else:
             self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
+        self.km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
         return self.km
 
-    def start_new_kernel_client(self, **kwargs):
+    async def start_new_kernel_client(self, **kwargs):
         """Creates a new kernel client.
 
         Parameters
@@ -316,7 +317,7 @@ class Executor(LoggingConfigurable):
         self.kc = self.km.client()
         self.kc.start_channels()
         try:
-            self.kc.wait_for_ready(timeout=self.startup_timeout)
+            await self.kc.wait_for_ready(timeout=self.startup_timeout)
         except RuntimeError:
             self.kc.stop_channels()
             self.km.shutdown_kernel()
@@ -324,8 +325,8 @@ class Executor(LoggingConfigurable):
         self.kc.allow_stdin = False
         return self.kc
 
-    @contextmanager
-    def setup_kernel(self, **kwargs):
+    @asynccontextmanager
+    async def setup_kernel(self, **kwargs):
         """
         Context manager for setting up the kernel to execute a notebook.
 
@@ -338,7 +339,7 @@ class Executor(LoggingConfigurable):
             self.start_kernel_manager()
 
         if not self.km.has_kernel:
-            self.start_new_kernel_client(**kwargs)
+            await self.start_new_kernel_client(**kwargs)
         try:
             yield
         finally:
@@ -370,11 +371,11 @@ class Executor(LoggingConfigurable):
         """
         self.reset_execution_trackers()
 
-        with self.setup_kernel(**kwargs):
+        async with self.setup_kernel(**kwargs):
             self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
             for index, cell in enumerate(self.nb.cells):
                 await self.async_execute_cell(cell, index)
-            info_msg = self._wait_for_reply(self.kc.kernel_info())
+            info_msg = await self._wait_for_reply(self.kc.kernel_info())
             self.nb.metadata['language_info'] = info_msg['content']['language_info']
             self.set_widgets_metadata()
 
@@ -455,16 +456,22 @@ class Executor(LoggingConfigurable):
                 outputs[output_idx]['data'] = out['data']
                 outputs[output_idx]['metadata'] = out['metadata']
 
-    def _poll_for_reply(self, msg_id, cell=None, timeout=None):
-        try:
-            # check with timeout if kernel is still alive
-            msg = self.kc.shell_channel.get_msg(timeout=timeout)
-            if msg['parent_header'].get('msg_id') == msg_id:
-                return msg
-        except Empty:
-            # received no message, check if kernel is still alive
-            self._check_alive()
-            # kernel still alive, wait for a message
+    async def _poll_for_reply(self, msg_id, cell=None, timeout=None):
+        if timeout is not None:
+            deadline = monotonic() + timeout
+        while True:
+            try:
+                # check with timeout if kernel is still alive
+                msg = await self.kc.shell_channel.get_msg(timeout=timeout)
+                if msg['parent_header'].get('msg_id') == msg_id:
+                    return msg
+                else:
+                    if timeout is not None:
+                        timeout = max(0, deadline-monotonic())
+            except Empty:
+                # received no message, check if kernel is still alive
+                self._check_alive()
+                self._handle_timeout(timeout, cell)
 
     def _get_timeout(self, cell):
         if self.timeout_func is not None and cell is not None:
@@ -492,14 +499,14 @@ class Executor(LoggingConfigurable):
             self.log.error("Kernel died while waiting for execute reply.")
             raise DeadKernelError("Kernel died")
 
-    def _wait_for_reply(self, msg_id, cell=None):
+    async def _wait_for_reply(self, msg_id, cell=None):
         # wait for finish, with timeout
         timeout = self._get_timeout(cell)
         cummulative_time = 0
         self.shell_timeout_interval = 5
         while True:
             try:
-                msg = self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
+                msg = await self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
             except Empty:
                 self._check_alive()
                 cummulative_time += self.shell_timeout_interval
@@ -528,60 +535,32 @@ class Executor(LoggingConfigurable):
         loop = get_loop()
         return loop.run_until_complete(self.async_run_cell(cell, cell_index, store_history))
 
-    async def poll_exec_reply(self, poll_period, parent_msg_id, cell):
-        exec_timeout = self._get_timeout(cell)
-        exec_deadline = None
-        if exec_timeout is not None:
-            exec_deadline = monotonic() + exec_timeout
-        while True:  # polling for exec reply
-            exec_reply = self._poll_for_reply(parent_msg_id, cell, 0)
-            if exec_reply is not None:
-                # cell executed, stop polling
-                self._polling_exec_reply = False
-                break
-            if self._passed_deadline(exec_deadline):
-                # cell still not executed after timeout, stop polling
-                self._handle_timeout(exec_timeout, cell)
-                self._polling_exec_reply = False
-                break
-            await asyncio.sleep(poll_period)
-        return exec_reply
-
-    async def poll_output_msg(self, poll_period, parent_msg_id, cell, cell_index):
-        iopub_deadline = None
-        while True:  # polling for output message
+    async def poll_output_msg(self, parent_msg_id, cell, cell_index, timeout=None):
+        if timeout is not None:
+            deadline = monotonic() + timeout
+        while True:
             try:
-                msg = self.kc.iopub_channel.get_msg(timeout=0)
+                msg = await self.kc.iopub_channel.get_msg(timeout=timeout)
             except Empty:
-                msg = None
-                if self._polling_exec_reply:
-                    # still waiting for execution to finish so we expect that
-                    # output may not always be produced yet (keep on polling)
-                    pass
+                # timeout
+                if self.raise_on_iopub_timeout:
+                    raise CellTimeoutError.error_from_timeout_and_cell(
+                        "Timeout waiting for IOPub output", self.iopub_timeout, cell
+                    )
                 else:
-                    # cell executed, we should receive remaining messages
-                    # before the deadline
-                    if iopub_deadline is None:
-                        iopub_deadline = monotonic() + self.iopub_timeout
-                    if self._passed_deadline(iopub_deadline):
-                        if self.raise_on_iopub_timeout:
-                            raise CellTimeoutError.error_from_timeout_and_cell(
-                                "Timeout waiting for IOPub output", self.iopub_timeout, cell
-                            )
-                        else:
-                            self.log.warning("Timeout waiting for IOPub output")
-                            break
-            if msg is not None:
-                if msg['parent_header'].get('msg_id') != parent_msg_id:
-                    # not an output from our execution
-                    pass
-                else:
-                    try:
-                        # Will raise CellExecutionComplete when completed
-                        self.process_message(msg, cell, cell_index)
-                    except CellExecutionComplete:
-                        break
-            await asyncio.sleep(poll_period)
+                    self.log.warning("Timeout waiting for IOPub output")
+                    return
+            if msg['parent_header'].get('msg_id') != parent_msg_id:
+                # not an output from our execution
+                pass
+            else:
+                try:
+                    # Will raise CellExecutionComplete when completed
+                    self.process_message(msg, cell, cell_index)
+                except CellExecutionComplete:
+                    return
+            if timeout is not None:
+                timeout = max(0, deadline-monotonic())
 
     async def async_run_cell(self, cell, cell_index=0, store_history=False):
         parent_msg_id = self.kc.execute(
@@ -598,12 +577,12 @@ class Executor(LoggingConfigurable):
         # after exec_reply was obtained from shell_channel, leading to the
         # aforementioned dropped data.
 
-        poll_period = 0  # in second
-        self._polling_exec_reply = True
-        tasks = []
-        tasks.append(self.poll_exec_reply(poll_period, parent_msg_id, cell))
-        tasks.append(self.poll_output_msg(poll_period, parent_msg_id, cell, cell_index))
-        exec_reply, _ = await asyncio.gather(*tasks)
+        exec_timeout = self._get_timeout(cell)
+        task_poll_output_msg = asyncio.ensure_future(self.poll_output_msg(parent_msg_id, cell, cell_index))
+        exec_reply = await self._poll_for_reply(parent_msg_id, cell, exec_timeout)
+        if not task_poll_output_msg.done():
+            task_poll_output_msg.cancel()
+            await self.poll_output_msg(parent_msg_id, cell, cell_index, self.iopub_timeout)
 
         # Return cell.outputs still for backwards compatibility
         return exec_reply, cell.outputs
