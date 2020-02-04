@@ -26,13 +26,19 @@ from ipython_genutils.py3compat import string_types
 from pebble import ProcessPool
 
 from queue import Empty
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
 current_dir = os.path.dirname(__file__)
 IPY_MAJOR = IPython.version_info[0]
+
+
+def make_async(mock_value):
+    async def _():
+        return mock_value
+    return _()
 
 
 def normalize_base64(b64_text):
@@ -109,19 +115,19 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     def shell_channel_message_mock():
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
-        return AsyncMock(
-            return_value=ExecutorTestsBase.merge_dicts(
+        return Mock(
+            return_value=make_async(ExecutorTestsBase.merge_dicts(
                 {'parent_header': {'msg_id': parent_id}}, reply_msg or {}
-            )
+            ))
         )
 
     def iopub_messages_mock():
         # Return the message generator for
         # self.kc.iopub_channel.get_msg => messages[i]
-        return AsyncMock(
+        return Mock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
-                ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
+                make_async(ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg))
                 for msg in messages
             ]
         )
@@ -676,8 +682,8 @@ class TestRunCell(ExecutorTestsBase):
             while True:
                 yield Empty()
         message_mock.side_effect = message_seq(list(message_mock.side_effect)[:-1])
-        executor.kc.shell_channel.get_msg = AsyncMock(
-            return_value={'parent_header': {'msg_id': executor.parent_id}}
+        executor.kc.shell_channel.get_msg = Mock(
+            return_value=make_async({'parent_header': {'msg_id': executor.parent_id}})
         )
         executor.raise_on_iopub_timeout = True
 
