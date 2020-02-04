@@ -343,7 +343,7 @@ def test_many_async_parallel_notebooks(capfd):
 
     tasks = [
         async_run_notebook(input_file, opts, res)
-        for i in range(8)
+        for i in range(4)
     ]
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.gather(*tasks))
