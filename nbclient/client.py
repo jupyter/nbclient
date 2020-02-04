@@ -263,6 +263,7 @@ class NotebookClient(LoggingConfigurable):
         """Resets any per-execution trackers.
         """
         self.kc = None
+        self.code_cells_executed = 0
         self._display_id_map = {}
         self.widget_state = {}
         self.widget_buffers = {}
@@ -342,7 +343,6 @@ class NotebookClient(LoggingConfigurable):
             self.kc.stop_channels()
             self.kc = None
 
-    # TODO: Remove non-kwarg arguments
     def execute(self, **kwargs):
         """
         Executes each code cell.
@@ -357,7 +357,9 @@ class NotebookClient(LoggingConfigurable):
         with self.setup_kernel(**kwargs):
             self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
             for index, cell in enumerate(self.nb.cells):
-                self.execute_cell(cell, index)
+                # Ignore `'execution_count' in content` as it's always 1
+                # when store_history is False
+                self.execute_cell(cell, index, execution_count=self.code_cells_executed + 1)
             info_msg = self._wait_for_reply(self.kc.kernel_info())
             self.nb.metadata['language_info'] = info_msg['content']['language_info']
             self.set_widgets_metadata()
@@ -383,30 +385,6 @@ class NotebookClient(LoggingConfigurable):
                 buffers = self.widget_buffers.get(key)
                 if buffers:
                     widget['buffers'] = buffers
-
-    def execute_cell(self, cell, cell_index, store_history=True):
-        """
-        Executes a single code cell.
-
-        To execute all cells see :meth:`execute`.
-        """
-        if cell.cell_type != 'code' or not cell.source.strip():
-            return cell
-
-        reply, outputs = self.run_cell(cell, cell_index, store_history)
-        # Backwards compatibility for processes that wrap run_cell
-        cell.outputs = outputs
-
-        cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
-            "tags", []
-        )
-
-        if self.force_raise_errors or not cell_allows_errors:
-            if (reply is not None) and reply['content']['status'] == 'error':
-                raise CellExecutionError.from_cell_and_msg(cell, reply['content'])
-
-        self.nb['cells'][cell_index] = cell
-        return cell
 
     def _update_display_id(self, display_id, msg):
         """Update outputs with a given display_id"""
@@ -499,11 +477,59 @@ class NotebookClient(LoggingConfigurable):
             return True
         return False
 
-    def run_cell(self, cell, cell_index=0, store_history=False):
+    def _check_raise_for_error(self, cell, exec_reply):
+        cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
+            "tags", []
+        )
+
+        if self.force_raise_errors or not cell_allows_errors:
+            if (exec_reply is not None) and exec_reply['content']['status'] == 'error':
+                raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
+
+    def execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
+        """
+        Executes a single code cell.
+
+        To execute all cells see :meth:`execute`.
+
+        Parameters
+        ----------
+        cell : nbformat.NotebookNode
+            The cell which is currently being processed.
+        cell_index : int
+            The position of the cell within the notebook object.
+        execution_count : int
+            The execution count to be assigned to the cell (default: Use kernel response)
+        store_history : bool
+            Determines if history should be stored in the kernel (default: False).
+            Specific to ipython kernels, which can store command histories.
+
+        Returns
+        -------
+        output : dict
+            The execution output payload (or None for no output).
+
+        Raises
+        ------
+        CellExecutionError
+            If execution failed and should raise an exception, this will be raised
+            with defaults about the failure.
+
+        Returns
+        -------
+        cell : NotebookNode
+            The cell which was just processed.
+        """
+        if cell.cell_type != 'code' or not cell.source.strip():
+            self.log.debug("Skipping non-executing cell %s", cell_index)
+            return cell
+
+        self.log.debug("Executing cell:\n%s", cell.source)
         parent_msg_id = self.kc.execute(
             cell.source, store_history=store_history, stop_on_error=not self.allow_errors
         )
-        self.log.debug("Executing cell:\n%s", cell.source)
+        # We launched a code cell to execute
+        self.code_cells_executed += 1
         exec_timeout = self._get_timeout(cell)
         deadline = None
         if exec_timeout is not None:
@@ -570,8 +596,11 @@ class NotebookClient(LoggingConfigurable):
             except CellExecutionComplete:
                 more_output = False
 
-        # Return cell.outputs still for backwards compatibility
-        return exec_reply, cell.outputs
+        if execution_count:
+            cell['execution_count'] = execution_count
+        self._check_raise_for_error(cell, exec_reply)
+        self.nb['cells'][cell_index] = cell
+        return cell
 
     def process_message(self, msg, cell, cell_index):
         """
