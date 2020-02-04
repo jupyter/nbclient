@@ -23,8 +23,7 @@ class Executor(LoggingConfigurable):
         help=dedent(
             """
             The time to wait (in seconds) for output from executions.
-            If a cell execution takes longer, an exception (TimeoutError
-            on python 3+, RuntimeError on python 2) is raised.
+            If a cell execution takes longer, a TimeoutError is raised.
 
             `None` or `-1` will disable the timeout. If `timeout_func` is set,
             it overrides `timeout`.
@@ -39,9 +38,8 @@ class Executor(LoggingConfigurable):
             """
             A callable which, when given the cell source as input,
             returns the time to wait (in seconds) for output from cell
-            executions. If a cell execution takes longer, an exception
-            (TimeoutError on python 3+, RuntimeError on python 2) is
-            raised.
+            executions. If a cell execution takes longer, a TimeoutError
+            is raised.
 
             Returning `None` or `-1` will disable the timeout for the cell.
             Not setting `timeout_func` will cause the preprocessor to
