@@ -1,11 +1,9 @@
 import base64
 from textwrap import dedent
 
-try:
-    from contextlib import asynccontextmanager
-except ImportError:
-    # python < 3.7
-    from async_generator import asynccontextmanager
+# For python 3.5 compatibility we import asynccontextmanager from async_generator instead of
+# contextlib, and we `await yield_()` instead of just `yield`
+from async_generator import asynccontextmanager, async_generator, yield_
 
 from time import monotonic
 from queue import Empty
@@ -332,6 +330,7 @@ class Executor(LoggingConfigurable):
         return self.kc
 
     @asynccontextmanager
+    @async_generator  # needed for python 3.5 compatibility
     async def setup_kernel(self, **kwargs):
         """
         Context manager for setting up the kernel to execute a notebook.
@@ -347,7 +346,7 @@ class Executor(LoggingConfigurable):
         if not self.km.has_kernel:
             await self.start_new_kernel_client(**kwargs)
         try:
-            yield
+            await yield_(None)  # would just yield in python >3.5
         finally:
             self.kc.stop_channels()
             self.kc = None
