@@ -1,6 +1,12 @@
 import base64
 from textwrap import dedent
-from contextlib import asynccontextmanager
+
+try:
+    from contextlib import asynccontextmanager
+except ImportError:
+    # python < 3.7
+    from async_generator import asynccontextmanager
+
 from time import monotonic
 from queue import Empty
 import asyncio
