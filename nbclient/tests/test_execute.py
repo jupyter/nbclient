@@ -127,7 +127,9 @@ def prepare_cell_mocks(*messages, reply_msg=None):
         return Mock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
-                make_async(ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg))
+                make_async(
+                    ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
+                )
                 for msg in messages
             ]
         )
