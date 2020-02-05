@@ -698,7 +698,7 @@ class Executor(LoggingConfigurable):
         return encoded_buffers
 
 
-def executenb(nb, cwd=None, km=None, **kwargs):
+def execute(nb, cwd=None, km=None, **kwargs):
     """Execute a notebook's code, updating outputs within the notebook object.
 
     This is a convenient wrapper around Executor. It returns the
