@@ -12,7 +12,7 @@ import functools
 import xmltodict
 
 from .base import ExecutorTestsBase
-from ..execute import Executor, execute
+from .._execute import Executor, execute
 from ..exceptions import CellExecutionError
 
 import IPython
@@ -271,7 +271,7 @@ def test_many_parallel_notebooks(capfd):
 
 
 class TestExecute(ExecutorTestsBase):
-    """Contains test functions for execute.py"""
+    """Contains test functions for _execute.py"""
 
     maxDiff = None
 
