@@ -465,7 +465,7 @@ while True: continue
         assert_notebooks_equal(original, executed)
 
     def test_execute_function(self):
-        # Test the executb() convenience API
+        # Test the execute() convenience API
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
         with io.open(filename) as f:
