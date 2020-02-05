@@ -12,7 +12,7 @@ import functools
 import xmltodict
 
 from .base import ExecutorTestsBase
-from ..execute import Executor, executenb
+from ..execute import Executor, execute
 from ..exceptions import CellExecutionError
 
 import IPython
@@ -465,14 +465,14 @@ while True: continue
         assert_notebooks_equal(original, executed)
 
     def test_execute_function(self):
-        # Test the executenb() convenience API
+        # Test the execute() convenience API
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
         with io.open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         original = copy.deepcopy(input_nb)
-        executed = executenb(original, os.path.dirname(filename))
+        executed = execute(original, os.path.dirname(filename))
         assert_notebooks_equal(original, executed)
 
     def test_widgets(self):
