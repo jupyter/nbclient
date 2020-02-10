@@ -103,7 +103,7 @@ html_theme = 'alabaster'
 #
 
 html_theme_options = {
-    'description': 'Parameterize, execute, and analyze notebooks',
+    'description': 'Execute notebooks',
     'github_button': True,
     'github_user': 'jupyter',
     'github_repo': 'nbclient',

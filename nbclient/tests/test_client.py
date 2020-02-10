@@ -11,8 +11,8 @@ import pytest
 import functools
 import xmltodict
 
-from .base import ExecutorTestsBase
-from ..execute import Executor, execute
+from .base import NBClientTestsBase
+from .. import NotebookClient, execute
 from ..exceptions import CellExecutionError
 
 import IPython
@@ -59,7 +59,7 @@ def run_notebook(filename, opts, resources=None):
 
     if resources:
         opts = {'resources': resources, **opts}
-    executor = Executor(cleaned_input_nb, **opts)
+    executor = NotebookClient(cleaned_input_nb, **opts)
 
     # Override terminal size to standardise traceback format
     with modified_env({'COLUMNS': '80', 'LINES': '24'}):
@@ -84,7 +84,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
         return MagicMock(
-            return_value=ExecutorTestsBase.merge_dicts(
+            return_value=NBClientTestsBase.merge_dicts(
                 {'parent_header': {'msg_id': parent_id}}, reply_msg or {}
             )
         )
@@ -95,7 +95,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
         return MagicMock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
-                ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
+                NBClientTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
                 for msg in messages
             ]
         )
@@ -113,7 +113,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
             cell_mock = NotebookNode(
                 source='"foo" = "bar"', metadata={}, cell_type='code', outputs=[]
             )
-            executor = Executor({})
+            executor = NotebookClient({})
             executor.nb = {'cells': [cell_mock]}
 
             # self.kc.iopub_channel.get_msg => message_mock.side_effect[i]
@@ -251,7 +251,7 @@ def test_many_parallel_notebooks(capfd):
     opts = dict(kernel_name="python", timeout=5)
     input_name = "HelloWorld.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
-    res = ExecutorTestsBase().build_resources()
+    res = NBClientTestsBase().build_resources()
     res["metadata"]["path"] = os.path.join(current_dir, "files")
 
     # run once, to trigger creating the original context
@@ -270,17 +270,17 @@ def test_many_parallel_notebooks(capfd):
     assert captured.err == ""
 
 
-class TestExecute(ExecutorTestsBase):
+class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 
     maxDiff = None
 
     def test_constructor(self):
-        Executor({})
+        NotebookClient({})
 
     def test_populate_language_info(self):
         nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
-        executor = Executor(nb, kernel_name="python")
+        executor = NotebookClient(nb, kernel_name="python")
         nb = executor.execute()
         assert 'language_info' in nb.metadata
 
@@ -300,7 +300,7 @@ class TestExecute(ExecutorTestsBase):
         """Can kernel in nb metadata be found when an empty string is passed?
 
         Note: this pattern should be discouraged in practice.
-        Passing in no kernel_name to Executor is recommended instead.
+        Passing in no kernel_name to NotebookClient is recommended instead.
         """
         filename = os.path.join(current_dir, 'files', 'UnicodePy3.ipynb')
         res = self.build_resources()
@@ -369,7 +369,7 @@ while True: continue
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
 
-        executor = Executor(input_nb, timeout=1)
+        executor = NotebookClient(input_nb, timeout=1)
 
         with pytest.raises(TimeoutError):
             output_nb = executor.execute()
@@ -400,7 +400,7 @@ while True: continue
     def test_force_raise_errors(self):
         """
         Check that conversion halts if the ``force_raise_errors`` traitlet on
-        Executor is set to True.
+        NotebookClient is set to True.
         """
         filename = os.path.join(current_dir, 'files', 'Skip Exceptions with Cell Tags.ipynb')
         res = self.build_resources()
@@ -427,7 +427,7 @@ while True: continue
                 del cell['execution_count']
             cell['outputs'] = []
 
-        executor = Executor(
+        executor = NotebookClient(
             cleaned_input_nb,
             resources=self.build_resources(),
             kernel_manager_class=FakeCustomKernelManager,
@@ -445,7 +445,7 @@ while True: continue
     def test_process_message_wrapper(self):
         outputs = []
 
-        class WrappedPreProc(Executor):
+        class WrappedPreProc(NotebookClient):
             def process_message(self, msg, cell, cell_index):
                 result = super(WrappedPreProc, self).process_message(msg, cell, cell_index)
                 if result:
@@ -503,8 +503,8 @@ while True: continue
         assert 'version_minor' in wdata
 
 
-class TestRunCell(ExecutorTestsBase):
-    """Contains test functions for Executor.run_cell"""
+class TestRunCell(NBClientTestsBase):
+    """Contains test functions for NotebookClient.run_cell"""
 
     @prepare_cell_mocks()
     def test_idle_message(self, executor, cell_mock, message_mock):
@@ -1085,8 +1085,8 @@ class TestRunCell(ExecutorTestsBase):
         ]
 
 
-class TestPreprocessCell(ExecutorTestsBase):
-    """Contains test functions for Executor.run_cell"""
+class TestPreprocessCell(NBClientTestsBase):
+    """Contains test functions for NotebookClient.run_cell"""
 
     @prepare_cell_mocks(
         {

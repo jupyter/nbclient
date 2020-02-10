@@ -12,9 +12,9 @@ from nbformat.v4 import output_from_msg
 from .exceptions import CellTimeoutError, DeadKernelError, CellExecutionComplete, CellExecutionError
 
 
-class Executor(LoggingConfigurable):
+class NotebookClient(LoggingConfigurable):
     """
-    Executes all the cells in a notebook
+    Encompasses a Client for executing cells in a notebook
     """
 
     timeout = Integer(
@@ -701,7 +701,7 @@ class Executor(LoggingConfigurable):
 def execute(nb, cwd=None, km=None, **kwargs):
     """Execute a notebook's code, updating outputs within the notebook object.
 
-    This is a convenient wrapper around Executor. It returns the
+    This is a convenient wrapper around NotebookClient. It returns the
     modified notebook object.
 
     Parameters
@@ -718,4 +718,4 @@ def execute(nb, cwd=None, km=None, **kwargs):
     resources = {}
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
-    return Executor(nb=nb, resources=resources, km=km, **kwargs).execute()
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()

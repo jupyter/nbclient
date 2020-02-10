@@ -27,11 +27,11 @@ Example
 Let's start with a complete quick example, leaving detailed explanations
 to the following sections.
 
-**Import**: First we import nbformat and the :class:`Executor`
+**Import**: First we import nbformat and the :class:`NotebookClient`
 class::
 
     import nbformat
-    from nbclient.execute import Executor
+    from nbclient import NotebookClient
 
 **Load**: Assuming that ``notebook_filename`` contains the path to a notebook,
 we can load it with::
@@ -41,7 +41,7 @@ we can load it with::
 
 **Configure**: Next, we configure the notebook execution mode::
 
-    executor = Executor(nb, timeout=600, kernel_name='python3', resources={'metadata': {'path': 'notebooks/'}})
+    client = NotebookClient(nb, timeout=600, kernel_name='python3', resources={'metadata': {'path': 'notebooks/'}})
 
 We specified two (optional) arguments ``timeout`` and ``kernel_name``, which
 define respectively the cell execution timeout and the execution kernel.
@@ -52,7 +52,7 @@ in which folder to execute the notebook.
 **Execute/Run**: To actually run the notebook we call the method
 ``execute``::
 
-    executor.execute()
+    client.execute()
 
 Hopefully, we will not get any errors during the notebook execution
 (see the last section for error handling). This notebook will

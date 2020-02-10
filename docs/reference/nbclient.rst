@@ -19,10 +19,10 @@ nbclient.exceptions module
    :undoc-members:
    :show-inheritance:
 
-nbclient.execute module
------------------------
+nbclient.nbclient module
+------------------------
 
-.. automodule:: nbclient.execute
+.. automodule:: nbclient.nbclient
    :members:
    :undoc-members:
    :show-inheritance:
