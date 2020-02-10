@@ -1,7 +1,7 @@
 Executing notebooks
 ===================
 
-.. module:: nbclient.execute.guide
+.. module:: nbclient.client.guide
 
 Jupyter notebooks are often saved with output cells that have been cleared.
 NBClient provides a convenient way to execute the input cells of an
