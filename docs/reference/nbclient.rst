@@ -11,18 +11,18 @@ Subpackages
 Submodules
 ----------
 
-nbclient.exceptions module
---------------------------
+nbclient.client module
+----------------------
 
-.. automodule:: nbclient.exceptions
+.. automodule:: nbclient.client
    :members:
    :undoc-members:
    :show-inheritance:
 
-nbclient.nbclient module
-------------------------
+nbclient.exceptions module
+--------------------------
 
-.. automodule:: nbclient.nbclient
+.. automodule:: nbclient.exceptions
    :members:
    :undoc-members:
    :show-inheritance:
