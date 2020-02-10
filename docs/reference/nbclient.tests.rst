@@ -20,10 +20,10 @@ nbclient.tests.fake\_kernelmanager module
    :undoc-members:
    :show-inheritance:
 
-nbclient.tests.test\_execute module
------------------------------------
+nbclient.tests.test\_client module
+----------------------------------
 
-.. automodule:: nbclient.tests.test_execute
+.. automodule:: nbclient.tests.test_client
    :members:
    :undoc-members:
    :show-inheritance:

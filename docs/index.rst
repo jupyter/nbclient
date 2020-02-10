@@ -33,7 +33,7 @@ These pages guide you through the installation and usage of nbclient.
    :maxdepth: 1
 
    installation
-   execute
+   client
 
 
 API Reference
