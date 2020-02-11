@@ -23,7 +23,7 @@ class DeadKernelError(RuntimeError):
 
 class CellExecutionComplete(Exception):
     """
-    Used as a control signal for cell execution across run_cell and
+    Used as a control signal for cell execution across execute_cell and
     process_message function calls. Raised when all execution requests
     are completed and no further messages are expected from the kernel
     over zeromq channels.
