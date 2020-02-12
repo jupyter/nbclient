@@ -378,7 +378,9 @@ class NotebookClient(LoggingConfigurable):
             for index, cell in enumerate(self.nb.cells):
                 # Ignore `'execution_count' in content` as it's always 1
                 # when store_history is False
-                await self.async_execute_cell(cell, index, execution_count=self.code_cells_executed + 1)
+                await self.async_execute_cell(
+                    cell, index, execution_count=self.code_cells_executed + 1
+                )
             info_msg = await self._wait_for_reply(self.kc.kernel_info())
             self.nb.metadata['language_info'] = info_msg['content']['language_info']
             self.set_widgets_metadata()
@@ -461,6 +463,7 @@ class NotebookClient(LoggingConfigurable):
                     self.process_message(msg, cell, cell_index)
                 except CellExecutionComplete:
                     return
+
     def _get_timeout(self, cell):
         if self.timeout_func is not None and cell is not None:
             timeout = self.timeout_func(cell)
@@ -563,7 +566,9 @@ class NotebookClient(LoggingConfigurable):
             The cell which was just processed.
         """
         loop = get_loop()
-        return loop.run_until_complete(self.async_execute_cell(cell, cell_index, execution_count, store_history))
+        return loop.run_until_complete(
+            self.async_execute_cell(cell, cell_index, execution_count, store_history)
+        )
 
     async def async_execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
         """
@@ -610,14 +615,10 @@ class NotebookClient(LoggingConfigurable):
         # We launched a code cell to execute
         self.code_cells_executed += 1
         exec_timeout = self._get_timeout(cell)
-        deadline = None
-        if exec_timeout is not None:
-            deadline = monotonic() + exec_timeout
 
         cell.outputs = []
         self.clear_before_next_output = False
 
-        exec_timeout = self._get_timeout(cell)
         task_poll_output_msg = asyncio.ensure_future(
             self._poll_output_msg(parent_msg_id, cell, cell_index)
         )

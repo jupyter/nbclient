@@ -91,7 +91,7 @@ async def async_run_notebook(filename, opts, resources=None):
 
     if resources:
         opts = {'resources': resources, **opts}
-    executor = Executor(cleaned_input_nb, **opts)
+    executor = NotebookClient(cleaned_input_nb, **opts)
 
     # Override terminal size to standardise traceback format
     with modified_env({'COLUMNS': '80', 'LINES': '24'}):
@@ -337,7 +337,7 @@ def test_many_async_parallel_notebooks(capfd):
     opts = dict(kernel_name="python", timeout=5)
     input_name = "HelloWorld.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
-    res = ExecutorTestsBase().build_resources()
+    res = NBClientTestsBase().build_resources()
     res["metadata"]["path"] = os.path.join(current_dir, "files")
 
     # run once, to trigger creating the original context
