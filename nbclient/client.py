@@ -17,19 +17,18 @@ from nbformat.v4 import output_from_msg
 from .exceptions import CellTimeoutError, DeadKernelError, CellExecutionComplete, CellExecutionError
 
 
-class Executor(LoggingConfigurable):
+class NotebookClient(LoggingConfigurable):
     """
-    Executes all the cells in a notebook
+    Encompasses a Client for executing cells in a notebook
     """
 
     timeout = Integer(
-        30,
+        None,
         allow_none=True,
         help=dedent(
             """
             The time to wait (in seconds) for output from executions.
-            If a cell execution takes longer, an exception (TimeoutError
-            on python 3+, RuntimeError on python 2) is raised.
+            If a cell execution takes longer, a TimeoutError is raised.
 
             `None` or `-1` will disable the timeout. If `timeout_func` is set,
             it overrides `timeout`.
@@ -44,9 +43,8 @@ class Executor(LoggingConfigurable):
             """
             A callable which, when given the cell source as input,
             returns the time to wait (in seconds) for output from cell
-            executions. If a cell execution takes longer, an exception
-            (TimeoutError on python 3+, RuntimeError on python 2) is
-            raised.
+            executions. If a cell execution takes longer, a TimeoutError
+            is raised.
 
             Returning `None` or `-1` will disable the timeout for the cell.
             Not setting `timeout_func` will cause the preprocessor to
@@ -270,6 +268,7 @@ class Executor(LoggingConfigurable):
         """Resets any per-execution trackers.
         """
         self.kc = None
+        self.code_cells_executed = 0
         self._display_id_map = {}
         self.widget_state = {}
         self.widget_buffers = {}
@@ -351,7 +350,6 @@ class Executor(LoggingConfigurable):
             self.kc.stop_channels()
             self.kc = None
 
-    # TODO: Remove non-kwarg arguments
     def execute(self, **kwargs):
         """
         Executes each code cell (blocking).
@@ -364,7 +362,6 @@ class Executor(LoggingConfigurable):
         loop = get_loop()
         return loop.run_until_complete(self.async_execute(**kwargs))
 
-    # TODO: Remove non-kwarg arguments
     async def async_execute(self, **kwargs):
         """
         Executes each code cell asynchronously.
@@ -379,7 +376,9 @@ class Executor(LoggingConfigurable):
         async with self.setup_kernel(**kwargs):
             self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
             for index, cell in enumerate(self.nb.cells):
-                await self.async_execute_cell(cell, index)
+                # Ignore `'execution_count' in content` as it's always 1
+                # when store_history is False
+                await self.async_execute_cell(cell, index, execution_count=self.code_cells_executed + 1)
             info_msg = await self._wait_for_reply(self.kc.kernel_info())
             self.nb.metadata['language_info'] = info_msg['content']['language_info']
             self.set_widgets_metadata()
@@ -405,39 +404,6 @@ class Executor(LoggingConfigurable):
                 buffers = self.widget_buffers.get(key)
                 if buffers:
                     widget['buffers'] = buffers
-
-    def execute_cell(self, cell, cell_index, store_history=True):
-        """
-        Executes a single code cell (blocking).
-
-        To execute all cells see :meth:`execute`.
-        """
-        loop = get_loop()
-        return loop.run_until_complete(self.async_execute_cell(cell, cell_index, store_history))
-
-    async def async_execute_cell(self, cell, cell_index, store_history=True):
-        """
-        Executes a single code cell asynchronously.
-
-        To execute all cells see :meth:`execute`.
-        """
-        if cell.cell_type != 'code' or not cell.source.strip():
-            return cell
-
-        reply, outputs = await self.async_run_cell(cell, cell_index, store_history)
-        # Backwards compatibility for processes that wrap run_cell
-        cell.outputs = outputs
-
-        cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
-            "tags", []
-        )
-
-        if self.force_raise_errors or not cell_allows_errors:
-            if (reply is not None) and reply['content']['status'] == 'error':
-                raise CellExecutionError.from_cell_and_msg(cell, reply['content'])
-
-        self.nb['cells'][cell_index] = cell
-        return cell
 
     def _update_display_id(self, display_id, msg):
         """Update outputs with a given display_id"""
@@ -486,6 +452,15 @@ class Executor(LoggingConfigurable):
                 self._check_alive()
                 self._handle_timeout(timeout, cell)
 
+    async def _poll_output_msg(self, parent_msg_id, cell, cell_index):
+        while True:
+            msg = await self.kc.iopub_channel.get_msg(timeout=None)
+            if msg['parent_header'].get('msg_id') == parent_msg_id:
+                try:
+                    # Will raise CellExecutionComplete when completed
+                    self.process_message(msg, cell, cell_index)
+                except CellExecutionComplete:
+                    return
     def _get_timeout(self, cell):
         if self.timeout_func is not None and cell is not None:
             timeout = self.timeout_func(cell)
@@ -544,34 +519,103 @@ class Executor(LoggingConfigurable):
             return True
         return False
 
-    def run_cell(self, cell, cell_index=0, store_history=False):
+    def _check_raise_for_error(self, cell, exec_reply):
+        cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
+            "tags", []
+        )
+
+        if self.force_raise_errors or not cell_allows_errors:
+            if (exec_reply is not None) and exec_reply['content']['status'] == 'error':
+                raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
+
+    def execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
+        """
+        Executes a single code cell (blocking).
+
+        To execute all cells see :meth:`execute`.
+
+        Parameters
+        ----------
+        cell : nbformat.NotebookNode
+            The cell which is currently being processed.
+        cell_index : int
+            The position of the cell within the notebook object.
+        execution_count : int
+            The execution count to be assigned to the cell (default: Use kernel response)
+        store_history : bool
+            Determines if history should be stored in the kernel (default: False).
+            Specific to ipython kernels, which can store command histories.
+
+        Returns
+        -------
+        output : dict
+            The execution output payload (or None for no output).
+
+        Raises
+        ------
+        CellExecutionError
+            If execution failed and should raise an exception, this will be raised
+            with defaults about the failure.
+
+        Returns
+        -------
+        cell : NotebookNode
+            The cell which was just processed.
+        """
         loop = get_loop()
-        return loop.run_until_complete(self.async_run_cell(cell, cell_index, store_history))
+        return loop.run_until_complete(self.async_execute_cell(cell, cell_index, execution_count, store_history))
 
-    async def _poll_output_msg(self, parent_msg_id, cell, cell_index):
-        while True:
-            msg = await self.kc.iopub_channel.get_msg(timeout=None)
-            if msg['parent_header'].get('msg_id') == parent_msg_id:
-                try:
-                    # Will raise CellExecutionComplete when completed
-                    self.process_message(msg, cell, cell_index)
-                except CellExecutionComplete:
-                    return
+    async def async_execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
+        """
+        Executes a single code cell asynchronously.
 
-    async def async_run_cell(self, cell, cell_index=0, store_history=False):
+        To execute all cells see :meth:`execute`.
+
+        Parameters
+        ----------
+        cell : nbformat.NotebookNode
+            The cell which is currently being processed.
+        cell_index : int
+            The position of the cell within the notebook object.
+        execution_count : int
+            The execution count to be assigned to the cell (default: Use kernel response)
+        store_history : bool
+            Determines if history should be stored in the kernel (default: False).
+            Specific to ipython kernels, which can store command histories.
+
+        Returns
+        -------
+        output : dict
+            The execution output payload (or None for no output).
+
+        Raises
+        ------
+        CellExecutionError
+            If execution failed and should raise an exception, this will be raised
+            with defaults about the failure.
+
+        Returns
+        -------
+        cell : NotebookNode
+            The cell which was just processed.
+        """
+        if cell.cell_type != 'code' or not cell.source.strip():
+            self.log.debug("Skipping non-executing cell %s", cell_index)
+            return cell
+
+        self.log.debug("Executing cell:\n%s", cell.source)
         parent_msg_id = self.kc.execute(
             cell.source, store_history=store_history, stop_on_error=not self.allow_errors
         )
-        self.log.debug("Executing cell:\n%s", cell.source)
+        # We launched a code cell to execute
+        self.code_cells_executed += 1
+        exec_timeout = self._get_timeout(cell)
+        deadline = None
+        if exec_timeout is not None:
+            deadline = monotonic() + exec_timeout
 
         cell.outputs = []
         self.clear_before_next_output = False
-
-        # This loop resolves nbconvert#659. By polling iopub_channel's and shell_channel's
-        # output we avoid dropping output and important signals (like idle) from
-        # iopub_channel. Prior to this change, iopub_channel wasn't polled until
-        # after exec_reply was obtained from shell_channel, leading to the
-        # aforementioned dropped data.
 
         exec_timeout = self._get_timeout(cell)
         task_poll_output_msg = asyncio.ensure_future(
@@ -581,8 +625,11 @@ class Executor(LoggingConfigurable):
             parent_msg_id, cell, exec_timeout, task_poll_output_msg
         )
 
-        # Return cell.outputs still for backwards compatibility
-        return exec_reply, cell.outputs
+        if execution_count:
+            cell['execution_count'] = execution_count
+        self._check_raise_for_error(cell, exec_reply)
+        self.nb['cells'][cell_index] = cell
+        return cell
 
     def process_message(self, msg, cell, cell_index):
         """
@@ -709,10 +756,10 @@ class Executor(LoggingConfigurable):
         return encoded_buffers
 
 
-def executenb(nb, cwd=None, km=None, **kwargs):
+def execute(nb, cwd=None, km=None, **kwargs):
     """Execute a notebook's code, updating outputs within the notebook object.
 
-    This is a convenient wrapper around Executor. It returns the
+    This is a convenient wrapper around NotebookClient. It returns the
     modified notebook object.
 
     Parameters
@@ -729,7 +776,7 @@ def executenb(nb, cwd=None, km=None, **kwargs):
     resources = {}
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
-    return Executor(nb=nb, resources=resources, km=km, **kwargs).execute()
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
 
 
 def get_loop():

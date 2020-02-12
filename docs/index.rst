@@ -13,7 +13,7 @@ protocol nbclient is to notebooks allowing for execution contexts to be run.
 Origins
 -------
 
-This library used to be part of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_ and was extracted into it's own
+This library used to be part of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_ and was extracted into its own
 library for easier updating and importing by downstream libraries and
 applications.
 
@@ -33,7 +33,7 @@ These pages guide you through the installation and usage of nbclient.
    :maxdepth: 1
 
    installation
-   execute
+   client
 
 
 API Reference

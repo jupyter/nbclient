@@ -12,8 +12,8 @@ import pytest
 import functools
 import xmltodict
 
-from .base import ExecutorTestsBase
-from ..execute import Executor, executenb
+from .base import NBClientTestsBase
+from .. import NotebookClient, execute
 from ..exceptions import CellExecutionError
 
 import IPython
@@ -66,7 +66,7 @@ def run_notebook(filename, opts, resources=None):
 
     if resources:
         opts = {'resources': resources, **opts}
-    executor = Executor(cleaned_input_nb, **opts)
+    executor = NotebookClient(cleaned_input_nb, **opts)
 
     # Override terminal size to standardise traceback format
     with modified_env({'COLUMNS': '80', 'LINES': '24'}):
@@ -115,9 +115,13 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     def shell_channel_message_mock():
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
-        return Mock(
-            return_value=make_async(ExecutorTestsBase.merge_dicts(
-                {'parent_header': {'msg_id': parent_id}}, reply_msg or {}
+        return MagicMock(
+            return_value=make_async(NBClientTestsBase.merge_dicts(
+                {
+                    'parent_header': {'msg_id': parent_id},
+                    'content': {'status': 'ok', 'execution_count': 1},
+                },
+                reply_msg or {},
             ))
         )
 
@@ -128,7 +132,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
                 make_async(
-                    ExecutorTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
+                    NBClientTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
                 )
                 for msg in messages
             ]
@@ -141,13 +145,13 @@ def prepare_cell_mocks(*messages, reply_msg=None):
             This inner function wrapper populates the executor object with
             the fake kernel client. This client has it's iopub and shell
             channels mocked so as to fake the setup handshake and return
-            the messages passed into prepare_cell_mocks as the run_cell loop
+            the messages passed into prepare_cell_mocks as the execute_cell loop
             processes them.
             """
             cell_mock = NotebookNode(
                 source='"foo" = "bar"', metadata={}, cell_type='code', outputs=[]
             )
-            executor = Executor({})
+            executor = NotebookClient({})
             executor.nb = {'cells': [cell_mock]}
 
             # self.kc.iopub_channel.get_msg => message_mock.side_effect[i]
@@ -169,10 +173,7 @@ def normalize_output(output):
     """
     Normalizes outputs for comparison.
     """
-    from pprint import pprint
-    pprint(output)
     output = dict(output)
-    pprint(output)
     if 'metadata' in output:
         del output['metadata']
     if 'text' in output:
@@ -193,7 +194,6 @@ def normalize_output(output):
         ]
         output['traceback'] = tb
 
-    pprint(output)
     return output
 
 
@@ -203,11 +203,13 @@ def assert_notebooks_equal(expected, actual):
     assert len(expected_cells) == len(actual_cells)
 
     for expected_cell, actual_cell in zip(expected_cells, actual_cells):
+        # Uncomment these to help debug test failures better
+        # from pprint import pprint
+        # pprint(expected_cell)
+        # pprint(actual_cell)
         expected_outputs = expected_cell.get('outputs', [])
         actual_outputs = actual_cell.get('outputs', [])
-        print('expected')
         normalized_expected_outputs = list(map(normalize_output, expected_outputs))
-        print('actual')
         normalized_actual_outputs = list(map(normalize_output, actual_outputs))
         assert normalized_expected_outputs == normalized_actual_outputs
 
@@ -285,7 +287,7 @@ def test_many_parallel_notebooks(capfd):
     opts = dict(kernel_name="python", timeout=5)
     input_name = "HelloWorld.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
-    res = ExecutorTestsBase().build_resources()
+    res = NBClientTestsBase().build_resources()
     res["metadata"]["path"] = os.path.join(current_dir, "files")
 
     # run once, to trigger creating the original context
@@ -352,17 +354,17 @@ def test_many_async_parallel_notebooks(capfd):
     assert captured.err == ""
 
 
-class TestExecute(ExecutorTestsBase):
+class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 
     maxDiff = None
 
     def test_constructor(self):
-        Executor({})
+        NotebookClient({})
 
     def test_populate_language_info(self):
         nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
-        executor = Executor(nb, kernel_name="python")
+        executor = NotebookClient(nb, kernel_name="python")
         nb = executor.execute()
         assert 'language_info' in nb.metadata
 
@@ -382,7 +384,7 @@ class TestExecute(ExecutorTestsBase):
         """Can kernel in nb metadata be found when an empty string is passed?
 
         Note: this pattern should be discouraged in practice.
-        Passing in no kernel_name to Executor is recommended instead.
+        Passing in no kernel_name to NotebookClient is recommended instead.
         """
         filename = os.path.join(current_dir, 'files', 'UnicodePy3.ipynb')
         res = self.build_resources()
@@ -451,7 +453,7 @@ while True: continue
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
 
-        executor = Executor(input_nb, timeout=1)
+        executor = NotebookClient(input_nb, timeout=1)
 
         with pytest.raises(TimeoutError):
             output_nb = executor.execute()
@@ -482,7 +484,7 @@ while True: continue
     def test_force_raise_errors(self):
         """
         Check that conversion halts if the ``force_raise_errors`` traitlet on
-        Executor is set to True.
+        NotebookClient is set to True.
         """
         filename = os.path.join(current_dir, 'files', 'Skip Exceptions with Cell Tags.ipynb')
         res = self.build_resources()
@@ -509,7 +511,7 @@ while True: continue
                 del cell['execution_count']
             cell['outputs'] = []
 
-        executor = Executor(
+        executor = NotebookClient(
             cleaned_input_nb,
             resources=self.build_resources(),
             kernel_manager_class=FakeCustomKernelManager,
@@ -527,7 +529,7 @@ while True: continue
     def test_process_message_wrapper(self):
         outputs = []
 
-        class WrappedPreProc(Executor):
+        class WrappedPreProc(NotebookClient):
             def process_message(self, msg, cell, cell_index):
                 result = super(WrappedPreProc, self).process_message(msg, cell, cell_index)
                 if result:
@@ -547,14 +549,14 @@ while True: continue
         assert_notebooks_equal(original, executed)
 
     def test_execute_function(self):
-        # Test the executenb() convenience API
+        # Test the execute() convenience API
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
         with io.open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         original = copy.deepcopy(input_nb)
-        executed = executenb(original, os.path.dirname(filename))
+        executed = execute(original, os.path.dirname(filename))
         assert_notebooks_equal(original, executed)
 
     def test_widgets(self):
@@ -585,12 +587,12 @@ while True: continue
         assert 'version_minor' in wdata
 
 
-class TestRunCell(ExecutorTestsBase):
-    """Contains test functions for Executor.run_cell"""
+class TestRunCell(NBClientTestsBase):
+    """Contains test functions for NotebookClient.execute_cell"""
 
     @prepare_cell_mocks()
     def test_idle_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # Just the exit message should be fetched
         assert message_mock.call_count == 1
         # Ensure no outputs were generated
@@ -605,7 +607,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_message_for_wrong_parent(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An ignored stream followed by an idle
         assert message_mock.call_count == 2
         # Ensure no output was written
@@ -619,7 +621,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_busy_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # One busy message, followed by an idle
         assert message_mock.call_count == 2
         # Ensure no outputs were generated
@@ -643,7 +645,7 @@ class TestRunCell(ExecutorTestsBase):
         executor.timeout = 1
 
         with pytest.raises(TimeoutError):
-            executor.run_cell(cell_mock)
+            executor.execute_cell(cell_mock, 0)
 
         assert message_mock.call_count == 3
         # Ensure the output was captured
@@ -662,7 +664,7 @@ class TestRunCell(ExecutorTestsBase):
         executor.raise_on_iopub_timeout = True
 
         with pytest.raises(TimeoutError):
-            executor.run_cell(cell_mock)
+            executor.execute_cell(cell_mock, 0)
 
     @prepare_cell_mocks(
         {
@@ -690,7 +692,7 @@ class TestRunCell(ExecutorTestsBase):
         executor.raise_on_iopub_timeout = True
 
         with pytest.raises(TimeoutError):
-            executor.run_cell(cell_mock)
+            executor.execute_cell(cell_mock, 0)
 
         assert message_mock.call_count >= 3
         # Ensure the output was captured
@@ -706,7 +708,7 @@ class TestRunCell(ExecutorTestsBase):
         {'msg_type': 'execute_input', 'header': {'msg_type': 'execute_input'}, 'content': {}}
     )
     def test_execute_input_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # One ignored execute_input, followed by an idle
         assert message_mock.call_count == 2
         # Ensure no outputs were generated
@@ -725,7 +727,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_stream_messages(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An stdout then stderr stream followed by an idle
         assert message_mock.call_count == 3
         # Ensure the output was captured
@@ -746,7 +748,7 @@ class TestRunCell(ExecutorTestsBase):
         {'msg_type': 'clear_output', 'header': {'msg_type': 'clear_output'}, 'content': {}},
     )
     def test_clear_output_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A stream, followed by a clear, and then an idle
         assert message_mock.call_count == 3
         # Ensure the output was cleared
@@ -765,7 +767,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_clear_output_wait_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A stream, followed by a clear, and then an idle
         assert message_mock.call_count == 3
         # Should be true without another message to trigger the clear
@@ -791,7 +793,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_clear_output_wait_then_message_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An stdout stream, followed by a wait clear, an stderr stream, and then an idle
         assert message_mock.call_count == 4
         # Should be false after the stderr message
@@ -817,7 +819,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_clear_output_wait_then_update_display_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An stdout stream, followed by a wait clear, an stderr stream, and then an idle
         assert message_mock.call_count == 4
         # Should be false after the stderr message
@@ -833,10 +835,25 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_execution_count_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An execution count followed by an idle
         assert message_mock.call_count == 2
         assert cell_mock.execution_count == 42
+        # Ensure no outputs were generated
+        assert cell_mock.outputs == []
+
+    @prepare_cell_mocks(
+        {
+            'msg_type': 'execute_reply',
+            'header': {'msg_type': 'execute_reply'},
+            'content': {'execution_count': 42},
+        }
+    )
+    def test_execution_count_message_ignored_on_override(self, executor, cell_mock, message_mock):
+        executor.execute_cell(cell_mock, 0, execution_count=21)
+        # An execution count followed by an idle
+        assert message_mock.call_count == 2
+        assert cell_mock.execution_count == 21
         # Ensure no outputs were generated
         assert cell_mock.outputs == []
 
@@ -848,7 +865,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_execution_count_with_stream_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An execution count followed by an idle
         assert message_mock.call_count == 2
         assert cell_mock.execution_count == 42
@@ -863,7 +880,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_widget_comm_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A comm message without buffer info followed by an idle
         assert message_mock.call_count == 2
         self.assertEqual(executor.widget_state, {'foobar': {'foo': 'bar'}})
@@ -884,7 +901,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_widget_comm_buffer_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A comm message with buffer info followed by an idle
         assert message_mock.call_count == 2
         assert executor.widget_state == {'foobar': {'foo': 'bar'}}
@@ -906,7 +923,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_unknown_comm_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An unknown comm message followed by an idle
         assert message_mock.call_count == 2
         # Widget states should be empty as the message has the wrong shape
@@ -927,7 +944,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_execute_result_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An execute followed by an idle
         assert message_mock.call_count == 2
         assert cell_mock.execution_count == 42
@@ -956,7 +973,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_execute_result_with_display_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An execute followed by an idle
         assert message_mock.call_count == 2
         assert cell_mock.execution_count == 42
@@ -979,7 +996,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_display_data_without_id_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A display followed by an idle
         assert message_mock.call_count == 2
         # Should generate an associated message
@@ -1005,7 +1022,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_display_data_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A display followed by an idle
         assert message_mock.call_count == 2
         # Should generate an associated message
@@ -1048,7 +1065,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_display_data_same_id_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A display followed by an idle
         assert message_mock.call_count == 4
         # Original output should be manipulated and a copy of the second now
@@ -1079,7 +1096,7 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_update_display_data_without_id_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An update followed by an idle
         assert message_mock.call_count == 2
         # Display updates don't create any outputs
@@ -1108,7 +1125,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_update_display_data_mismatch_id_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An update followed by an idle
         assert message_mock.call_count == 3
         # Display updates don't create any outputs
@@ -1142,7 +1159,7 @@ class TestRunCell(ExecutorTestsBase):
         },
     )
     def test_update_display_data_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # A display followed by an update then an idle
         assert message_mock.call_count == 3
         # Original output should be manipulated
@@ -1163,17 +1180,13 @@ class TestRunCell(ExecutorTestsBase):
         }
     )
     def test_error_message(self, executor, cell_mock, message_mock):
-        executor.run_cell(cell_mock)
+        executor.execute_cell(cell_mock, 0)
         # An error followed by an idle
         assert message_mock.call_count == 2
         # Should also consume the message stream
         assert cell_mock.outputs == [
             {'output_type': 'error', 'ename': 'foo', 'evalue': 'bar', 'traceback': ['Boom']}
         ]
-
-
-class TestPreprocessCell(ExecutorTestsBase):
-    """Contains test functions for Executor.run_cell"""
 
     @prepare_cell_mocks(
         {

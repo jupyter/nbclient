@@ -3,7 +3,7 @@ import unittest
 from nbformat import v4 as nbformat
 
 
-class ExecutorTestsBase(unittest.TestCase):
+class NBClientTestsBase(unittest.TestCase):
     """Contains test functions preprocessor tests"""
 
     def build_notebook(self, with_json_outputs=False):

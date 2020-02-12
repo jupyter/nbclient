@@ -41,7 +41,7 @@ dev_reqs = read_reqs('requirements-dev.txt')
 extras_require = {"test": dev_reqs, "dev": dev_reqs}
 
 setup(
-    name="nbclient",
+    name=name,
     version=version(),
     author='Jupyter Development Team',
     author_email='jupyter@googlegroups.com',
