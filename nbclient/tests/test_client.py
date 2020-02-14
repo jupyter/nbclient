@@ -12,7 +12,8 @@ import functools
 import xmltodict
 
 from .base import NBClientTestsBase
-from .. import NotebookClient, execute
+from .. import execute
+from .._client import NotebookClient
 from ..exceptions import CellExecutionError
 
 import IPython
