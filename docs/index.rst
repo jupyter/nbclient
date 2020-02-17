@@ -34,6 +34,7 @@ These pages guide you through the installation and usage of nbclient.
 
    installation
    client
+   changelog
 
 
 API Reference
