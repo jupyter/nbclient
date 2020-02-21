@@ -1,5 +1,5 @@
 numpy
 pandas
-scrapbook
+nteract-scrapbook
 nbformat
 ./
