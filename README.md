@@ -25,7 +25,7 @@ This library used to be part of [nbconvert](https://nbconvert.readthedocs.io/en/
 
 ## Python Version Support
 
-This library currently supports python 3.5+ verisons. As minor python
+This library currently supports python 3.5+ versions. As minor python
 versions are officially sunset by the python org nbclient will similarly
 drop support in the future.
 
