@@ -14,7 +14,7 @@ A client library for executing notebooks. Formally nbconvert's ExecutePreprocess
 
 NBClient lets you:
 
-    **execute** notebooks
+- **execute** notebooks
 
 Similar in nature to jupyter_client, as the jupyter_client is to the jupyter
 protocol nbclient is to notebooks allowing for execution contexts to be run.
