@@ -4,6 +4,7 @@ import io
 import os
 import re
 import threading
+import asyncio
 
 import nbformat
 import sys
@@ -25,13 +26,19 @@ from ipython_genutils.py3compat import string_types
 from pebble import ProcessPool
 
 from queue import Empty
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
 current_dir = os.path.dirname(__file__)
 IPY_MAJOR = IPython.version_info[0]
+
+
+def make_async(mock_value):
+    async def _():
+        return mock_value
+    return _()
 
 
 def normalize_base64(b64_text):
@@ -68,6 +75,31 @@ def run_notebook(filename, opts, resources=None):
     return input_nb, output_nb
 
 
+async def async_run_notebook(filename, opts, resources=None):
+    """Loads and runs a notebook, returning both the version prior to
+    running it and the version after running it.
+
+    """
+    with io.open(filename) as f:
+        input_nb = nbformat.read(f, 4)
+
+    cleaned_input_nb = copy.deepcopy(input_nb)
+    for cell in cleaned_input_nb.cells:
+        if 'execution_count' in cell:
+            del cell['execution_count']
+        cell['outputs'] = []
+
+    if resources:
+        opts = {'resources': resources, **opts}
+    executor = NotebookClient(cleaned_input_nb, **opts)
+
+    # Override terminal size to standardise traceback format
+    with modified_env({'COLUMNS': '80', 'LINES': '24'}):
+        output_nb = await executor.async_execute()
+
+    return input_nb, output_nb
+
+
 def prepare_cell_mocks(*messages, reply_msg=None):
     """
     This function prepares a executor object which has a fake kernel client
@@ -84,22 +116,24 @@ def prepare_cell_mocks(*messages, reply_msg=None):
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
         return MagicMock(
-            return_value=NBClientTestsBase.merge_dicts(
+            return_value=make_async(NBClientTestsBase.merge_dicts(
                 {
                     'parent_header': {'msg_id': parent_id},
                     'content': {'status': 'ok', 'execution_count': 1},
                 },
                 reply_msg or {},
-            )
+            ))
         )
 
     def iopub_messages_mock():
         # Return the message generator for
         # self.kc.iopub_channel.get_msg => messages[i]
-        return MagicMock(
+        return Mock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
-                NBClientTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
+                make_async(
+                    NBClientTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
+                )
                 for msg in messages
             ]
         )
@@ -247,7 +281,7 @@ def test_parallel_notebooks(capfd, tmpdir):
 def test_many_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
 
-    Specifically, many IPython kernels when run simultaneously would enocunter errors
+    Specifically, many IPython kernels when run simultaneously would encounter errors
     due to using the same SQLite history database.
     """
     opts = dict(kernel_name="python", timeout=5)
@@ -259,14 +293,62 @@ def test_many_parallel_notebooks(capfd):
     # run once, to trigger creating the original context
     run_notebook(input_file, opts, res)
 
-    with ProcessPool(max_workers=4) as pool:
+    with ProcessPool(max_workers=2) as pool:
         futures = [
-            # Travis needs a lot more time even though 10s is enough on most dev machines
-            pool.schedule(run_notebook, args=(input_file, opts, res), timeout=30)
-            for i in range(0, 8)
+            pool.schedule(run_notebook, args=(input_file, opts, res))
+            for i in range(8)
         ]
         for index, future in enumerate(futures):
             future.result()
+
+    captured = capfd.readouterr()
+    assert captured.err == ""
+
+
+def test_async_parallel_notebooks(capfd, tmpdir):
+    """Two notebooks should be able to be run simultaneously without problems.
+
+    The two notebooks spawned here use the filesystem to check that the other notebook
+    wrote to the filesystem."""
+
+    opts = dict(kernel_name="python")
+    input_name = "Parallel Execute {label}.ipynb"
+    input_file = os.path.join(current_dir, "files", input_name)
+    res = notebook_resources()
+
+    with modified_env({"NBEXECUTE_TEST_PARALLEL_TMPDIR": str(tmpdir)}):
+        tasks = [
+            async_run_notebook(input_file.format(label=label), opts, res)
+            for label in ("A", "B")
+        ]
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(*tasks))
+
+    captured = capfd.readouterr()
+    assert captured.err == ""
+
+
+def test_many_async_parallel_notebooks(capfd):
+    """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
+
+    Specifically, many IPython kernels when run simultaneously would encounter errors
+    due to using the same SQLite history database.
+    """
+    opts = dict(kernel_name="python", timeout=5)
+    input_name = "HelloWorld.ipynb"
+    input_file = os.path.join(current_dir, "files", input_name)
+    res = NBClientTestsBase().build_resources()
+    res["metadata"]["path"] = os.path.join(current_dir, "files")
+
+    # run once, to trigger creating the original context
+    run_notebook(input_file, opts, res)
+
+    tasks = [
+        async_run_notebook(input_file, opts, res)
+        for i in range(4)
+    ]
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.gather(*tasks))
 
     captured = capfd.readouterr()
     assert captured.err == ""
@@ -598,16 +680,21 @@ class TestRunCell(NBClientTestsBase):
     )
     def test_eventual_deadline_iopub(self, executor, cell_mock, message_mock):
         # Process a few messages before raising a timeout from iopub
-        message_mock.side_effect = list(message_mock.side_effect)[:-1] + [Empty()]
-        executor.kc.shell_channel.get_msg = MagicMock(
-            return_value={'parent_header': {'msg_id': executor.parent_id}}
+        def message_seq(messages):
+            for message in messages:
+                yield message
+            while True:
+                yield Empty()
+        message_mock.side_effect = message_seq(list(message_mock.side_effect)[:-1])
+        executor.kc.shell_channel.get_msg = Mock(
+            return_value=make_async({'parent_header': {'msg_id': executor.parent_id}})
         )
         executor.raise_on_iopub_timeout = True
 
         with pytest.raises(TimeoutError):
             executor.execute_cell(cell_mock, 0)
 
-        assert message_mock.call_count == 3
+        assert message_mock.call_count >= 3
         # Ensure the output was captured
         self.assertListEqual(
             cell_mock.outputs,

@@ -1,8 +1,13 @@
 import base64
 from textwrap import dedent
-from contextlib import contextmanager
+
+# For python 3.5 compatibility we import asynccontextmanager from async_generator instead of
+# contextlib, and we `await yield_()` instead of just `yield`
+from async_generator import asynccontextmanager, async_generator, yield_
+
 from time import monotonic
 from queue import Empty
+import asyncio
 
 from traitlets.config.configurable import LoggingConfigurable
 from traitlets import List, Unicode, Bool, Enum, Any, Type, Dict, Integer, default
@@ -285,9 +290,10 @@ class NotebookClient(LoggingConfigurable):
             self.km = self.kernel_manager_class(config=self.config)
         else:
             self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
+        self.km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
         return self.km
 
-    def start_new_kernel_client(self, **kwargs):
+    async def start_new_kernel_client(self, **kwargs):
         """Creates a new kernel client.
 
         Parameters
@@ -314,7 +320,7 @@ class NotebookClient(LoggingConfigurable):
         self.kc = self.km.client()
         self.kc.start_channels()
         try:
-            self.kc.wait_for_ready(timeout=self.startup_timeout)
+            await self.kc.wait_for_ready(timeout=self.startup_timeout)
         except RuntimeError:
             self.kc.stop_channels()
             self.km.shutdown_kernel()
@@ -322,8 +328,9 @@ class NotebookClient(LoggingConfigurable):
         self.kc.allow_stdin = False
         return self.kc
 
-    @contextmanager
-    def setup_kernel(self, **kwargs):
+    @asynccontextmanager
+    @async_generator  # needed for python 3.5 compatibility
+    async def setup_kernel(self, **kwargs):
         """
         Context manager for setting up the kernel to execute a notebook.
 
@@ -336,16 +343,28 @@ class NotebookClient(LoggingConfigurable):
             self.start_kernel_manager()
 
         if not self.km.has_kernel:
-            self.start_new_kernel_client(**kwargs)
+            await self.start_new_kernel_client(**kwargs)
         try:
-            yield
+            await yield_(None)  # would just yield in python >3.5
         finally:
             self.kc.stop_channels()
             self.kc = None
 
     def execute(self, **kwargs):
         """
-        Executes each code cell.
+        Executes each code cell (blocking).
+
+        Returns
+        -------
+        nb : NotebookNode
+            The executed notebook.
+        """
+        loop = get_loop()
+        return loop.run_until_complete(self.async_execute(**kwargs))
+
+    async def async_execute(self, **kwargs):
+        """
+        Executes each code cell asynchronously.
 
         Returns
         -------
@@ -354,13 +373,15 @@ class NotebookClient(LoggingConfigurable):
         """
         self.reset_execution_trackers()
 
-        with self.setup_kernel(**kwargs):
+        async with self.setup_kernel(**kwargs):
             self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
             for index, cell in enumerate(self.nb.cells):
                 # Ignore `'execution_count' in content` as it's always 1
                 # when store_history is False
-                self.execute_cell(cell, index, execution_count=self.code_cells_executed + 1)
-            info_msg = self._wait_for_reply(self.kc.kernel_info())
+                await self.async_execute_cell(
+                    cell, index, execution_count=self.code_cells_executed + 1
+                )
+            info_msg = await self._wait_for_reply(self.kc.kernel_info())
             self.nb.metadata['language_info'] = info_msg['content']['language_info']
             self.set_widgets_metadata()
 
@@ -408,16 +429,40 @@ class NotebookClient(LoggingConfigurable):
                 outputs[output_idx]['data'] = out['data']
                 outputs[output_idx]['metadata'] = out['metadata']
 
-    def _poll_for_reply(self, msg_id, cell=None, timeout=None):
-        try:
-            # check with timeout if kernel is still alive
-            msg = self.kc.shell_channel.get_msg(timeout=timeout)
-            if msg['parent_header'].get('msg_id') == msg_id:
-                return msg
-        except Empty:
-            # received no message, check if kernel is still alive
-            self._check_alive()
-            # kernel still alive, wait for a message
+    async def _poll_for_reply(self, msg_id, cell, timeout, task_poll_output_msg):
+        if timeout is not None:
+            deadline = monotonic() + timeout
+        while True:
+            try:
+                msg = await self.kc.shell_channel.get_msg(timeout=timeout)
+                if msg['parent_header'].get('msg_id') == msg_id:
+                    try:
+                        await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
+                    except (asyncio.TimeoutError, Empty):
+                        if self.raise_on_iopub_timeout:
+                            raise CellTimeoutError.error_from_timeout_and_cell(
+                                "Timeout waiting for IOPub output", self.iopub_timeout, cell
+                            )
+                        else:
+                            self.log.warning("Timeout waiting for IOPub output")
+                    return msg
+                else:
+                    if timeout is not None:
+                        timeout = max(0, deadline - monotonic())
+            except Empty:
+                # received no message, check if kernel is still alive
+                self._check_alive()
+                self._handle_timeout(timeout, cell)
+
+    async def _poll_output_msg(self, parent_msg_id, cell, cell_index):
+        while True:
+            msg = await self.kc.iopub_channel.get_msg(timeout=None)
+            if msg['parent_header'].get('msg_id') == parent_msg_id:
+                try:
+                    # Will raise CellExecutionComplete when completed
+                    self.process_message(msg, cell, cell_index)
+                except CellExecutionComplete:
+                    return
 
     def _get_timeout(self, cell):
         if self.timeout_func is not None and cell is not None:
@@ -445,14 +490,14 @@ class NotebookClient(LoggingConfigurable):
             self.log.error("Kernel died while waiting for execute reply.")
             raise DeadKernelError("Kernel died")
 
-    def _wait_for_reply(self, msg_id, cell=None):
+    async def _wait_for_reply(self, msg_id, cell=None):
         # wait for finish, with timeout
         timeout = self._get_timeout(cell)
         cummulative_time = 0
         self.shell_timeout_interval = 5
         while True:
             try:
-                msg = self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
+                msg = await self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
             except Empty:
                 self._check_alive()
                 cummulative_time += self.shell_timeout_interval
@@ -488,7 +533,46 @@ class NotebookClient(LoggingConfigurable):
 
     def execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
         """
-        Executes a single code cell.
+        Executes a single code cell (blocking).
+
+        To execute all cells see :meth:`execute`.
+
+        Parameters
+        ----------
+        cell : nbformat.NotebookNode
+            The cell which is currently being processed.
+        cell_index : int
+            The position of the cell within the notebook object.
+        execution_count : int
+            The execution count to be assigned to the cell (default: Use kernel response)
+        store_history : bool
+            Determines if history should be stored in the kernel (default: False).
+            Specific to ipython kernels, which can store command histories.
+
+        Returns
+        -------
+        output : dict
+            The execution output payload (or None for no output).
+
+        Raises
+        ------
+        CellExecutionError
+            If execution failed and should raise an exception, this will be raised
+            with defaults about the failure.
+
+        Returns
+        -------
+        cell : NotebookNode
+            The cell which was just processed.
+        """
+        loop = get_loop()
+        return loop.run_until_complete(
+            self.async_execute_cell(cell, cell_index, execution_count, store_history)
+        )
+
+    async def async_execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
+        """
+        Executes a single code cell asynchronously.
 
         To execute all cells see :meth:`execute`.
 
@@ -531,70 +615,16 @@ class NotebookClient(LoggingConfigurable):
         # We launched a code cell to execute
         self.code_cells_executed += 1
         exec_timeout = self._get_timeout(cell)
-        deadline = None
-        if exec_timeout is not None:
-            deadline = monotonic() + exec_timeout
 
         cell.outputs = []
         self.clear_before_next_output = False
 
-        # This loop resolves nbconvert#659. By polling iopub_channel's and shell_channel's
-        # output we avoid dropping output and important signals (like idle) from
-        # iopub_channel. Prior to this change, iopub_channel wasn't polled until
-        # after exec_reply was obtained from shell_channel, leading to the
-        # aforementioned dropped data.
-
-        # These two variables are used to track what still needs polling:
-        # more_output=true => continue to poll the iopub_channel
-        more_output = True
-        # polling_exec_reply=true => continue to poll the shell_channel
-        polling_exec_reply = True
-
-        while more_output or polling_exec_reply:
-            if polling_exec_reply:
-                if self._passed_deadline(deadline):
-                    self._handle_timeout(exec_timeout, cell)
-                    polling_exec_reply = False
-                    continue
-
-                # Avoid exceeding the execution timeout (deadline), but stop
-                # after at most 1s so we can poll output from iopub_channel.
-                timeout = self._timeout_with_deadline(1, deadline)
-                exec_reply = self._poll_for_reply(parent_msg_id, cell, timeout)
-                if exec_reply is not None:
-                    polling_exec_reply = False
-
-            if more_output:
-                try:
-                    timeout = self.iopub_timeout
-                    if polling_exec_reply:
-                        # Avoid exceeding the execution timeout (deadline) while
-                        # polling for output.
-                        timeout = self._timeout_with_deadline(timeout, deadline)
-                    msg = self.kc.iopub_channel.get_msg(timeout=timeout)
-                except Empty:
-                    if polling_exec_reply:
-                        # Still waiting for execution to finish so we expect that
-                        # output may not always be produced yet.
-                        continue
-
-                    if self.raise_on_iopub_timeout:
-                        raise CellTimeoutError.error_from_timeout_and_cell(
-                            "Timeout waiting for IOPub output", self.iopub_timeout, cell
-                        )
-                    else:
-                        self.log.warning("Timeout waiting for IOPub output")
-                        more_output = False
-                        continue
-            if msg['parent_header'].get('msg_id') != parent_msg_id:
-                # not an output from our execution
-                continue
-
-            try:
-                # Will raise CellExecutionComplete when completed
-                self.process_message(msg, cell, cell_index)
-            except CellExecutionComplete:
-                more_output = False
+        task_poll_output_msg = asyncio.ensure_future(
+            self._poll_output_msg(parent_msg_id, cell, cell_index)
+        )
+        exec_reply = await self._poll_for_reply(
+            parent_msg_id, cell, exec_timeout, task_poll_output_msg
+        )
 
         if execution_count:
             cell['execution_count'] = execution_count
@@ -748,3 +778,12 @@ def execute(nb, cwd=None, km=None, **kwargs):
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+
+
+def get_loop():
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop
