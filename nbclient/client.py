@@ -21,6 +21,7 @@ from .exceptions import CellTimeoutError, DeadKernelError, CellExecutionComplete
 def timestamp():
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
+
 class NotebookClient(LoggingConfigurable):
     """
     Encompasses a Client for executing cells in a notebook
@@ -144,6 +145,16 @@ class NotebookClient(LoggingConfigurable):
             """
             If `True` (default), then the state of the Jupyter widgets created
             at the kernel will be stored in the metadata of the notebook.
+            """
+        ),
+    ).tag(config=True)
+
+    record_timing = Bool(
+        True,
+        help=dedent(
+            """
+            If `True` (default), then the execution timings of each cell will
+            be stored in the metadata of the notebook.
             """
         ),
     ).tag(config=True)
@@ -440,7 +451,7 @@ class NotebookClient(LoggingConfigurable):
             try:
                 msg = await self.kc.shell_channel.get_msg(timeout=timeout)
                 if msg['parent_header'].get('msg_id') == msg_id:
-                    if msg['msg_type'] == 'execute_reply':
+                    if self.record_timing:
                         cell['metadata']['execution']['shell.execute_reply'] = timestamp()
                     try:
                         await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
@@ -614,7 +625,7 @@ class NotebookClient(LoggingConfigurable):
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
 
-        if 'execution' not in cell['metadata']:
+        if self.record_timing and 'execution' not in cell['metadata']:
             cell['metadata']['execution'] = {}
 
         self.log.debug("Executing cell:\n%s", cell.source)
@@ -681,21 +692,25 @@ class NotebookClient(LoggingConfigurable):
         if 'execution_count' in content:
             cell['execution_count'] = content['execution_count']
 
+        if self.record_timing:
+            if msg_type == 'status':
+                if content['execution_state'] == 'idle':
+                    cell['metadata']['execution']['iopub.status.idle'] = timestamp()
+                elif content['execution_state'] == 'busy':
+                    cell['metadata']['execution']['iopub.status.busy'] = timestamp()
+            elif msg_type == 'execute_input':
+                cell['metadata']['execution']['iopub.execute_input'] = timestamp()
+
         if msg_type == 'status':
             if content['execution_state'] == 'idle':
-                cell['metadata']['execution']['iopub.status.idle'] = timestamp()
                 raise CellExecutionComplete()
-            elif content['execution_state'] == 'busy':
-                cell['metadata']['execution']['iopub.status.busy'] = timestamp()
         elif msg_type == 'clear_output':
             self.clear_output(cell.outputs, msg, cell_index)
         elif msg_type.startswith('comm'):
             self.handle_comm_msg(cell.outputs, msg, cell_index)
-        elif msg_type == 'execute_input':
-            cell['metadata']['execution']['iopub.execute_input'] = timestamp()
         # Check for remaining messages we don't process
-        elif msg_type != 'update_display_data':
-            # Assign output as ocell['metadata']['execution']ur processed "result"
+        elif msg_type not in ['execute_input', 'update_display_data']:
+            # Assign output as our processed "result"
             return self.output(cell.outputs, msg, display_id, cell_index)
 
     def output(self, outs, msg, display_id, cell_index):
