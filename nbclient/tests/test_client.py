@@ -5,6 +5,7 @@ import os
 import re
 import threading
 import asyncio
+import datetime
 
 import nbformat
 import sys
@@ -352,6 +353,36 @@ def test_many_async_parallel_notebooks(capfd):
 
     captured = capfd.readouterr()
     assert captured.err == ""
+
+
+def test_execution_timing():
+    """Compare the execution timing information stored in the cell with the
+    actual time it took to run the cell. Also check for the cell timing string
+    format."""
+    opts = dict(kernel_name="python")
+    input_name = "Sleep1s.ipynb"
+    input_file = os.path.join(current_dir, "files", input_name)
+    res = notebook_resources()
+    input_nb, output_nb = run_notebook(input_file, opts, res)
+
+    def get_time_from_str(s):
+        time_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+        return datetime.datetime.strptime(s, time_format)
+
+    execution_timing = output_nb['cells'][1]['metadata']['execution']
+    status_busy = get_time_from_str(execution_timing['iopub.status.busy'])
+    execute_input = get_time_from_str(execution_timing['iopub.execute_input'])
+    execute_reply = get_time_from_str(execution_timing['shell.execute_reply'])
+    status_idle = get_time_from_str(execution_timing['iopub.status.idle'])
+
+    cell_start = get_time_from_str(output_nb['cells'][2]['outputs'][0]['text'])
+    cell_end = get_time_from_str(output_nb['cells'][3]['outputs'][0]['text'])
+
+    delta = datetime.timedelta(milliseconds=100)
+    assert status_busy - cell_start < delta
+    assert execute_input - cell_start < delta
+    assert execute_reply - cell_end < delta
+    assert status_idle - cell_end < delta
 
 
 class TestExecute(NBClientTestsBase):
