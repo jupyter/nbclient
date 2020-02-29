@@ -1,3 +1,4 @@
+import datetime
 import base64
 from textwrap import dedent
 
@@ -15,6 +16,10 @@ from traitlets import List, Unicode, Bool, Enum, Any, Type, Dict, Integer, defau
 from nbformat.v4 import output_from_msg
 
 from .exceptions import CellTimeoutError, DeadKernelError, CellExecutionComplete, CellExecutionError
+
+
+def timestamp():
+    return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
 class NotebookClient(LoggingConfigurable):
@@ -140,6 +145,16 @@ class NotebookClient(LoggingConfigurable):
             """
             If `True` (default), then the state of the Jupyter widgets created
             at the kernel will be stored in the metadata of the notebook.
+            """
+        ),
+    ).tag(config=True)
+
+    record_timing = Bool(
+        True,
+        help=dedent(
+            """
+            If `True` (default), then the execution timings of each cell will
+            be stored in the metadata of the notebook.
             """
         ),
     ).tag(config=True)
@@ -436,6 +451,8 @@ class NotebookClient(LoggingConfigurable):
             try:
                 msg = await self.kc.shell_channel.get_msg(timeout=timeout)
                 if msg['parent_header'].get('msg_id') == msg_id:
+                    if self.record_timing:
+                        cell['metadata']['execution']['shell.execute_reply'] = timestamp()
                     try:
                         await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
                     except (asyncio.TimeoutError, Empty):
@@ -608,6 +625,9 @@ class NotebookClient(LoggingConfigurable):
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
 
+        if self.record_timing and 'execution' not in cell['metadata']:
+            cell['metadata']['execution'] = {}
+
         self.log.debug("Executing cell:\n%s", cell.source)
         parent_msg_id = self.kc.execute(
             cell.source, store_history=store_history, stop_on_error=not self.allow_errors
@@ -671,6 +691,15 @@ class NotebookClient(LoggingConfigurable):
         # set the prompt number for the input and the output
         if 'execution_count' in content:
             cell['execution_count'] = content['execution_count']
+
+        if self.record_timing:
+            if msg_type == 'status':
+                if content['execution_state'] == 'idle':
+                    cell['metadata']['execution']['iopub.status.idle'] = timestamp()
+                elif content['execution_state'] == 'busy':
+                    cell['metadata']['execution']['iopub.status.busy'] = timestamp()
+            elif msg_type == 'execute_input':
+                cell['metadata']['execution']['iopub.execute_input'] = timestamp()
 
         if msg_type == 'status':
             if content['execution_state'] == 'idle':
