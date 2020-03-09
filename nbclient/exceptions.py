@@ -1,4 +1,13 @@
-class CellTimeoutError(TimeoutError):
+class CellControlSignal(Exception):
+    """
+    A custom exception used to indicate that the exception is used for cell
+    control actions (not the best model, but it's needed to cover existing
+    behavior without major refactors).
+    """
+    pass
+
+
+class CellTimeoutError(TimeoutError, CellControlSignal):
     """
     A custom exception to capture when a cell has timed out during execution.
     """
@@ -21,7 +30,7 @@ class DeadKernelError(RuntimeError):
     pass
 
 
-class CellExecutionComplete(Exception):
+class CellExecutionComplete(CellControlSignal):
     """
     Used as a control signal for cell execution across execute_cell and
     process_message function calls. Raised when all execution requests
@@ -32,7 +41,7 @@ class CellExecutionComplete(Exception):
     pass
 
 
-class CellExecutionError(Exception):
+class CellExecutionError(CellControlSignal):
     """
     Custom exception to propagate exceptions that are raised during
     notebook execution to the caller. This is mostly useful when

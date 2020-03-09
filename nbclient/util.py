@@ -5,6 +5,8 @@
 
 import asyncio
 
+from typing import Coroutine
+
 
 def run_sync(coro):
     """Runs a coroutine and blocks until it has executed.
@@ -45,3 +47,17 @@ def run_sync(coro):
         return result
     wrapped.__doc__ = coro.__doc__
     return wrapped
+
+
+async def await_or_block(func, *args, **kwargs):
+    """Awaits the function if it's an asynchronous function. Otherwise block
+    on execution.
+    """
+    if asyncio.iscoroutinefunction(func):
+        return await func(*args, **kwargs)
+    else:
+        result = func(*args, **kwargs)
+        # Mocks mask that the function is a coroutine :/
+        if isinstance(result, Coroutine):
+            return await result
+        return result
