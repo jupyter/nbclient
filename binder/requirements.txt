@@ -1,5 +1,5 @@
 numpy
 pandas
+matplotlib
 nteract-scrapbook
 nbformat
-./
