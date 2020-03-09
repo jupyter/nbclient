@@ -6,6 +6,8 @@ from textwrap import dedent
 # contextlib, and we `await yield_()` instead of just `yield`
 from async_generator import asynccontextmanager, async_generator, yield_
 
+import nest_asyncio
+
 from time import monotonic
 from queue import Empty
 import asyncio
@@ -816,3 +818,6 @@ def get_loop():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
     return loop
+
+
+nest_asyncio.apply()
