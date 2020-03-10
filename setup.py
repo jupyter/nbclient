@@ -37,7 +37,7 @@ def read_reqs(fname):
 
 long_description = read(os.path.join(os.path.dirname(__file__), "README.md"))
 requirements = read(os.path.join(os.path.dirname(__file__), "requirements.txt"))
-dev_reqs = read_reqs('requirements-dev.txt')
+dev_reqs = read_reqs(os.path.join(os.path.dirname(__file__), 'requirements-dev.txt'))
 extras_require = {"test": dev_reqs, "dev": dev_reqs}
 
 setup(

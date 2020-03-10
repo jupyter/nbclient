@@ -10,6 +10,11 @@ NBClient lets you:
 Similar in nature to jupyter_client, as the jupyter_client is to the jupyter
 protocol nbclient is to notebooks allowing for execution contexts to be run.
 
+To demo **NBClient** interactively, click the Binder link below:
+
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/jupyter/nbclient/master?filepath=binder%2Frun_nbclient.ipynb
+
 Origins
 -------
 
