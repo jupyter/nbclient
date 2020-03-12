@@ -294,6 +294,34 @@ class NotebookClient(LoggingConfigurable):
         self.km = km
         self.reset_execution_trackers()
 
+    def run_blocking(self, coro):
+        """Runs a coroutine and blocks until it has executed.
+
+        An event loop is created if no one already exists. If an event loop is
+        already running, this event loop execution is nested into the already
+        running one if `nest_asyncio` is set to True.
+
+        Parameters
+        ----------
+        coro : coroutine
+            The coroutine to be executed.
+
+        Returns
+        -------
+        result :
+            Whatever the coroutine returns.
+        """
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        if self.nest_asyncio:
+            import nest_asyncio
+            nest_asyncio.apply(loop)
+        result = loop.run_until_complete(coro)
+        return result
+
     def reset_execution_trackers(self):
         """Resets any per-execution trackers.
         """
@@ -379,6 +407,9 @@ class NotebookClient(LoggingConfigurable):
         finally:
             self.kc.stop_channels()
             self.kc = None
+
+    def execute(self, **kwargs):
+        return self.run_blocking(self.async_execute(**kwargs))
 
     async def async_execute(self, **kwargs):
         """
@@ -550,6 +581,11 @@ class NotebookClient(LoggingConfigurable):
         if self.force_raise_errors or not cell_allows_errors:
             if (exec_reply is not None) and exec_reply['content']['status'] == 'error':
                 raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
+
+    def execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
+        return self.run_blocking(
+            self.async_execute_cell(cell, cell_index, execution_count, store_history)
+        )
 
     async def async_execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
         """
@@ -748,24 +784,6 @@ class NotebookClient(LoggingConfigurable):
                 }
             )
         return encoded_buffers
-
-
-def make_blocking(async_method):
-    def blocking_method(self, *args, **kwargs):
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        if self.nest_asyncio:
-            import nest_asyncio
-            nest_asyncio.apply(loop)
-        return loop.run_until_complete(async_method(self, *args, **kwargs))
-    return blocking_method
-
-
-NotebookClient.execute = make_blocking(NotebookClient.async_execute)
-NotebookClient.execute_cell = make_blocking(NotebookClient.async_execute_cell)
 
 
 def execute(nb, cwd=None, km=None, **kwargs):
