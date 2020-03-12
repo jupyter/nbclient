@@ -319,7 +319,16 @@ class NotebookClient(LoggingConfigurable):
         if self.nest_asyncio:
             import nest_asyncio
             nest_asyncio.apply(loop)
-        result = loop.run_until_complete(coro)
+        try:
+            result = loop.run_until_complete(coro)
+        except RuntimeError as e:
+            if str(e) == 'This event loop is already running':
+                raise RuntimeError(
+                    'You are trying to run nbclient in an environment where an '
+                    'event loop is already running. Please pass `nest_asyncio=True` in '
+                    '`NotebookClient.execute` and such methods.'
+                )
+            raise
         return result
 
     def reset_execution_trackers(self):
