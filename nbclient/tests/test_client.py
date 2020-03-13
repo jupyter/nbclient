@@ -144,7 +144,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
         def test_mock_wrapper(self):
             """
             This inner function wrapper populates the executor object with
-            the fake kernel client. This client has it's iopub and shell
+            the fake kernel client. This client has its iopub and shell
             channels mocked so as to fake the setup handshake and return
             the messages passed into prepare_cell_mocks as the execute_cell loop
             processes them.
@@ -161,6 +161,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
                 iopub_channel=MagicMock(get_msg=message_mock),
                 shell_channel=MagicMock(get_msg=shell_channel_message_mock()),
                 execute=MagicMock(return_value=parent_id),
+                is_alive=MagicMock(return_value=make_async(True))
             )
             executor.parent_id = parent_id
             return func(self, executor, cell_mock, message_mock)
@@ -491,7 +492,7 @@ while True: continue
         km = executor.start_kernel_manager()
 
         with patch.object(km, "is_alive") as alive_mock:
-            alive_mock.return_value = False
+            alive_mock.return_value = make_async(False)
             # Will be a RuntimeError or subclass DeadKernelError depending
             # on if jupyter_client or nbconvert catches the dead client first
             with pytest.raises(RuntimeError):
@@ -672,7 +673,11 @@ class TestRunCell(NBClientTestsBase):
     )
     def test_deadline_exec_reply(self, executor, cell_mock, message_mock):
         # exec_reply is never received, so we expect to hit the timeout.
-        executor.kc.shell_channel.get_msg = MagicMock(side_effect=Empty())
+        async def get_msg(timeout):
+            await asyncio.sleep(timeout)
+            raise Empty
+
+        executor.kc.shell_channel.get_msg = get_msg
         executor.timeout = 1
 
         with pytest.raises(TimeoutError):
