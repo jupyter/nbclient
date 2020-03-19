@@ -16,6 +16,7 @@ from traitlets import List, Unicode, Bool, Enum, Any, Type, Dict, Integer, defau
 from nbformat.v4 import output_from_msg
 
 from .exceptions import CellTimeoutError, DeadKernelError, CellExecutionComplete, CellExecutionError
+from .util import run_sync
 
 
 def timestamp():
@@ -294,43 +295,6 @@ class NotebookClient(LoggingConfigurable):
         self.km = km
         self.reset_execution_trackers()
 
-    def run_blocking(self, coro):
-        """Runs a coroutine and blocks until it has executed.
-
-        An event loop is created if no one already exists. If an event loop is
-        already running, this event loop execution is nested into the already
-        running one if `nest_asyncio` is set to True.
-
-        Parameters
-        ----------
-        coro : coroutine
-            The coroutine to be executed.
-
-        Returns
-        -------
-        result :
-            Whatever the coroutine returns.
-        """
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        if self.nest_asyncio:
-            import nest_asyncio
-            nest_asyncio.apply(loop)
-        try:
-            result = loop.run_until_complete(coro)
-        except RuntimeError as e:
-            if str(e) == 'This event loop is already running':
-                raise RuntimeError(
-                    'You are trying to run nbclient in an environment where an '
-                    'event loop is already running. Please pass `nest_asyncio=True` in '
-                    '`NotebookClient.execute` and such methods.'
-                )
-            raise
-        return result
-
     def reset_execution_trackers(self):
         """Resets any per-execution trackers.
         """
@@ -417,9 +381,6 @@ class NotebookClient(LoggingConfigurable):
             self.kc.stop_channels()
             self.kc = None
 
-    def execute(self, **kwargs):
-        return self.run_blocking(self.async_execute(**kwargs))
-
     async def async_execute(self, **kwargs):
         """
         Executes each code cell.
@@ -444,6 +405,8 @@ class NotebookClient(LoggingConfigurable):
             self.set_widgets_metadata()
 
         return self.nb
+
+    execute = run_sync(async_execute)
 
     def set_widgets_metadata(self):
         if self.widget_state:
@@ -591,11 +554,6 @@ class NotebookClient(LoggingConfigurable):
             if (exec_reply is not None) and exec_reply['content']['status'] == 'error':
                 raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
 
-    def execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
-        return self.run_blocking(
-            self.async_execute_cell(cell, cell_index, execution_count, store_history)
-        )
-
     async def async_execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
         """
         Executes a single code cell.
@@ -660,6 +618,8 @@ class NotebookClient(LoggingConfigurable):
         self._check_raise_for_error(cell, exec_reply)
         self.nb['cells'][cell_index] = cell
         return cell
+
+    execute_cell = run_sync(async_execute_cell)
 
     def process_message(self, msg, cell, cell_index):
         """
