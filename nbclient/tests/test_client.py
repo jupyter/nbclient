@@ -672,6 +672,9 @@ class TestRunCell(NBClientTestsBase):
     )
     def test_deadline_exec_reply(self, executor, cell_mock, message_mock):
         # exec_reply is never received, so we expect to hit the timeout.
+        async def is_alive():
+            return True
+        executor.kc.is_alive = is_alive
         executor.kc.shell_channel.get_msg = MagicMock(side_effect=Empty())
         executor.timeout = 1
 

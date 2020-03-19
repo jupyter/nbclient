@@ -1,5 +1,5 @@
 traitlets>=4.2
-jupyter_client>=6.0.0
+jupyter_client @ git+https://github.com/jupyter/jupyter_client
 nbformat>=5.0
 async_generator
 nest_asyncio
