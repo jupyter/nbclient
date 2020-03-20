@@ -218,9 +218,9 @@ class NotebookClient(LoggingConfigurable):
     @default('kernel_manager_class')
     def _kernel_manager_class_default(self):
         """Use a dynamic default to avoid importing jupyter_client at startup"""
-        from jupyter_client import KernelManager
+        from jupyter_client import AsyncKernelManager
 
-        return KernelManager
+        return AsyncKernelManager
 
     _display_id_map = Dict(
         help=dedent(
@@ -317,8 +317,8 @@ class NotebookClient(LoggingConfigurable):
         ----------
         kwargs :
             Any options for `self.kernel_manager_class.start_kernel()`. Because
-            that defaults to KernelManager, this will likely include options
-            accepted by `KernelManager.start_kernel()``, which includes `cwd`.
+            that defaults to AsyncKernelManager, this will likely include options
+            accepted by `AsyncKernelManager.start_kernel()``, which includes `cwd`.
 
         Returns
         -------
@@ -332,7 +332,7 @@ class NotebookClient(LoggingConfigurable):
         if self.km.ipykernel and self.ipython_hist_file:
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
-        self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs)
+        await self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs)
 
         self.kc = self.km.client()
         self.kc.start_channels()
@@ -340,7 +340,7 @@ class NotebookClient(LoggingConfigurable):
             await self.kc.wait_for_ready(timeout=self.startup_timeout)
         except RuntimeError:
             self.kc.stop_channels()
-            self.km.shutdown_kernel()
+            await self.km.shutdown_kernel()
             raise
         self.kc.allow_stdin = False
         return self.kc
@@ -470,8 +470,8 @@ class NotebookClient(LoggingConfigurable):
                         timeout = max(0, deadline - monotonic())
             except Empty:
                 # received no message, check if kernel is still alive
-                self._check_alive()
-                self._handle_timeout(timeout, cell)
+                await self._check_alive()
+                await self._handle_timeout(timeout, cell)
 
     async def _poll_output_msg(self, parent_msg_id, cell, cell_index):
         while True:
@@ -494,18 +494,18 @@ class NotebookClient(LoggingConfigurable):
 
         return timeout
 
-    def _handle_timeout(self, timeout, cell=None):
+    async def _handle_timeout(self, timeout, cell=None):
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
         if self.interrupt_on_timeout:
             self.log.error("Interrupting kernel")
-            self.km.interrupt_kernel()
+            await self.km.interrupt_kernel()
         else:
             raise CellTimeoutError.error_from_timeout_and_cell(
                 "Cell execution timed out", timeout, cell
             )
 
-    def _check_alive(self):
-        if not self.kc.is_alive():
+    async def _check_alive(self):
+        if not await self.kc.is_alive():
             self.log.error("Kernel died while waiting for execute reply.")
             raise DeadKernelError("Kernel died")
 
@@ -518,10 +518,10 @@ class NotebookClient(LoggingConfigurable):
             try:
                 msg = await self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
             except Empty:
-                self._check_alive()
+                await self._check_alive()
                 cummulative_time += self.shell_timeout_interval
                 if timeout and cummulative_time > timeout:
-                    self._handle_timeout(timeout, cell)
+                    await self._handle_timeout(timeout, cell)
                     break
             else:
                 if msg['parent_header'].get('msg_id') == msg_id:
@@ -800,7 +800,7 @@ def execute(nb, cwd=None, km=None, **kwargs):
       The notebook object to be executed
     cwd : str, optional
       If supplied, the kernel will run in this directory
-    km : KernelManager, optional
+    km : AsyncKernelManager, optional
       If supplied, the specified kernel manager will be used for code execution.
     kwargs :
       Any other options for ExecutePreprocessor, e.g. timeout, kernel_name
