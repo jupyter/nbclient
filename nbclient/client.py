@@ -6,8 +6,6 @@ from textwrap import dedent
 # contextlib, and we `await yield_()` instead of just `yield`
 from async_generator import asynccontextmanager, async_generator, yield_
 
-import nest_asyncio
-
 from time import monotonic
 from queue import Empty
 import asyncio
@@ -18,6 +16,7 @@ from traitlets import List, Unicode, Bool, Enum, Any, Type, Dict, Integer, defau
 from nbformat.v4 import output_from_msg
 
 from .exceptions import CellTimeoutError, DeadKernelError, CellExecutionComplete, CellExecutionError
+from .util import run_sync
 
 
 def timestamp():
@@ -93,6 +92,21 @@ class NotebookClient(LoggingConfigurable):
             If `True`, execution errors are ignored and the execution
             is continued until the end of the notebook. Output from
             exceptions is included in the cell output in both cases.
+            """
+        ),
+    ).tag(config=True)
+
+    nest_asyncio = Bool(
+        False,
+        help=dedent(
+            """
+            If False (default), then blocking functions such as `execute`
+            assume that no event loop is already running. These functions
+            run their async counterparts (e.g. `async_execute`) in an event
+            loop with `asyncio.run_until_complete`, which will fail if an
+            event loop is already running. This can be the case if nbclient
+            is used e.g. in a Jupyter Notebook. In that case, `nest_asyncio`
+            should be set to True.
             """
         ),
     ).tag(config=True)
@@ -367,21 +381,9 @@ class NotebookClient(LoggingConfigurable):
             self.kc.stop_channels()
             self.kc = None
 
-    def execute(self, **kwargs):
-        """
-        Executes each code cell (blocking).
-
-        Returns
-        -------
-        nb : NotebookNode
-            The executed notebook.
-        """
-        loop = get_loop()
-        return loop.run_until_complete(self.async_execute(**kwargs))
-
     async def async_execute(self, **kwargs):
         """
-        Executes each code cell asynchronously.
+        Executes each code cell.
 
         Returns
         -------
@@ -403,6 +405,8 @@ class NotebookClient(LoggingConfigurable):
             self.set_widgets_metadata()
 
         return self.nb
+
+    execute = run_sync(async_execute)
 
     def set_widgets_metadata(self):
         if self.widget_state:
@@ -550,48 +554,9 @@ class NotebookClient(LoggingConfigurable):
             if (exec_reply is not None) and exec_reply['content']['status'] == 'error':
                 raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
 
-    def execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
-        """
-        Executes a single code cell (blocking).
-
-        To execute all cells see :meth:`execute`.
-
-        Parameters
-        ----------
-        cell : nbformat.NotebookNode
-            The cell which is currently being processed.
-        cell_index : int
-            The position of the cell within the notebook object.
-        execution_count : int
-            The execution count to be assigned to the cell (default: Use kernel response)
-        store_history : bool
-            Determines if history should be stored in the kernel (default: False).
-            Specific to ipython kernels, which can store command histories.
-
-        Returns
-        -------
-        output : dict
-            The execution output payload (or None for no output).
-
-        Raises
-        ------
-        CellExecutionError
-            If execution failed and should raise an exception, this will be raised
-            with defaults about the failure.
-
-        Returns
-        -------
-        cell : NotebookNode
-            The cell which was just processed.
-        """
-        loop = get_loop()
-        return loop.run_until_complete(
-            self.async_execute_cell(cell, cell_index, execution_count, store_history)
-        )
-
     async def async_execute_cell(self, cell, cell_index, execution_count=None, store_history=True):
         """
-        Executes a single code cell asynchronously.
+        Executes a single code cell.
 
         To execute all cells see :meth:`execute`.
 
@@ -653,6 +618,8 @@ class NotebookClient(LoggingConfigurable):
         self._check_raise_for_error(cell, exec_reply)
         self.nb['cells'][cell_index] = cell
         return cell
+
+    execute_cell = run_sync(async_execute_cell)
 
     def process_message(self, msg, cell, cell_index):
         """
@@ -809,15 +776,3 @@ def execute(nb, cwd=None, km=None, **kwargs):
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
-
-
-def get_loop():
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    return loop
-
-
-nest_asyncio.apply()
