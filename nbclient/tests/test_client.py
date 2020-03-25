@@ -492,7 +492,7 @@ while True: continue
         km = executor.start_kernel_manager()
 
         with patch.object(km, "is_alive") as alive_mock:
-            alive_mock.return_value = False
+            alive_mock.return_value = make_async(False)
             # Will be a RuntimeError or subclass DeadKernelError depending
             # on if jupyter_client or nbconvert catches the dead client first
             with pytest.raises(RuntimeError):
