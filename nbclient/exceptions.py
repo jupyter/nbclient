@@ -70,7 +70,7 @@ class CellExecutionError(Exception):
             ),
             ename=msg.get('ename', '<Error>'),
             evalue=msg.get('evalue', '')
-    )
+        )
 
 
 exec_err_msg = u"""\
