@@ -569,7 +569,10 @@ class NotebookClient(LoggingConfigurable):
         cummulative_time = 0
         while True:
             try:
-                msg = await await_or_block(self.kc.shell_channel.get_msg, timeout=self.shell_timeout_interval)
+                msg = await await_or_block(
+                    self.kc.shell_channel.get_msg,
+                    timeout=self.shell_timeout_interval
+                )
             except Empty:
                 await self._async_check_alive()
                 cummulative_time += self.shell_timeout_interval
@@ -649,8 +652,11 @@ class NotebookClient(LoggingConfigurable):
             cell['metadata']['execution'] = {}
 
         self.log.debug("Executing cell:\n%s", cell.source)
-        parent_msg_id = await await_or_block(self.kc.execute,
-            cell.source, store_history=store_history, stop_on_error=not self.allow_errors
+        parent_msg_id = await await_or_block(
+            self.kc.execute,
+            cell.source,
+            store_history=store_history,
+            stop_on_error=not self.allow_errors
         )
         # We launched a code cell to execute
         self.code_cells_executed += 1
