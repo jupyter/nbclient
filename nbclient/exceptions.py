@@ -49,9 +49,11 @@ class CellExecutionError(CellControlSignal):
     failures gracefully.
     """
 
-    def __init__(self, traceback):
+    def __init__(self, traceback, ename, evalue):
         super(CellExecutionError, self).__init__(traceback)
         self.traceback = traceback
+        self.ename = ename
+        self.evalue = evalue
 
     def __str__(self):
         s = self.__unicode__()
@@ -74,7 +76,9 @@ class CellExecutionError(CellControlSignal):
                 traceback=tb,
                 ename=msg.get('ename', '<Error>'),
                 evalue=msg.get('evalue', ''),
-            )
+            ),
+            ename=msg.get('ename', '<Error>'),
+            evalue=msg.get('evalue', '')
         )
 
 
