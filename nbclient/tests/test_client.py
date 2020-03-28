@@ -505,12 +505,13 @@ while True: continue
             output_nb = executor.execute()
         km = executor.start_kernel_manager()
 
-        with patch.object(km, "is_alive") as alive_mock:
-            alive_mock.return_value = False
-            # Will be a RuntimeError or subclass DeadKernelError depending
-            # on if jupyter_client or nbconvert catches the dead client first
-            with pytest.raises(RuntimeError):
-                input_nb, output_nb = executor.execute()
+        async def is_alive():
+            return False
+        km.is_alive = is_alive
+        # Will be a RuntimeError or subclass DeadKernelError depending
+        # on if jupyter_client or nbconvert catches the dead client first
+        with pytest.raises(RuntimeError):
+            input_nb, output_nb = executor.execute()
 
     def test_allow_errors(self):
         """
