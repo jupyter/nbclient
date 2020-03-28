@@ -23,7 +23,7 @@ from .exceptions import (
     CellExecutionComplete,
     CellExecutionError
 )
-from .util import run_sync, await_or_block
+from .util import run_sync, ensure_async
 
 
 def timestamp():
@@ -334,20 +334,20 @@ class NotebookClient(LoggingConfigurable):
     async def _async_cleanup_kernel(self):
         try:
             # Send a polite shutdown request
-            await await_or_block(self.kc.shutdown)
+            await ensure_async(self.kc.shutdown())
             try:
                 # Queue the manager to kill the process, sometimes the built-in and above
                 # shutdowns have not been successful or called yet, so give a direct kill
                 # call here and recover gracefully if it's already dead.
-                await await_or_block(self.km.shutdown_kernel, now=True)
+                await ensure_async(self.km.shutdown_kernel(now=True))
             except RuntimeError as e:
                 # The error isn't specialized, so we have to check the message
                 if 'No kernel is running!' not in str(e):
                     raise
         finally:
             # Remove any state left over even if we failed to stop the kernel
-            await await_or_block(self.km.cleanup)
-            await await_or_block(self.kc.stop_channels)
+            await ensure_async(self.km.cleanup())
+            await ensure_async(self.kc.stop_channels())
             self.kc = None
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
@@ -374,12 +374,12 @@ class NotebookClient(LoggingConfigurable):
         if self.km.ipykernel and self.ipython_hist_file:
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
-        await await_or_block(self.km.start_kernel, extra_arguments=self.extra_arguments, **kwargs)
+        await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
 
         self.kc = self.km.client()
-        await await_or_block(self.kc.start_channels)
+        await ensure_async(self.kc.start_channels())
         try:
-            await await_or_block(self.kc.wait_for_ready, timeout=self.startup_timeout)
+            await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
         except RuntimeError:
             await self._async_cleanup_kernel()
             raise
@@ -449,7 +449,7 @@ class NotebookClient(LoggingConfigurable):
                 await self.async_execute_cell(
                     cell, index, execution_count=self.code_cells_executed + 1
                 )
-            msg_id = await await_or_block(self.kc.kernel_info)
+            msg_id = await ensure_async(self.kc.kernel_info())
             info_msg = await self.async_wait_for_reply(msg_id)
             self.nb.metadata['language_info'] = info_msg['content']['language_info']
             self.set_widgets_metadata()
@@ -505,7 +505,7 @@ class NotebookClient(LoggingConfigurable):
             deadline = monotonic() + timeout
         while True:
             try:
-                msg = await await_or_block(self.kc.shell_channel.get_msg, timeout=timeout)
+                msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=timeout))
                 if msg['parent_header'].get('msg_id') == msg_id:
                     if self.record_timing:
                         cell['metadata']['execution']['shell.execute_reply'] = timestamp()
@@ -529,7 +529,7 @@ class NotebookClient(LoggingConfigurable):
 
     async def _async_poll_output_msg(self, parent_msg_id, cell, cell_index):
         while True:
-            msg = await await_or_block(self.kc.iopub_channel.get_msg, timeout=None)
+            msg = await ensure_async(self.kc.iopub_channel.get_msg(timeout=None))
             if msg['parent_header'].get('msg_id') == parent_msg_id:
                 try:
                     # Will raise CellExecutionComplete when completed
@@ -552,14 +552,14 @@ class NotebookClient(LoggingConfigurable):
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
         if self.interrupt_on_timeout:
             self.log.error("Interrupting kernel")
-            await await_or_block(self.km.interrupt_kernel)
+            await ensure_async(self.km.interrupt_kernel())
         else:
             raise CellTimeoutError.error_from_timeout_and_cell(
                 "Cell execution timed out", timeout, cell
             )
 
     async def _async_check_alive(self):
-        if not await await_or_block(self.kc.is_alive):
+        if not await ensure_async(self.kc.is_alive()):
             self.log.error("Kernel died while waiting for execute reply.")
             raise DeadKernelError("Kernel died")
 
@@ -569,9 +569,10 @@ class NotebookClient(LoggingConfigurable):
         cummulative_time = 0
         while True:
             try:
-                msg = await await_or_block(
-                    self.kc.shell_channel.get_msg,
-                    timeout=self.shell_timeout_interval
+                msg = await ensure_async(
+                    self.kc.shell_channel.get_msg(
+                        timeout=self.shell_timeout_interval
+                    )
                 )
             except Empty:
                 await self._async_check_alive()
@@ -652,11 +653,12 @@ class NotebookClient(LoggingConfigurable):
             cell['metadata']['execution'] = {}
 
         self.log.debug("Executing cell:\n%s", cell.source)
-        parent_msg_id = await await_or_block(
-            self.kc.execute,
-            cell.source,
-            store_history=store_history,
-            stop_on_error=not self.allow_errors
+        parent_msg_id = await ensure_async(
+            self.kc.execute(
+                cell.source,
+                store_history=store_history,
+                stop_on_error=not self.allow_errors
+            )
         )
         # We launched a code cell to execute
         self.code_cells_executed += 1

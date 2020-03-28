@@ -4,8 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import asyncio
-
-from typing import Coroutine
+import inspect
 
 
 def run_sync(coro):
@@ -49,15 +48,18 @@ def run_sync(coro):
     return wrapped
 
 
-async def await_or_block(func, *args, **kwargs):
-    """Awaits the function if it's an asynchronous function. Otherwise block
-    on execution.
+async def ensure_async(obj):
+    """Convert a non-awaitable object to a coroutine if needed,
+    and await it if it was not already awaited.
     """
-    if asyncio.iscoroutinefunction(func):
-        return await func(*args, **kwargs)
-    else:
-        result = func(*args, **kwargs)
-        # Mocks mask that the function is a coroutine :/
-        if isinstance(result, Coroutine):
-            return await result
+    if inspect.isawaitable(obj):
+        try:
+            result = await obj
+        except RuntimeError as e:
+            if str(e) == 'cannot reuse already awaited coroutine':
+                # obj is already the coroutine's result
+                return obj
+            raise
         return result
+    # obj doesn't need to be awaited
+    return obj
