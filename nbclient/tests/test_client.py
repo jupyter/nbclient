@@ -27,7 +27,7 @@ from ipython_genutils.py3compat import string_types
 from pebble import ProcessPool
 
 from queue import Empty
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
