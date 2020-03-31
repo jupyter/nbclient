@@ -2,9 +2,7 @@ import datetime
 import base64
 from textwrap import dedent
 
-# For python 3.5 compatibility we import asynccontextmanager from async_generator instead of
-# contextlib, and we `await yield_()` instead of just `yield`
-from async_generator import asynccontextmanager, async_generator, yield_
+from async_generator import asynccontextmanager
 from contextlib import contextmanager
 
 from time import monotonic
@@ -410,7 +408,6 @@ class NotebookClient(LoggingConfigurable):
             self._cleanup_kernel()
 
     @asynccontextmanager
-    @async_generator  # needed for python 3.5 compatibility
     async def async_setup_kernel(self, **kwargs):
         """
         Context manager for setting up the kernel to execute a notebook.
@@ -426,7 +423,7 @@ class NotebookClient(LoggingConfigurable):
         if not self.km.has_kernel:
             await self.async_start_new_kernel_client(**kwargs)
         try:
-            await yield_(None)  # would just yield in python >3.5
+            yield
         finally:
             await self._async_cleanup_kernel()
 

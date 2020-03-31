@@ -1,7 +1,6 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter/nbclient/master?filepath=binder%2Frun_nbclient.ipynb)
 [![Travis Build Status](https://travis-ci.org/jupyter/nbclient.svg?branch=master)](https://travis-ci.org/jupyter/nbclient)
 [![image](https://codecov.io/github/jupyter/nbclient/coverage.svg?branch=master)](https://codecov.io/github/jupyter/nbclient?branch=master)
-[![Python 3.5](https://img.shields.io/badge/python-3.5-blue.svg)](https://www.python.org/downloads/release/python-350/)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
@@ -26,7 +25,7 @@ This library used to be part of [nbconvert](https://nbconvert.readthedocs.io/en/
 
 ## Python Version Support
 
-This library currently supports python 3.5+ versions. As minor python
+This library currently supports python 3.6+ versions. As minor python
 versions are officially sunset by the python org nbclient will similarly
 drop support in the future.
 
