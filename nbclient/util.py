@@ -4,6 +4,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 import asyncio
+import inspect
 
 
 def run_sync(coro):
@@ -45,3 +46,20 @@ def run_sync(coro):
         return result
     wrapped.__doc__ = coro.__doc__
     return wrapped
+
+
+async def ensure_async(obj):
+    """Convert a non-awaitable object to a coroutine if needed,
+    and await it if it was not already awaited.
+    """
+    if inspect.isawaitable(obj):
+        try:
+            result = await obj
+        except RuntimeError as e:
+            if str(e) == 'cannot reuse already awaited coroutine':
+                # obj is already the coroutine's result
+                return obj
+            raise
+        return result
+    # obj doesn't need to be awaited
+    return obj

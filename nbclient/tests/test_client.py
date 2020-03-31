@@ -27,13 +27,17 @@ from ipython_genutils.py3compat import string_types
 from pebble import ProcessPool
 
 from queue import Empty
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
 current_dir = os.path.dirname(__file__)
 IPY_MAJOR = IPython.version_info[0]
+
+
+class AsyncMock(Mock):
+    pass
 
 
 def make_async(mock_value):
@@ -116,7 +120,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     def shell_channel_message_mock():
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
-        return MagicMock(
+        return AsyncMock(
             return_value=make_async(NBClientTestsBase.merge_dicts(
                 {
                     'parent_header': {'msg_id': parent_id},
@@ -129,7 +133,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     def iopub_messages_mock():
         # Return the message generator for
         # self.kc.iopub_channel.get_msg => messages[i]
-        return Mock(
+        return AsyncMock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
                 make_async(
@@ -386,6 +390,16 @@ def test_execution_timing():
     assert status_idle - cell_end < delta
 
 
+def test_synchronous_setup_kernel():
+    nb = nbformat.v4.new_notebook()
+    executor = NotebookClient(nb)
+    with executor.setup_kernel():
+        # Prove it initalized client
+        assert executor.kc is not None
+    # Prove it removed the client (and hopefully cleaned up)
+    assert executor.kc is None
+
+
 class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 
@@ -491,12 +505,13 @@ while True: continue
             output_nb = executor.execute()
         km = executor.start_kernel_manager()
 
-        with patch.object(km, "is_alive") as alive_mock:
-            alive_mock.return_value = make_async(False)
-            # Will be a RuntimeError or subclass DeadKernelError depending
-            # on if jupyter_client or nbconvert catches the dead client first
-            with pytest.raises(RuntimeError):
-                input_nb, output_nb = executor.execute()
+        async def is_alive():
+            return False
+        km.is_alive = is_alive
+        # Will be a RuntimeError or subclass DeadKernelError depending
+        # on if jupyter_client or nbconvert catches the dead client first
+        with pytest.raises(RuntimeError):
+            input_nb, output_nb = executor.execute()
 
     def test_allow_errors(self):
         """
