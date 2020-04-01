@@ -10,9 +10,6 @@ sphinx:
 
 formats: all
 
-conda:
-  environment: docs/environment.yml
-
 build:
   image: latest
 
