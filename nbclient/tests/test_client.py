@@ -544,6 +544,29 @@ while True: continue
             else:
                 assert u"# üñîçø∂é".encode('utf8', 'replace') in str(exc.value)
 
+    def test_reset_kernel_client(self):
+        filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
+
+        with io.open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+
+        executor = NotebookClient(
+            input_nb,
+            resources=self.build_resources(),
+        )
+
+        executor.execute()
+        # we didn't ask to reset the kernel client, a new one must have been created
+        kc = executor.kc
+        assert kc is not None
+        executor.execute()
+        # we didn't ask to reset the kernel client, the previously created one must have been reused
+        assert kc == executor.kc
+        executor.execute(reset_kc=True)
+        # we asked to reset the kernel client, the previous one must have been cleaned up,
+        # a new one must have been created and also cleaned up
+        assert executor.kc is None
+
     def test_custom_kernel_manager(self):
         from .fake_kernelmanager import FakeCustomKernelManager
 
