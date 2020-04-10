@@ -298,13 +298,11 @@ class NotebookClient(LoggingConfigurable):
         super().__init__(**kw)
         self.nb = nb
         self.km = km
-        self.reset_execution_trackers(reset_kc=True)
+        self.reset_execution_trackers()
 
-    def reset_execution_trackers(self, reset_kc=False):
+    def reset_execution_trackers(self):
         """Resets any per-execution trackers.
         """
-        if reset_kc:
-            self.kc = None
         self.code_cells_executed = 0
         self._display_id_map = {}
         self.widget_state = {}
@@ -418,6 +416,7 @@ class NotebookClient(LoggingConfigurable):
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
         """
+        reset_kc = kwargs.pop('reset_kc', False)
         if self.km is None:
             self.start_kernel_manager()
 
@@ -426,7 +425,8 @@ class NotebookClient(LoggingConfigurable):
         try:
             yield
         finally:
-            await self._async_cleanup_kernel()
+            if reset_kc:
+                await self._async_cleanup_kernel()
 
     async def async_execute(self, **kwargs):
         """
@@ -438,17 +438,19 @@ class NotebookClient(LoggingConfigurable):
             Any option for `self.kernel_manager_class.start_kernel()`. Because
             that defaults to AsyncKernelManager, this will likely include options
             accepted by `AsyncKernelManager.start_kernel()``, which includes `cwd`.
-            If present, `reset_kc` is passed to `self.reset_execution_trackers`:
+            If present, `reset_kc` is passed to `self.async_setup_kernel`:
             if True, the kernel client will be reset and a new one will be created
-            (default: False).
+            and cleaned up after execution (default: False).
 
         Returns
         -------
         nb : NotebookNode
             The executed notebook.
         """
-        reset_kc = kwargs.pop('reset_kc', False)
-        self.reset_execution_trackers(reset_kc=reset_kc)
+        reset_kc = kwargs.get('reset_kc', False)
+        if reset_kc:
+            await self._async_cleanup_kernel()
+        self.reset_execution_trackers()
 
         async with self.async_setup_kernel(**kwargs):
             self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
