@@ -9,7 +9,7 @@
 
 # nbclient
 
-A client library for executing notebooks. Formally nbconvert's ExecutePreprocessor.
+A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor.
 
 **NBClient** is a tool for executing Jupyter Notebooks.
 
