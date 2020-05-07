@@ -1,6 +1,17 @@
 Welcome to nbclient
 ===================
 
+.. image:: https://img.shields.io/github/stars/jupyter/nbclient?label=stars&style=social
+   :alt: GitHub stars
+   :target: https://githu.com/jupyter/nbclient
+.. image:: https://img.shields.io/travis/jupyter/nbclient
+   :alt: Travis (.org)
+   :target: https://travis-ci.org/jupyter/nbclient
+.. image:: https://codecov.io/github/jupyter/nbclient/coverage.svg?branch=master
+   :alt: CodeCov
+   :target: https://codecov.io/github/jupyter/nbclient
+---
+
 **NBClient** is a tool for executing Jupyter Notebooks.
 
 NBClient lets you:
@@ -36,6 +47,7 @@ These pages guide you through the installation and usage of nbclient.
 
 .. toctree::
    :maxdepth: 1
+   :caption: Documentation
 
    installation
    client
@@ -50,6 +62,7 @@ this documentation section will help you.
 
 .. toctree::
    :maxdepth: 3
+   :caption: Reference
 
    reference/index.rst
    reference/nbclient.tests.rst
