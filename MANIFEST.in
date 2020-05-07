@@ -37,3 +37,6 @@ global-exclude .ipynb_checkpoints
 exclude binder
 recursive-exclude binder *.ipynb
 recursive-exclude binder *.txt
+
+# Exclude CI/CD files
+prune .circleci
