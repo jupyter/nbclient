@@ -373,7 +373,8 @@ class NotebookClient(LoggingConfigurable):
         if hasattr(self.km, 'ipykernel') and self.km.ipykernel and self.ipython_hist_file:
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
-        kernel_id = await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
+        kernel_id = await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments,
+                                       **kwargs))
 
         # if self.km is not a KernelManager, it's probably a MultiKernelManager
         try:
@@ -383,7 +384,8 @@ class NotebookClient(LoggingConfigurable):
             try:
                 km = self.km.get_kernel(kernel_id)
             except AttributeError:
-                raise AttributeError(f'{self.km=} has no client() or get_kernel() method, what is this?')
+                raise AttributeError(f'{self.km=} has no client() or get_kernel() method, '
+                                     'what is this?')
 
         self.kc = km.client()
         await ensure_async(self.kc.start_channels())
