@@ -363,17 +363,29 @@ class NotebookClient(LoggingConfigurable):
         -------
         kc : KernelClient
             Kernel client as created by the kernel manager `km`.
+        kernel_id : string-ized version 4 uuid
+           The id of the started kernel.
         """
         resource_path = self.resources.get('metadata', {}).get('path') or None
         if resource_path and 'cwd' not in kwargs:
             kwargs["cwd"] = resource_path
 
-        if self.km.ipykernel and self.ipython_hist_file:
+        if hasattr(self.km, 'ipykernel') and self.km.ipykernel and self.ipython_hist_file:
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
-        await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
+        kernel_id = await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
 
-        self.kc = self.km.client()
+        # if self.km is not a KernelManager, it's probably a MultiKernelManager
+        try:
+            self.km.client
+            km = self.km
+        except AttributeError:
+            try:
+                km = self.km.get_kernel(kernel_id)
+            except AttributeError:
+                raise AttributeError(f'{self.km=} has no client() or get_kernel() method, what is this?')
+
+        self.kc = km.client()
         await ensure_async(self.kc.start_channels())
         try:
             await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
@@ -381,7 +393,7 @@ class NotebookClient(LoggingConfigurable):
             await self._async_cleanup_kernel()
             raise
         self.kc.allow_stdin = False
-        return self.kc
+        return self.kc, kernel_id
 
     start_new_kernel_client = run_sync(async_start_new_kernel_client)
 
