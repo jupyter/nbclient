@@ -384,8 +384,8 @@ class NotebookClient(LoggingConfigurable):
             try:
                 km = self.km.get_kernel(kernel_id)
             except AttributeError:
-                raise AttributeError(f'{self.km=} has no client() or get_kernel() method, '
-                                     'what is this?')
+                raise AttributeError('self.km={} has no client() or get_kernel() method, '
+                                     'what is this?'.format(self.km))
 
         self.kc = km.client()
         await ensure_async(self.kc.start_channels())
