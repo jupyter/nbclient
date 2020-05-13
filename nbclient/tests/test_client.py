@@ -20,6 +20,7 @@ from ..exceptions import CellExecutionError
 import IPython
 from traitlets import TraitError
 from nbformat import NotebookNode
+from jupyter_client import KernelManager, MultiKernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from testpath import modified_env
@@ -398,6 +399,43 @@ def test_synchronous_setup_kernel():
         assert executor.kc is not None
     # Prove it removed the client (and hopefully cleaned up)
     assert executor.kc is None
+
+
+def test_startnewkernel_with_kernelmanager():
+    nb = nbformat.v4.new_notebook()
+    km = KernelManager()
+    executor = NotebookClient(nb, km=km)
+    kc, kernel_id = executor.start_new_kernel_client()
+    # no kernel_id for a single kernel manager
+    assert kernel_id is None
+    # prove it initalized client
+    assert kc is not None
+    # since we are not using the setup_kernel context manager,
+    # cleanup has to be done manually
+    kc.shutdown()
+    km.cleanup()
+    kc.stop_channels()
+
+
+def test_startnewkernel_with_multikernelmanager():
+    nb = nbformat.v4.new_notebook()
+    km = MultiKernelManager()
+    executor = NotebookClient(nb, km=km)
+    kc, kernel_id = executor.start_new_kernel_client()
+    # a multi kernel manager always gives back an id to the started kernel
+    assert kernel_id is not None
+    # prove it initalized client
+    assert kc is not None
+    # since we are not using the setup_kernel context manager,
+    # cleanup has to be done manually
+    kc.shutdown()
+    km.cleanup(kernel_id)
+    km.remove_kernel(kernel_id)
+    # check that the kernel doesn't exist anymore
+    with pytest.raises(KeyError) as e_info:
+        km.get_kernel(kernel_id)
+    assert str(e_info.value) == "'Kernel with id not found: {}'".format(kernel_id)
+    kc.stop_channels()
 
 
 class TestExecute(NBClientTestsBase):

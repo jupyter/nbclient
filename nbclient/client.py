@@ -370,6 +370,8 @@ class NotebookClient(LoggingConfigurable):
         if resource_path and 'cwd' not in kwargs:
             kwargs["cwd"] = resource_path
 
+        # if self.km is a MultiKernelManager, it doesn't have an ipykernel attribute
+        # so no extra_arguments can be passed
         if hasattr(self.km, 'ipykernel') and self.km.ipykernel and self.ipython_hist_file:
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
