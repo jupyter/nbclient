@@ -36,7 +36,7 @@ global-exclude .ipynb_checkpoints
 # Binder files to be excluded
 exclude binder
 recursive-exclude binder *.ipynb
-recursive-exclude binder *.yaml
+recursive-exclude binder *.yml
 
 # Exclude CI/CD files
 prune .circleci
