@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0
+
+### Major Changes
+
+- The `(async_)start_new_kernel_client` method now supports starting a new client when its kernel manager (`self.km`) is a `MultiKernelManager`. The method now returns the kernel id in addition to the kernel client. If the kernel manager was a `KernelManager`, the returned kernel id is `None`. [#51](https://github.com/jupyter/nbclient/pull/51)
+- Added sphinx-book-theme for documentation. Added a CircleCI job to let us preview the built documentation in a PR. [#50](https://github.com/jupyter/nbclient/pull/50)
+- Added `reset_kc` option to `reset_execution_trackers`, so that the kernel client can be reset and a new one created in calls to `(async_)execute` [#44](https://github.com/jupyter/nbclient/pull/44)
+
+### Docs
+
+- Fixed documentation [#46](https://github.com/jupyter/nbclient/pull/46) [#47](https://github.com/jupyter/nbclient/pull/47)
+- Added documentation status badge to the README
+- Removed conda from documentation build
+
 ## 0.2.0
 
 ### Major Changes
