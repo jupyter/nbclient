@@ -412,7 +412,7 @@ class NotebookClient(LoggingConfigurable):
         down the kernel.
         """
         reset_kc = kwargs.pop('reset_kc', False)
-        
+
         # Can't use run_until_complete on an asynccontextmanager function :(
         if self.km is None:
             self.start_kernel_manager()
