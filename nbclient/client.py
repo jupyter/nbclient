@@ -411,6 +411,8 @@ class NotebookClient(LoggingConfigurable):
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
         """
+        reset_kc = kwargs.pop('reset_kc', False)
+        
         # Can't use run_until_complete on an asynccontextmanager function :(
         if self.km is None:
             self.start_kernel_manager()
@@ -420,7 +422,8 @@ class NotebookClient(LoggingConfigurable):
         try:
             yield
         finally:
-            self._cleanup_kernel()
+            if reset_kc:
+                self._cleanup_kernel()
 
     @asynccontextmanager
     async def async_setup_kernel(self, **kwargs):
