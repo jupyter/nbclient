@@ -20,6 +20,7 @@ from ..exceptions import CellExecutionError
 import IPython
 from traitlets import TraitError
 from nbformat import NotebookNode
+from jupyter_client.asynchronous import AsyncKernelClient
 from jupyter_client import KernelManager, MultiKernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
@@ -424,8 +425,8 @@ def test_startnewkernel_with_multikernelmanager():
     kc, kernel_id = executor.start_new_kernel_client()
     # a multi kernel manager always gives back an id to the started kernel
     assert kernel_id is not None
-    # prove it initalized client
-    assert kc is not None
+    # prove it initalized an async client
+    assert isinstance(kc, AsyncKernelClient)
     # since we are not using the setup_kernel context manager,
     # cleanup has to be done manually
     kc.shutdown()
