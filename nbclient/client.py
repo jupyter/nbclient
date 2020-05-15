@@ -388,6 +388,9 @@ class NotebookClient(LoggingConfigurable):
             except AttributeError:
                 raise AttributeError('self.km={} has no client() or get_kernel() method, '
                                      'what is this?'.format(self.km))
+            # since self.km is a MultiKernelManager, it might not be async
+            # so let's ensure the client is async
+            km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
 
         self.kc = km.client()
         await ensure_async(self.kc.start_channels())
