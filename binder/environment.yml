@@ -1,0 +1,10 @@
+name: nbclient
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - matplotlib
+  - nteract-scrapbook
+  - nbformat
+  - nbclient
