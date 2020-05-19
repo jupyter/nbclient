@@ -467,7 +467,7 @@ class NotebookClient(LoggingConfigurable):
             The executed notebook.
         """
         reset_kc = kwargs.get('reset_kc', False)
-        if reset_kc:
+        if reset_kc and self.km:
             await self._async_cleanup_kernel()
         self.reset_execution_trackers()
 
