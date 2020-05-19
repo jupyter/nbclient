@@ -329,18 +329,14 @@ class NotebookClient(LoggingConfigurable):
         return self.km
 
     async def _async_cleanup_kernel(self):
+        now = self.shutdown_kernel == "immediate"
         try:
-            # Send a polite shutdown request
-            await ensure_async(self.kc.shutdown())
-            try:
-                # Queue the manager to kill the process, sometimes the built-in and above
-                # shutdowns have not been successful or called yet, so give a direct kill
-                # call here and recover gracefully if it's already dead.
-                await ensure_async(self.km.shutdown_kernel(now=True))
-            except RuntimeError as e:
-                # The error isn't specialized, so we have to check the message
-                if 'No kernel is running!' not in str(e):
-                    raise
+            # Queue the manager to kill the process, and recover gracefully if it's already dead.
+            await ensure_async(self.km.shutdown_kernel(now=now))
+        except RuntimeError as e:
+            # The error isn't specialized, so we have to check the message
+            if 'No kernel is running!' not in str(e):
+                raise
         finally:
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup())
