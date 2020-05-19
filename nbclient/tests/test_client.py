@@ -301,7 +301,7 @@ def test_many_parallel_notebooks(capfd):
     # run once, to trigger creating the original context
     run_notebook(input_file, opts, res)
 
-    with ProcessPool(max_workers=2) as pool:
+    with ProcessPool(max_workers=1) as pool:
         futures = [
             pool.schedule(run_notebook, args=(input_file, opts, res))
             for i in range(8)
