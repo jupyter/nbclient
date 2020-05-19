@@ -26,7 +26,6 @@ from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from testpath import modified_env
 from ipython_genutils.py3compat import string_types
-from pebble import ProcessPool
 
 from queue import Empty
 from unittest.mock import MagicMock, Mock
