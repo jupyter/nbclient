@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1
+
+### Fixes
+
+- Check that a kernel manager exists before cleaning up the kernel [#61](https://github.com/jupyter/nbclient/pull/61)
+- Force client class to be async when kernel manager is MultiKernelManager [#55](https://github.com/jupyter/nbclient/pull/55)
+- Replace pip install with conda install in Binder [#54](https://github.com/jupyter/nbclient/pull/54)
+
 ## 0.3.0
 
 ### Major Changes
