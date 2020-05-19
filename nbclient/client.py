@@ -291,7 +291,7 @@ class NotebookClient(LoggingConfigurable):
         ----------
         nb : NotebookNode
             Notebook being executed.
-        km : KernerlManager (optional)
+        km : KernelManager (optional)
             Optional kernel manager. If none is provided, a kernel manager will
             be created.
         """
