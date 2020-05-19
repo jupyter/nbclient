@@ -450,7 +450,7 @@ class NotebookClient(LoggingConfigurable):
             if cleanup_kc:
                 await self._async_cleanup_kernel()
 
-    async def async_execute(self, **kwargs):
+    async def async_execute(self, reset_kc, **kwargs):
         """
         Executes each code cell.
 
@@ -469,7 +469,6 @@ class NotebookClient(LoggingConfigurable):
         nb : NotebookNode
             The executed notebook.
         """
-        reset_kc = kwargs.pop('reset_kc', False)
         if reset_kc and self.km:
             await self._async_cleanup_kernel()
         self.reset_execution_trackers()
