@@ -414,6 +414,8 @@ class NotebookClient(LoggingConfigurable):
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
         """
+        cleanup_kc = kwargs.pop('cleanup_kc', True)
+
         # Can't use run_until_complete on an asynccontextmanager function :(
         if self.km is None:
             self.start_kernel_manager()
@@ -423,7 +425,8 @@ class NotebookClient(LoggingConfigurable):
         try:
             yield
         finally:
-            self._cleanup_kernel()
+            if cleanup_kc:
+                self._cleanup_kernel()
 
     @asynccontextmanager
     async def async_setup_kernel(self, **kwargs):
@@ -435,7 +438,7 @@ class NotebookClient(LoggingConfigurable):
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
         """
-        reset_kc = kwargs.pop('reset_kc', False)
+        cleanup_kc = kwargs.pop('cleanup_kc', True)
         if self.km is None:
             self.start_kernel_manager()
 
@@ -444,10 +447,10 @@ class NotebookClient(LoggingConfigurable):
         try:
             yield
         finally:
-            if reset_kc:
+            if cleanup_kc:
                 await self._async_cleanup_kernel()
 
-    async def async_execute(self, **kwargs):
+    async def async_execute(self, reset_kc=False, **kwargs):
         """
         Executes each code cell.
 
@@ -457,16 +460,15 @@ class NotebookClient(LoggingConfigurable):
             Any option for `self.kernel_manager_class.start_kernel()`. Because
             that defaults to AsyncKernelManager, this will likely include options
             accepted by `AsyncKernelManager.start_kernel()``, which includes `cwd`.
-            If present, `reset_kc` is passed to `self.async_setup_kernel`:
-            if True, the kernel client will be reset and a new one will be created
-            and cleaned up after execution (default: False).
+
+            `reset_kc` if True, the kernel client will be reset and a new one
+            will be created (default: False).
 
         Returns
         -------
         nb : NotebookNode
             The executed notebook.
         """
-        reset_kc = kwargs.get('reset_kc', False)
         if reset_kc and self.km:
             await self._async_cleanup_kernel()
         self.reset_execution_trackers()
