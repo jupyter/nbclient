@@ -41,7 +41,7 @@ def run_sync(coro):
                     'You are trying to run nbclient in an environment where an '
                     'event loop is already running. Please pass `nest_asyncio=True` in '
                     '`NotebookClient.execute` and such methods.'
-                )
+                ) from e
             raise
         return result
     wrapped.__doc__ = coro.__doc__
