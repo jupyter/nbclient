@@ -1,3 +1,4 @@
+import atexit
 import datetime
 import base64
 from textwrap import dedent
@@ -438,6 +439,8 @@ class NotebookClient(LoggingConfigurable):
         if self.km is None:
             self.start_kernel_manager()
 
+        atexit.register(self._cleanup_kernel)
+
         if not self.km.has_kernel:
             await self.async_start_new_kernel_client(**kwargs)
         try:
@@ -445,6 +448,7 @@ class NotebookClient(LoggingConfigurable):
         finally:
             if cleanup_kc:
                 await self._async_cleanup_kernel()
+            atexit.unregister(self._cleanup_kernel)
 
     async def async_execute(self, reset_kc=False, **kwargs):
         """
