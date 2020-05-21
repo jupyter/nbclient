@@ -133,7 +133,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    extra_arguments = List(Unicode())
+    extra_arguments = List(Unicode()).tag(config=True)
 
     kernel_name = Unicode(
         '',
