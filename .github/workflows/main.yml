@@ -13,7 +13,10 @@ jobs:
         python-version: [ 3.6, 3.7, 3.8 ]
         exclude:
           - os: windows-latest
-            python-version: '3.8'
+            python-version: 3.8
+    env:
+        OS: ${{ matrix.os }}
+        PYTHON: '3.8'
 
     steps:
     - name: Checkout
@@ -29,10 +32,11 @@ jobs:
         pip install tox coverage codecov tox-gh-actions
     - name: Run the tests
       run: tox
-    - name: Run code coverage
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
       with:
-        os: ubuntu-latest
-        python-version: 3.8
-      run: |
-        coverage xml -i
-        codecov
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: true
