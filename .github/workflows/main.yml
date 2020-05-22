@@ -3,8 +3,8 @@ name: CI
 on: push
 
 jobs:
-  build-n-test:
-    name: Build and test
+  build-n-test-n-coverage:
+    name: Build, test and code coverage
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -29,21 +29,10 @@ jobs:
         pip install tox coverage codecov tox-gh-actions
     - name: Run the tests
       run: tox
-
-  coverage:
-    name: Code coverage
-    needs: build-n-test
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        pip install coverage codecov
     - name: Run code coverage
+      with:
+        os: ubuntu-latest
+        python-version: 3.8
       run: |
         coverage xml -i
         codecov
