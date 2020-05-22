@@ -1,6 +1,7 @@
 import atexit
 import datetime
 import base64
+import signal
 from textwrap import dedent
 
 from async_generator import asynccontextmanager
@@ -341,8 +342,9 @@ class NotebookClient(LoggingConfigurable):
         finally:
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup())
-            await ensure_async(self.kc.stop_channels())
-            self.kc = None
+            if self.kc:
+                await ensure_async(self.kc.stop_channels())
+                self.kc = None
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
@@ -425,6 +427,33 @@ class NotebookClient(LoggingConfigurable):
             if cleanup_kc:
                 self._cleanup_kernel()
 
+    @contextmanager
+    def graceful_shutdown(self):
+        """
+        Context manager for attempting to clean up the kernel when execution is
+        INTerrupted or TERMinated to prevent zombie kernels.
+
+        In `atexit`, the ioloop has already been stopped, so `run_sync` is used to start
+        it up again. `add_signal_handler` ensures the loop is running, so we just use
+        the coro directly.
+        """
+
+        atexit.register(self._cleanup_kernel)
+        loop = asyncio.get_event_loop()
+
+        def on_signal():
+            asyncio.ensure_future(self._async_cleanup_kernel())
+            atexit.unregister(self._cleanup_kernel)
+
+        loop.add_signal_handler(signal.SIGINT, on_signal)
+        loop.add_signal_handler(signal.SIGTERM, on_signal)
+        try:
+            yield
+        finally:
+            atexit.unregister(self._cleanup_kernel)
+            loop.remove_signal_handler(signal.SIGINT)
+            loop.remove_signal_handler(signal.SIGTERM)
+
     @asynccontextmanager
     async def async_setup_kernel(self, **kwargs):
         """
@@ -439,16 +468,14 @@ class NotebookClient(LoggingConfigurable):
         if self.km is None:
             self.start_kernel_manager()
 
-        atexit.register(self._cleanup_kernel)
-
-        if not self.km.has_kernel:
-            await self.async_start_new_kernel_client(**kwargs)
-        try:
-            yield
-        finally:
-            if cleanup_kc:
-                await self._async_cleanup_kernel()
-            atexit.unregister(self._cleanup_kernel)
+        with self.graceful_shutdown():
+            if not self.km.has_kernel:
+                await self.async_start_new_kernel_client(**kwargs)
+            try:
+                yield
+            finally:
+                if cleanup_kc:
+                    await self._async_cleanup_kernel()
 
     async def async_execute(self, reset_kc=False, **kwargs):
         """
