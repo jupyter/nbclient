@@ -83,7 +83,8 @@ def run_notebook(filename, opts, resources=None):
 
 
 def run_notebook_wrapper(args):
-    # since concurrent.futures.ProcessPoolExecutor doesn't have starmap, we need to unpack the arguments
+    # since concurrent.futures.ProcessPoolExecutor doesn't have starmap,
+    # we need to unpack the arguments
     return run_notebook(*args)
 
 
