@@ -308,7 +308,7 @@ def test_many_parallel_notebooks(capfd):
     run_notebook(input_file, opts, res)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        results = executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
+        executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
 
     captured = capfd.readouterr()
     assert captured.err == ""
