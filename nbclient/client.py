@@ -427,33 +427,6 @@ class NotebookClient(LoggingConfigurable):
             if cleanup_kc:
                 self._cleanup_kernel()
 
-    @contextmanager
-    def graceful_shutdown(self):
-        """
-        Context manager for attempting to clean up the kernel when execution is
-        INTerrupted or TERMinated to prevent zombie kernels.
-
-        In `atexit`, the ioloop has already been stopped, so `run_sync` is used to start
-        it up again. `add_signal_handler` ensures the loop is running, so we just use
-        the coro directly.
-        """
-
-        atexit.register(self._cleanup_kernel)
-        loop = asyncio.get_event_loop()
-
-        def on_signal():
-            asyncio.ensure_future(self._async_cleanup_kernel())
-            atexit.unregister(self._cleanup_kernel)
-
-        loop.add_signal_handler(signal.SIGINT, on_signal)
-        loop.add_signal_handler(signal.SIGTERM, on_signal)
-        try:
-            yield
-        finally:
-            atexit.unregister(self._cleanup_kernel)
-            loop.remove_signal_handler(signal.SIGINT)
-            loop.remove_signal_handler(signal.SIGTERM)
-
     @asynccontextmanager
     async def async_setup_kernel(self, **kwargs):
         """
@@ -463,19 +436,43 @@ class NotebookClient(LoggingConfigurable):
 
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
+
+        Handlers for SIGINT and SIGTERM are also added to cleanup in case of unexpected shutdown.
         """
         cleanup_kc = kwargs.pop('cleanup_kc', True)
         if self.km is None:
             self.start_kernel_manager()
 
-        with self.graceful_shutdown():
-            if not self.km.has_kernel:
-                await self.async_start_new_kernel_client(**kwargs)
+        # self._cleanup_kernel uses run_async, which ensures the ioloop is running again.
+        # This is necessary as the ioloop has stopped once atexit fires.
+        atexit.register(self._cleanup_kernel)
+
+        def on_signal():
+            asyncio.ensure_future(self._async_cleanup_kernel())
+            atexit.unregister(self._cleanup_kernel)
+
+        loop = asyncio.get_event_loop()
+        try:
+            loop.add_signal_handler(signal.SIGINT, on_signal)
+            loop.add_signal_handler(signal.SIGTERM, on_signal)
+        except NotImplementedError:
+            # Windows does not support signals.
+            pass
+
+        if not self.km.has_kernel:
+            await self.async_start_new_kernel_client(**kwargs)
+        try:
+            yield
+        finally:
+            if cleanup_kc:
+                await self._async_cleanup_kernel()
+
+            atexit.unregister(self._cleanup_kernel)
             try:
-                yield
-            finally:
-                if cleanup_kc:
-                    await self._async_cleanup_kernel()
+                loop.remove_signal_handler(signal.SIGINT)
+                loop.remove_signal_handler(signal.SIGTERM)
+            except NotImplementedError:
+                pass
 
     async def async_execute(self, reset_kc=False, **kwargs):
         """
