@@ -26,6 +26,7 @@ from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from testpath import modified_env
 from ipython_genutils.py3compat import string_types
+import concurrent.futures
 
 from queue import Empty
 from unittest.mock import MagicMock, Mock
@@ -79,6 +80,11 @@ def run_notebook(filename, opts, resources=None):
         output_nb = executor.execute()
 
     return input_nb, output_nb
+
+
+def run_notebook_wrapper(args):
+    # since concurrent.futures.ProcessPoolExecutor doesn't have starmap, we need to unpack the arguments
+    return run_notebook(*args)
 
 
 async def async_run_notebook(filename, opts, resources=None):
@@ -300,8 +306,8 @@ def test_many_parallel_notebooks(capfd):
     # run once, to trigger creating the original context
     run_notebook(input_file, opts, res)
 
-    for i in range(8):
-        run_notebook(input_file, opts, res)
+    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+        results = executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
 
     captured = capfd.readouterr()
     assert captured.err == ""
