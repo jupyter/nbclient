@@ -9,7 +9,6 @@ check-manifest
 flake8
 tox
 bumpversion
-pebble
 xmltodict
 black; python_version >= '3.6'
 pip>=18.1
