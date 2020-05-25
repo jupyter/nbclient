@@ -455,8 +455,9 @@ class NotebookClient(LoggingConfigurable):
         try:
             loop.add_signal_handler(signal.SIGINT, on_signal)
             loop.add_signal_handler(signal.SIGTERM, on_signal)
-        except NotImplementedError:
-            # Windows does not support signals.
+        except (NotImplementedError, RuntimeError):
+            # NotImplementedError: Windows does not support signals.
+            # RuntimeError: Raised when add_signal_handler is called outside the main thread
             pass
 
         if not self.km.has_kernel:
@@ -471,7 +472,7 @@ class NotebookClient(LoggingConfigurable):
             try:
                 loop.remove_signal_handler(signal.SIGINT)
                 loop.remove_signal_handler(signal.SIGTERM)
-            except NotImplementedError:
+            except (NotImplementedError, RuntimeError):
                 pass
 
     async def async_execute(self, reset_kc=False, **kwargs):
