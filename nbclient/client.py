@@ -101,21 +101,6 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    nest_asyncio = Bool(
-        False,
-        help=dedent(
-            """
-            If False (default), then blocking functions such as `execute`
-            assume that no event loop is already running. These functions
-            run their async counterparts (e.g. `async_execute`) in an event
-            loop with `asyncio.run_until_complete`, which will fail if an
-            event loop is already running. This can be the case if nbclient
-            is used e.g. in a Jupyter Notebook. In that case, `nest_asyncio`
-            should be set to True.
-            """
-        ),
-    ).tag(config=True)
-
     force_raise_errors = Bool(
         False,
         help=dedent(
