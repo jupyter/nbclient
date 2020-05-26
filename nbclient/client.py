@@ -306,6 +306,10 @@ class NotebookClient(LoggingConfigurable):
                 'OutputModel': OutputWidget
             }
         }
+        # comm_open_handlers should return an object with a .handle_msg(msg) method or None
+        self.comm_open_handlers = {
+            'jupyter.widget': self.on_comm_open_jupyter_widget
+        }
 
     def reset_execution_trackers(self):
         """Resets any per-execution trackers.
@@ -318,7 +322,7 @@ class NotebookClient(LoggingConfigurable):
         # to support nested use of output widgets.
         self.output_hook_stack = collections.defaultdict(list)
         # our front-end mimicing Output widgets
-        self.widget_objects = {}
+        self.comm_objects = {}
 
     def start_kernel_manager(self):
         """Creates a new kernel manager.
@@ -863,23 +867,17 @@ class NotebookClient(LoggingConfigurable):
                 self.widget_buffers[content['comm_id']] = self._get_buffer_data(msg)
         # There are cases where we need to mimic a frontend, to get similar behaviour as
         # when using the Output widget from Jupyter lab/notebook
-        if msg['msg_type'] == 'comm_open' and msg['content'].get('target_name') == 'jupyter.widget':
-            content = msg['content']
-            data = content['data']
-            state = data['state']
+        if msg['msg_type'] == 'comm_open':
+            handler = self.comm_open_handlers.get(msg['content'].get('target_name'))
             comm_id = msg['content']['comm_id']
-            module = self.widget_registry.get(state['_model_module'])
-            if module:
-               widget_class = module.get(state['_model_name'])
-               self.widget_objects[comm_id] = widget_class(comm_id, state, self.kc, self)
+            comm_object = handler(msg)
+            if comm_object:
+                self.comm_objects[comm_id] = comm_object
         elif msg['msg_type'] == 'comm_msg':
             content = msg['content']
-            data = content['data']
-            if 'state' in data:
-                state = data['state']
-                comm_id = msg['content']['comm_id']
-                if comm_id in self.widget_objects:
-                    self.widget_objects[comm_id].set_state(state)
+            comm_id = msg['content']['comm_id']
+            if comm_id in self.comm_objects:
+                self.comm_objects[comm_id].handle_msg(msg)
 
     def _serialize_widget_state(self, state):
         """Serialize a widget state, following format in @jupyter-widgets/schema."""
@@ -919,6 +917,17 @@ class NotebookClient(LoggingConfigurable):
         # https://jupyterlab.github.io/jupyterlab/services/interfaces/kernel.ikernelconnection.html#removemessagehook
         removed_hook = self.output_hook_stack[msg_id].pop()
         assert removed_hook == hook
+
+    def on_comm_open_jupyter_widget(self, msg):
+        content = msg['content']
+        data = content['data']
+        state = data['state']
+        comm_id = msg['content']['comm_id']
+        module = self.widget_registry.get(state['_model_module'])
+        if module:
+            widget_class = module.get(state['_model_name'])
+            if widget_class:
+                return widget_class(comm_id, state, self.kc, self)
 
 
 def execute(nb, cwd=None, km=None, **kwargs):

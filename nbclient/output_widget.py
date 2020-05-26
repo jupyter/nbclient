@@ -75,3 +75,11 @@ class OutputWidget:
             else:
                 self.executor.remove_output_hook(self.msg_id, self)
                 self.msg_id = msg_id
+
+    def handle_msg(self, msg):
+        content = msg['content']
+        comm_id = content['comm_id']
+        assert comm_id == self.comm_id
+        data = content['data']
+        if 'state' in data:
+            self.set_state(data['state'])
