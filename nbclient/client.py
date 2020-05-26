@@ -301,6 +301,11 @@ class NotebookClient(LoggingConfigurable):
         self.nb = nb
         self.km = km
         self.reset_execution_trackers()
+        self.widget_registry = {
+            '@jupyter-widgets/output': {
+                'OutputModel': OutputWidget
+            }
+        }
 
     def reset_execution_trackers(self):
         """Resets any per-execution trackers.
@@ -313,7 +318,7 @@ class NotebookClient(LoggingConfigurable):
         # to support nested use of output widgets.
         self.output_hook_stack = collections.defaultdict(list)
         # our front-end mimicing Output widgets
-        self.output_widget_objects = {}
+        self.widget_objects = {}
 
     def start_kernel_manager(self):
         """Creates a new kernel manager.
@@ -863,17 +868,18 @@ class NotebookClient(LoggingConfigurable):
             data = content['data']
             state = data['state']
             comm_id = msg['content']['comm_id']
-            if state['_model_module'] == '@jupyter-widgets/output' and\
-               state['_model_name'] == 'OutputModel':
-                self.output_widget_objects[comm_id] = OutputWidget(comm_id, state, self.kc, self)
+            module = self.widget_registry.get(state['_model_module'])
+            if module:
+               widget_class = module.get(state['_model_name'])
+               self.widget_objects[comm_id] = widget_class(comm_id, state, self.kc, self)
         elif msg['msg_type'] == 'comm_msg':
             content = msg['content']
             data = content['data']
             if 'state' in data:
                 state = data['state']
                 comm_id = msg['content']['comm_id']
-                if comm_id in self.output_widget_objects:
-                    self.output_widget_objects[comm_id].set_state(state)
+                if comm_id in self.widget_objects:
+                    self.widget_objects[comm_id].set_state(state)
 
     def _serialize_widget_state(self, state):
         """Serialize a widget state, following format in @jupyter-widgets/schema."""
