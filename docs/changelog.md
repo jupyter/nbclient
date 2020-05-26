@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 (unreleased)
+
+### Major Changes
+
+- Mimic an Output widget at the frontend so that the Output widget behaves correctly [#68](https://github.com/jupyter/nbclient/pull/68)
+
 ## 0.3.1
 
 ### Fixes

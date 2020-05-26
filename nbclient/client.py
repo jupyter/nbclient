@@ -1,5 +1,6 @@
-import datetime
 import base64
+import collections
+import datetime
 from textwrap import dedent
 
 from async_generator import asynccontextmanager
@@ -22,6 +23,7 @@ from .exceptions import (
     CellExecutionError
 )
 from .util import run_sync, ensure_async
+from .output_widget import OutputWidget
 
 
 def timestamp():
@@ -299,6 +301,15 @@ class NotebookClient(LoggingConfigurable):
         self.nb = nb
         self.km = km
         self.reset_execution_trackers()
+        self.widget_registry = {
+            '@jupyter-widgets/output': {
+                'OutputModel': OutputWidget
+            }
+        }
+        # comm_open_handlers should return an object with a .handle_msg(msg) method or None
+        self.comm_open_handlers = {
+            'jupyter.widget': self.on_comm_open_jupyter_widget
+        }
 
     def reset_execution_trackers(self):
         """Resets any per-execution trackers.
@@ -307,6 +318,11 @@ class NotebookClient(LoggingConfigurable):
         self._display_id_map = {}
         self.widget_state = {}
         self.widget_buffers = {}
+        # maps to list of hooks, where the last is used, this is used
+        # to support nested use of output widgets.
+        self.output_hook_stack = collections.defaultdict(list)
+        # our front-end mimicing Output widgets
+        self.comm_objects = {}
 
     def start_kernel_manager(self):
         """Creates a new kernel manager.
@@ -787,6 +803,14 @@ class NotebookClient(LoggingConfigurable):
     def output(self, outs, msg, display_id, cell_index):
         msg_type = msg['msg_type']
 
+        parent_msg_id = msg['parent_header'].get('msg_id')
+        if self.output_hook_stack[parent_msg_id]:
+            # if we have a hook registered, it will overrride our
+            # default output behaviour (e.g. OutputWidget)
+            hook = self.output_hook_stack[parent_msg_id][-1]
+            hook.output(outs, msg, display_id, cell_index)
+            return
+
         try:
             out = output_from_msg(msg)
         except ValueError:
@@ -812,6 +836,15 @@ class NotebookClient(LoggingConfigurable):
 
     def clear_output(self, outs, msg, cell_index):
         content = msg['content']
+
+        parent_msg_id = msg['parent_header'].get('msg_id')
+        if self.output_hook_stack[parent_msg_id]:
+            # if we have a hook registered, it will overrride our
+            # default clear_output behaviour (e.g. OutputWidget)
+            hook = self.output_hook_stack[parent_msg_id][-1]
+            hook.clear_output(outs, msg, cell_index)
+            return
+
         if content.get('wait'):
             self.log.debug('Wait to clear output')
             self.clear_before_next_output = True
@@ -832,6 +865,19 @@ class NotebookClient(LoggingConfigurable):
             self.widget_state.setdefault(content['comm_id'], {}).update(data['state'])
             if 'buffer_paths' in data and data['buffer_paths']:
                 self.widget_buffers[content['comm_id']] = self._get_buffer_data(msg)
+        # There are cases where we need to mimic a frontend, to get similar behaviour as
+        # when using the Output widget from Jupyter lab/notebook
+        if msg['msg_type'] == 'comm_open':
+            handler = self.comm_open_handlers.get(msg['content'].get('target_name'))
+            comm_id = msg['content']['comm_id']
+            comm_object = handler(msg)
+            if comm_object:
+                self.comm_objects[comm_id] = comm_object
+        elif msg['msg_type'] == 'comm_msg':
+            content = msg['content']
+            comm_id = msg['content']['comm_id']
+            if comm_id in self.comm_objects:
+                self.comm_objects[comm_id].handle_msg(msg)
 
     def _serialize_widget_state(self, state):
         """Serialize a widget state, following format in @jupyter-widgets/schema."""
@@ -855,6 +901,33 @@ class NotebookClient(LoggingConfigurable):
                 }
             )
         return encoded_buffers
+
+    def register_output_hook(self, msg_id, hook):
+        """Registers an override object that handles output/clear_output instead.
+
+        Multiple hooks can be registered, where the last one will be used (stack based)
+        """
+        # mimics
+        # https://jupyterlab.github.io/jupyterlab/services/interfaces/kernel.ikernelconnection.html#registermessagehook
+        self.output_hook_stack[msg_id].append(hook)
+
+    def remove_output_hook(self, msg_id, hook):
+        """Unregisters an override object that handles output/clear_output instead"""
+        # mimics
+        # https://jupyterlab.github.io/jupyterlab/services/interfaces/kernel.ikernelconnection.html#removemessagehook
+        removed_hook = self.output_hook_stack[msg_id].pop()
+        assert removed_hook == hook
+
+    def on_comm_open_jupyter_widget(self, msg):
+        content = msg['content']
+        data = content['data']
+        state = data['state']
+        comm_id = msg['content']['comm_id']
+        module = self.widget_registry.get(state['_model_module'])
+        if module:
+            widget_class = module.get(state['_model_name'])
+            if widget_class:
+                return widget_class(comm_id, state, self.kc, self)
 
 
 def execute(nb, cwd=None, km=None, **kwargs):
