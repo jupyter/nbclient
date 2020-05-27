@@ -4,7 +4,51 @@
 # Distributed under the terms of the Modified BSD License.
 
 import asyncio
+import sys
 import inspect
+
+
+def check_ipython():
+    # original from vaex/asyncio.py
+    IPython = sys.modules.get('IPython')
+    if IPython:
+        IPython_version = tuple(map(int, IPython.__version__.split('.')))
+        if IPython_version < (7, 0, 0):
+            raise RuntimeError(f'You are using IPython {IPython.__version__} while we require'
+                               '7.0.0+, please update IPython')
+
+
+def check_patch_tornado():
+    """If tornado is imported, add the patched asyncio.Future to its tuple of acceptable Futures"""
+    # original from vaex/asyncio.py
+    if 'tornado' in sys.modules:
+        import tornado.concurrent
+        if asyncio.Future not in tornado.concurrent.FUTURES:
+            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (asyncio.Future, )
+
+
+def just_run(coro):
+    """Make the coroutine run, even if there is an event loop running (using nest_asyncio)"""
+    # original from vaex/asyncio.py
+    loop = asyncio._get_running_loop()
+    if loop is None:
+        had_running_loop = False
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # we can still get 'There is no current event loop in ...'
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+    else:
+        had_running_loop = True
+    if had_running_loop:
+        # if there is a running loop, we patch using nest_asyncio
+        # to have reentrant event loops
+        check_ipython()
+        import nest_asyncio
+        nest_asyncio.apply()
+        check_patch_tornado()
+    return loop.run_until_complete(coro)
 
 
 def run_sync(coro):
@@ -24,26 +68,8 @@ def run_sync(coro):
     result :
         Whatever the coroutine returns.
     """
-    def wrapped(self, *args, **kwargs):
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        if self.nest_asyncio:
-            import nest_asyncio
-            nest_asyncio.apply(loop)
-        try:
-            result = loop.run_until_complete(coro(self, *args, **kwargs))
-        except RuntimeError as e:
-            if str(e) == 'This event loop is already running':
-                raise RuntimeError(
-                    'You are trying to run nbclient in an environment where an '
-                    'event loop is already running. Please pass `nest_asyncio=True` in '
-                    '`NotebookClient.execute` and such methods.'
-                ) from e
-            raise
-        return result
+    def wrapped(*args, **kwargs):
+        return just_run(coro(*args, **kwargs))
     wrapped.__doc__ = coro.__doc__
     return wrapped
 
