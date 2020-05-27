@@ -12,7 +12,7 @@ def run_sync(coro):
 
     An event loop is created if no one already exists. If an event loop is
     already running, this event loop execution is nested into the already
-    running one if `nest_asyncio` is set to True.
+    running one.
 
     Parameters
     ----------
@@ -30,19 +30,16 @@ def run_sync(coro):
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        if self.nest_asyncio:
-            import nest_asyncio
-            nest_asyncio.apply(loop)
         try:
-            result = loop.run_until_complete(coro(self, *args, **kwargs))
+            c = coro(self, *args, **kwargs)
+            result = loop.run_until_complete(c)
         except RuntimeError as e:
             if str(e) == 'This event loop is already running':
-                raise RuntimeError(
-                    'You are trying to run nbclient in an environment where an '
-                    'event loop is already running. Please pass `nest_asyncio=True` in '
-                    '`NotebookClient.execute` and such methods.'
-                ) from e
-            raise
+                import nest_asyncio
+                nest_asyncio.apply(loop)
+                result = loop.run_until_complete(c)
+            else:
+                raise
         return result
     wrapped.__doc__ = coro.__doc__
     return wrapped
