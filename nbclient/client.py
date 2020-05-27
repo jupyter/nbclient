@@ -350,7 +350,8 @@ class NotebookClient(LoggingConfigurable):
         now = self.shutdown_kernel == "immediate"
         try:
             # Queue the manager to kill the process, and recover gracefully if it's already dead.
-            await ensure_async(self.km.shutdown_kernel(now=now))
+            if await ensure_async(self.km.is_alive()):
+                await ensure_async(self.km.shutdown_kernel(now=now))
         except RuntimeError as e:
             # The error isn't specialized, so we have to check the message
             if 'No kernel is running!' not in str(e):
