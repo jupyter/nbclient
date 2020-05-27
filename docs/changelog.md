@@ -5,6 +5,7 @@
 ### Major Changes
 
 - Mimic an Output widget at the frontend so that the Output widget behaves correctly [#68](https://github.com/jupyter/nbclient/pull/68)
+- Nested asyncio is automatic, and works with Tornado [#71](https://github.com/jupyter/nbclient/pull/71)
 
 ## 0.3.1
 
