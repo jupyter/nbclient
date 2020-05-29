@@ -853,11 +853,15 @@ class NotebookClient(LoggingConfigurable):
         # There are cases where we need to mimic a frontend, to get similar behaviour as
         # when using the Output widget from Jupyter lab/notebook
         if msg['msg_type'] == 'comm_open':
-            handler = self.comm_open_handlers.get(msg['content'].get('target_name'))
-            comm_id = msg['content']['comm_id']
-            comm_object = handler(msg)
-            if comm_object:
-                self.comm_objects[comm_id] = comm_object
+            target = msg['content'].get('target_name')
+            handler = self.comm_open_handlers.get(target)
+            if handler:
+                comm_id = msg['content']['comm_id']
+                comm_object = handler(msg)
+                if comm_object:
+                    self.comm_objects[comm_id] = comm_object
+            else:
+                self.log.warning(f'No handler found for comm target {target!r}')
         elif msg['msg_type'] == 'comm_msg':
             content = msg['content']
             comm_id = msg['content']['comm_id']
