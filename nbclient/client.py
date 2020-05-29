@@ -1,6 +1,8 @@
-import base64
+import atexit
 import collections
 import datetime
+import base64
+import signal
 from textwrap import dedent
 
 from async_generator import asynccontextmanager
@@ -278,7 +280,7 @@ class NotebookClient(LoggingConfigurable):
         ----------
         nb : NotebookNode
             Notebook being executed.
-        km : KernerlManager (optional)
+        km : KernelManager (optional)
             Optional kernel manager. If none is provided, a kernel manager will
             be created.
         """
@@ -330,23 +332,21 @@ class NotebookClient(LoggingConfigurable):
         return self.km
 
     async def _async_cleanup_kernel(self):
+        now = self.shutdown_kernel == "immediate"
         try:
-            # Send a polite shutdown request
-            await ensure_async(self.kc.shutdown())
-            try:
-                # Queue the manager to kill the process, sometimes the built-in and above
-                # shutdowns have not been successful or called yet, so give a direct kill
-                # call here and recover gracefully if it's already dead.
-                await ensure_async(self.km.shutdown_kernel(now=True))
-            except RuntimeError as e:
-                # The error isn't specialized, so we have to check the message
-                if 'No kernel is running!' not in str(e):
-                    raise
+            # Queue the manager to kill the process, and recover gracefully if it's already dead.
+            if await ensure_async(self.km.is_alive()):
+                await ensure_async(self.km.shutdown_kernel(now=now))
+        except RuntimeError as e:
+            # The error isn't specialized, so we have to check the message
+            if 'No kernel is running!' not in str(e):
+                raise
         finally:
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup())
-            await ensure_async(self.kc.stop_channels())
-            self.kc = None
+            if getattr(self, "kc"):
+                await ensure_async(self.kc.stop_channels())
+                self.kc = None
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
@@ -438,10 +438,29 @@ class NotebookClient(LoggingConfigurable):
 
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
+
+        Handlers for SIGINT and SIGTERM are also added to cleanup in case of unexpected shutdown.
         """
         cleanup_kc = kwargs.pop('cleanup_kc', True)
         if self.km is None:
             self.start_kernel_manager()
+
+        # self._cleanup_kernel uses run_async, which ensures the ioloop is running again.
+        # This is necessary as the ioloop has stopped once atexit fires.
+        atexit.register(self._cleanup_kernel)
+
+        def on_signal():
+            asyncio.ensure_future(self._async_cleanup_kernel())
+            atexit.unregister(self._cleanup_kernel)
+
+        loop = asyncio.get_event_loop()
+        try:
+            loop.add_signal_handler(signal.SIGINT, on_signal)
+            loop.add_signal_handler(signal.SIGTERM, on_signal)
+        except (NotImplementedError, RuntimeError):
+            # NotImplementedError: Windows does not support signals.
+            # RuntimeError: Raised when add_signal_handler is called outside the main thread
+            pass
 
         if not self.km.has_kernel:
             await self.async_start_new_kernel_client(**kwargs)
@@ -450,6 +469,13 @@ class NotebookClient(LoggingConfigurable):
         finally:
             if cleanup_kc:
                 await self._async_cleanup_kernel()
+
+            atexit.unregister(self._cleanup_kernel)
+            try:
+                loop.remove_signal_handler(signal.SIGINT)
+                loop.remove_signal_handler(signal.SIGTERM)
+            except (NotImplementedError, RuntimeError):
+                pass
 
     async def async_execute(self, reset_kc=False, **kwargs):
         """
