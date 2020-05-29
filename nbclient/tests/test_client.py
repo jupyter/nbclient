@@ -243,6 +243,7 @@ def notebook_resources():
 @pytest.mark.parametrize(
     ["input_name", "opts"],
     [
+        ("Matplotlib.ipynb", dict(kernel_name="python")),
         ("Clear Output.ipynb", dict(kernel_name="python")),
         ("Empty Cell.ipynb", dict(kernel_name="python")),
         ("Factorials.ipynb", dict(kernel_name="python")),

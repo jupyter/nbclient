@@ -24,6 +24,7 @@ from .exceptions import (
 )
 from .util import run_sync, ensure_async
 from .output_widget import OutputWidget
+from .matplotlib import MatplotlibCommHandler
 
 
 def timestamp():
@@ -293,7 +294,8 @@ class NotebookClient(LoggingConfigurable):
         }
         # comm_open_handlers should return an object with a .handle_msg(msg) method or None
         self.comm_open_handlers = {
-            'jupyter.widget': self.on_comm_open_jupyter_widget
+            'jupyter.widget': self.on_comm_open_jupyter_widget,
+            'matplotlib': self.on_comm_open_matplotlib
         }
 
     def reset_execution_trackers(self):
@@ -913,6 +915,12 @@ class NotebookClient(LoggingConfigurable):
             widget_class = module.get(state['_model_name'])
             if widget_class:
                 return widget_class(comm_id, state, self.kc, self)
+
+    def on_comm_open_matplotlib(self, msg):
+        content = msg['content']
+        data = content['data']
+        return MatplotlibCommHandler(comm_id=content['comm_id'], kernel_client=self.kc,
+                                     parent_header=msg['parent_header'], nbagg_id=data['id'])
 
 
 def execute(nb, cwd=None, km=None, **kwargs):
