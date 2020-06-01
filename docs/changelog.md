@@ -4,8 +4,13 @@
 
 ### Major Changes
 
+- Use KernelManager's graceful shutdown rather than KILLing kernels [#64](https://github.com/jupyter/nbclient/pull/64)
 - Mimic an Output widget at the frontend so that the Output widget behaves correctly [#68](https://github.com/jupyter/nbclient/pull/68)
 - Nested asyncio is automatic, and works with Tornado [#71](https://github.com/jupyter/nbclient/pull/71)
+
+### Fixes
+
+- Fix `OSError: [WinError 6] The handle is invalid` for windows/python<3.7 [#77](https://github.com/jupyter/nbclient/pull/77)
 
 ## 0.3.1
 
