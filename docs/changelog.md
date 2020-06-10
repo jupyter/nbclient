@@ -1,16 +1,23 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.4.0
 
 ### Major Changes
 
 - Use KernelManager's graceful shutdown rather than KILLing kernels [#64](https://github.com/jupyter/nbclient/pull/64)
 - Mimic an Output widget at the frontend so that the Output widget behaves correctly [#68](https://github.com/jupyter/nbclient/pull/68)
 - Nested asyncio is automatic, and works with Tornado [#71](https://github.com/jupyter/nbclient/pull/71)
+- `async_execute` now has a `reset_kc` argument to control if the client is reset upon execution request [#53](https://github.com/jupyter/nbclient/pull/53)
 
 ### Fixes
 
 - Fix `OSError: [WinError 6] The handle is invalid` for windows/python<3.7 [#77](https://github.com/jupyter/nbclient/pull/77)
+- Async wapper Exceptions no longer loose thier caused exception information [#65](https://github.com/jupyter/nbclient/pull/65)
+- `extra_arguments` are now configurable by config settings [#66](https://github.com/jupyter/nbclient/pull/66)
+
+### Operational
+
+- Cross-OS testing now run on PRs via Github Actions [#63](https://github.com/jupyter/nbclient/pull/63)
 
 ## 0.3.1
 
