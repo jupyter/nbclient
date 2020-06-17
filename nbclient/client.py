@@ -114,14 +114,14 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             If False (default), errors from executing the notebook can be
-            allowed with a `raises-exception` tag on a single cell, or the
-            `allow_errors` configurable option for all cells. An allowed error
+            allowed with a ``raises-exception`` tag on a single cell, or the
+            ``allow_errors`` configurable option for all cells. An allowed error
             will be recorded in notebook output, and execution will continue.
             If an error occurs when it is not explicitly allowed, a
             `CellExecutionError` will be raised.
             If True, `CellExecutionError` will be raised for any error that occurs
             while executing the notebook. This overrides both the
-            `allow_errors` option and the `raises-exception` cell tag.
+            ``allow_errors`` option and the ``raises-exception`` cell tag.
             """
         ),
     ).tag(config=True)
@@ -215,12 +215,12 @@ class NotebookClient(LoggingConfigurable):
         default_value=':memory:',
         help="""Path to file to use for SQLite history database for an IPython kernel.
 
-        The specific value `:memory:` (including the colon
+        The specific value ``:memory:`` (including the colon
         at both end but not the back ticks), avoids creating a history file. Otherwise, IPython
         will create a history file for each kernel.
 
         When running kernels simultaneously (e.g. via multiprocessing) saving history a single
-        SQLite file can result in database errors, so using `:memory:` is recommended in
+        SQLite file can result in database errors, so using ``:memory:`` is recommended in
         non-interactive contexts.
         """,
     ).tag(config=True)
