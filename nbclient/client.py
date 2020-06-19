@@ -647,10 +647,10 @@ class NotebookClient(LoggingConfigurable):
             timeout: int,
             cell: t.Optional[NotebookNode] = None) -> None:
 
-        assert self.km is not None
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
         if self.interrupt_on_timeout:
             self.log.error("Interrupting kernel")
+            assert self.km is not None
             await ensure_async(self.km.interrupt_kernel())
         else:
             raise CellTimeoutError.error_from_timeout_and_cell(
