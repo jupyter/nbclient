@@ -278,10 +278,10 @@ class NotebookClient(LoggingConfigurable):
     )
 
     def __init__(
-        self,
-        nb: NotebookNode,
-        km: t.Optional[KernelManager] = None,
-        **kw) -> None:
+            self,
+            nb: NotebookNode,
+            km: t.Optional[KernelManager] = None,
+            **kw) -> None:
         """Initializes the execution manager.
 
         Parameters
@@ -489,9 +489,9 @@ class NotebookClient(LoggingConfigurable):
                 pass
 
     async def async_execute(
-        self,
-        reset_kc: bool = False,
-        **kwargs) -> NotebookNode:
+            self,
+            reset_kc: bool = False,
+            **kwargs) -> NotebookNode:
         """
         Executes each code cell.
 
@@ -554,9 +554,9 @@ class NotebookClient(LoggingConfigurable):
                     widget['buffers'] = buffers
 
     def _update_display_id(
-        self,
-        display_id: str,
-        msg: t.Dict) -> None:
+            self,
+            display_id: str,
+            msg: t.Dict) -> None:
         """Update outputs with a given display_id"""
         if display_id not in self._display_id_map:
             self.log.debug("display id %r not in %s", display_id, self._display_id_map)
@@ -578,14 +578,15 @@ class NotebookClient(LoggingConfigurable):
                 outputs[output_idx]['data'] = out['data']
                 outputs[output_idx]['metadata'] = out['metadata']
 
-    async def _async_poll_for_reply(self,
-        msg_id: str,
-        cell: NotebookNode,
-        timeout: t.Optional[int],
-        task_poll_output_msg: asyncio.Future) -> t.Dict:
+    async def _async_poll_for_reply(
+            self,
+            msg_id: str,
+            cell: NotebookNode,
+            timeout: t.Optional[int],
+            task_poll_output_msg: asyncio.Future) -> t.Dict:
 
         assert self.kc is not None
-        new_timeout: t.Optional[float]= None
+        new_timeout: t.Optional[float] = None
         if timeout is not None:
             deadline = monotonic() + timeout
             new_timeout = float(timeout)
@@ -615,10 +616,10 @@ class NotebookClient(LoggingConfigurable):
                 await self._async_handle_timeout(timeout, cell)
 
     async def _async_poll_output_msg(
-        self,
-        parent_msg_id: str,
-        cell: NotebookNode,
-        cell_index: int) -> None:
+            self,
+            parent_msg_id: str,
+            cell: NotebookNode,
+            cell_index: int) -> None:
 
         assert self.kc is not None
         while True:
@@ -642,9 +643,9 @@ class NotebookClient(LoggingConfigurable):
         return timeout
 
     async def _async_handle_timeout(
-        self,
-        timeout: int,
-        cell: t.Optional[NotebookNode] = None) -> None:
+            self,
+            timeout: int,
+            cell: t.Optional[NotebookNode] = None) -> None:
 
         assert self.km is not None
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
@@ -663,9 +664,9 @@ class NotebookClient(LoggingConfigurable):
             raise DeadKernelError("Kernel died")
 
     async def async_wait_for_reply(
-        self,
-        msg_id: str,
-        cell: t.Optional[NotebookNode] = None) -> t.Optional[t.Dict]:
+            self,
+            msg_id: str,
+            cell: t.Optional[NotebookNode] = None) -> t.Optional[t.Dict]:
 
         assert self.kc is not None
         # wait for finish, with timeout
@@ -699,9 +700,9 @@ class NotebookClient(LoggingConfigurable):
         return False
 
     def _check_raise_for_error(
-        self,
-        cell: NotebookNode,
-        exec_reply: t.Optional[t.Dict]) -> None:
+            self,
+            cell: NotebookNode,
+            exec_reply: t.Optional[t.Dict]) -> None:
 
         cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
             "tags", []
@@ -712,11 +713,11 @@ class NotebookClient(LoggingConfigurable):
                 raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
 
     async def async_execute_cell(
-        self,
-        cell: NotebookNode,
-        cell_index: int,
-        execution_count: t.Optional[int] = None,
-        store_history: bool = True) -> NotebookNode:
+            self,
+            cell: NotebookNode,
+            cell_index: int,
+            execution_count: t.Optional[int] = None,
+            store_history: bool = True) -> NotebookNode:
         """
         Executes a single code cell.
 
@@ -798,10 +799,10 @@ class NotebookClient(LoggingConfigurable):
     execute_cell = run_sync(async_execute_cell)
 
     def process_message(
-        self,
-        msg: t.Dict,
-        cell: NotebookNode,
-        cell_index: int) -> t.Optional[t.List]:
+            self,
+            msg: t.Dict,
+            cell: NotebookNode,
+            cell_index: int) -> t.Optional[t.List]:
         """
         Processes a kernel message, updates cell state, and returns the
         resulting output object that was appended to cell.outputs.
@@ -864,11 +865,11 @@ class NotebookClient(LoggingConfigurable):
         return None
 
     def output(
-        self,
-        outs: t.List,
-        msg: t.Dict,
-        display_id: str,
-        cell_index: int) -> t.Optional[t.List]:
+            self,
+            outs: t.List,
+            msg: t.Dict,
+            display_id: str,
+            cell_index: int) -> t.Optional[t.List]:
 
         msg_type = msg['msg_type']
 
@@ -904,10 +905,10 @@ class NotebookClient(LoggingConfigurable):
         return out
 
     def clear_output(
-        self,
-        outs: t.List,
-        msg: t.Dict,
-        cell_index: int) -> None:
+            self,
+            outs: t.List,
+            msg: t.Dict,
+            cell_index: int) -> None:
 
         content = msg['content']
 
@@ -928,18 +929,18 @@ class NotebookClient(LoggingConfigurable):
             self.clear_display_id_mapping(cell_index)
 
     def clear_display_id_mapping(
-        self,
-        cell_index: int) -> None:
+            self,
+            cell_index: int) -> None:
 
         for display_id, cell_map in self._display_id_map.items():
             if cell_index in cell_map:
                 cell_map[cell_index] = []
 
     def handle_comm_msg(
-        self,
-        outs: t.List,
-        msg: t.Dict,
-        cell_index: int) -> None:
+            self,
+            outs: t.List,
+            msg: t.Dict,
+            cell_index: int) -> None:
 
         content = msg['content']
         data = content['data']
@@ -989,9 +990,9 @@ class NotebookClient(LoggingConfigurable):
         return encoded_buffers
 
     def register_output_hook(
-        self,
-        msg_id: str,
-        hook: t.Callable) -> None:
+            self,
+            msg_id: str,
+            hook: t.Callable) -> None:
         """Registers an override object that handles output/clear_output instead.
 
         Multiple hooks can be registered, where the last one will be used (stack based)
@@ -1001,9 +1002,9 @@ class NotebookClient(LoggingConfigurable):
         self.output_hook_stack[msg_id].append(hook)
 
     def remove_output_hook(
-        self,
-        msg_id: str,
-        hook: t.Callable) -> None:
+            self,
+            msg_id: str,
+            hook: t.Callable) -> None:
         """Unregisters an override object that handles output/clear_output instead"""
         # mimics
         # https://jupyterlab.github.io/jupyterlab/services/interfaces/kernel.ikernelconnection.html#removemessagehook
@@ -1023,10 +1024,10 @@ class NotebookClient(LoggingConfigurable):
 
 
 def execute(
-    nb: NotebookNode,
-    cwd: t.Optional[str] = None,
-    km: t.Optional[KernelManager] = None,
-    **kwargs) -> NotebookClient:
+        nb: NotebookNode,
+        cwd: t.Optional[str] = None,
+        km: t.Optional[KernelManager] = None,
+        **kwargs) -> NotebookClient:
     """Execute a notebook's code, updating outputs within the notebook object.
 
     This is a convenient wrapper around NotebookClient. It returns the
