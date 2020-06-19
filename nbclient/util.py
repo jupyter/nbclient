@@ -15,8 +15,8 @@ def check_ipython() -> None:
     if IPython:
         IPython_version = tuple(map(int, IPython.__version__.split('.')))  # type: ignore
         if IPython_version < (7, 0, 0):
-            raise RuntimeError(f'You are using IPython {IPython.__version__} while we require'  # type: ignore
-                               '7.0.0+, please update IPython')
+            raise RuntimeError(f'You are using IPython {IPython.__version__} '  # type: ignore
+                               'while we require 7.0.0+, please update IPython')
 
 
 def check_patch_tornado() -> None:
@@ -25,7 +25,8 @@ def check_patch_tornado() -> None:
     if 'tornado' in sys.modules:
         import tornado.concurrent
         if asyncio.Future not in tornado.concurrent.FUTURES:
-            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (asyncio.Future, )  # type: ignore
+            tornado.concurrent.FUTURES = \
+                tornado.concurrent.FUTURES + (asyncio.Future, )  # type: ignore
 
 
 def just_run(coro: Awaitable) -> Any:
