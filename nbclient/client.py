@@ -354,7 +354,7 @@ class NotebookClient(LoggingConfigurable):
         finally:
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup())
-            if self.kc is not None:
+            if getattr(self, "kc") and self.kc is not None:
                 await ensure_async(self.kc.stop_channels())
                 self.kc = None
 
