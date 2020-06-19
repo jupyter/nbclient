@@ -992,7 +992,7 @@ class NotebookClient(LoggingConfigurable):
     def register_output_hook(
             self,
             msg_id: str,
-            hook: t.Callable) -> None:
+            hook: OutputWidget) -> None:
         """Registers an override object that handles output/clear_output instead.
 
         Multiple hooks can be registered, where the last one will be used (stack based)
@@ -1004,7 +1004,7 @@ class NotebookClient(LoggingConfigurable):
     def remove_output_hook(
             self,
             msg_id: str,
-            hook: t.Callable) -> None:
+            hook: OutputWidget) -> None:
         """Unregisters an override object that handles output/clear_output instead"""
         # mimics
         # https://jupyterlab.github.io/jupyterlab/services/interfaces/kernel.ikernelconnection.html#removemessagehook
