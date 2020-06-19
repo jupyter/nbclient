@@ -3,7 +3,6 @@ from nbformat.v4 import output_from_msg
 from typing import Dict, List, Any, Optional
 
 from jupyter_client.client import KernelClient
-from nbclient import NotebookClient
 
 
 class OutputWidget:
@@ -13,12 +12,12 @@ class OutputWidget:
             comm_id: str,
             state: Dict[str, Any],
             kernel_client: KernelClient,
-            executor: NotebookClient) -> None:
+            executor) -> None:
 
         self.comm_id: str = comm_id
         self.state: Dict[str, Any] = state
         self.kernel_client: KernelClient = kernel_client
-        self.executor: NotebookClient = executor
+        self.executor = executor
         self.topic: bytes = ('comm-%s' % self.comm_id).encode('ascii')
         self.outputs: List = self.state['outputs']
         self.clear_before_next_output: bool = False

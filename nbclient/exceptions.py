@@ -22,7 +22,7 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
             cls,
             msg: str,
             timeout: int,
-            cell: NotebookNode) -> CellTimeoutError:
+            cell: NotebookNode):
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
             src = (
@@ -81,7 +81,7 @@ class CellExecutionError(CellControlSignal):
     def from_cell_and_msg(
             cls,
             cell: NotebookNode,
-            msg: Dict) -> CellExecutionError:
+            msg: Dict):
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """
