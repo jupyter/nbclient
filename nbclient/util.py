@@ -6,28 +6,30 @@
 import asyncio
 import sys
 import inspect
+from typing import Callable, Awaitable, Any, Union
 
 
-def check_ipython():
+def check_ipython() -> None:
     # original from vaex/asyncio.py
     IPython = sys.modules.get('IPython')
     if IPython:
-        IPython_version = tuple(map(int, IPython.__version__.split('.')))
+        IPython_version = tuple(map(int, IPython.__version__.split('.')))  # type: ignore
         if IPython_version < (7, 0, 0):
-            raise RuntimeError(f'You are using IPython {IPython.__version__} while we require'
-                               '7.0.0+, please update IPython')
+            raise RuntimeError(f'You are using IPython {IPython.__version__} '  # type: ignore
+                               'while we require 7.0.0+, please update IPython')
 
 
-def check_patch_tornado():
+def check_patch_tornado() -> None:
     """If tornado is imported, add the patched asyncio.Future to its tuple of acceptable Futures"""
     # original from vaex/asyncio.py
     if 'tornado' in sys.modules:
         import tornado.concurrent
         if asyncio.Future not in tornado.concurrent.FUTURES:
-            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (asyncio.Future, )
+            tornado.concurrent.FUTURES = \
+                tornado.concurrent.FUTURES + (asyncio.Future, )  # type: ignore
 
 
-def just_run(coro):
+def just_run(coro: Awaitable) -> Any:
     """Make the coroutine run, even if there is an event loop running (using nest_asyncio)"""
     # original from vaex/asyncio.py
     loop = asyncio._get_running_loop()
@@ -51,7 +53,7 @@ def just_run(coro):
     return loop.run_until_complete(coro)
 
 
-def run_sync(coro):
+def run_sync(coro: Callable) -> Callable:
     """Runs a coroutine and blocks until it has executed.
 
     An event loop is created if no one already exists. If an event loop is
@@ -74,7 +76,7 @@ def run_sync(coro):
     return wrapped
 
 
-async def ensure_async(obj):
+async def ensure_async(obj: Union[Awaitable, Any]) -> Any:
     """Convert a non-awaitable object to a coroutine if needed,
     and await it if it was not already awaited.
     """

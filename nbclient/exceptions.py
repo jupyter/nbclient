@@ -1,3 +1,8 @@
+from typing import Dict
+
+from nbformat import NotebookNode
+
+
 class CellControlSignal(Exception):
     """
     A custom exception used to indicate that the exception is used for cell
@@ -13,7 +18,11 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
     """
 
     @classmethod
-    def error_from_timeout_and_cell(cls, msg, timeout, cell):
+    def error_from_timeout_and_cell(
+            cls,
+            msg: str,
+            timeout: int,
+            cell: NotebookNode):
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
             src = (
@@ -49,23 +58,30 @@ class CellExecutionError(CellControlSignal):
     failures gracefully.
     """
 
-    def __init__(self, traceback, ename, evalue):
+    def __init__(
+            self,
+            traceback: str,
+            ename: str,
+            evalue: str) -> None:
         super(CellExecutionError, self).__init__(traceback)
         self.traceback = traceback
         self.ename = ename
         self.evalue = evalue
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = self.__unicode__()
         if not isinstance(s, str):
             s = s.encode('utf8', 'replace')
         return s
 
-    def __unicode__(self):
+    def __unicode__(self) -> str:
         return self.traceback
 
     @classmethod
-    def from_cell_and_msg(cls, cell, msg):
+    def from_cell_and_msg(
+            cls,
+            cell: NotebookNode,
+            msg: Dict):
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """
@@ -82,7 +98,7 @@ class CellExecutionError(CellControlSignal):
         )
 
 
-exec_err_msg = u"""\
+exec_err_msg: str = u"""\
 An error occurred while executing the following cell:
 ------------------
 {cell.source}
@@ -93,7 +109,7 @@ An error occurred while executing the following cell:
 """
 
 
-timeout_err_msg = u"""\
+timeout_err_msg: str = u"""\
 A cell timed out while it was being executed, after {timeout} seconds.
 The message was: {msg}.
 Here is a preview of the cell contents:

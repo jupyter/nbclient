@@ -11,6 +11,7 @@ import re
 import types
 from datetime import datetime
 import numbers
+from typing import Dict
 
 
 from ipython_genutils import py3compat
@@ -51,7 +52,7 @@ GIF89_64 = b'R0lGODlh'
 PDF64 = b'JVBER'
 
 
-def encode_images(format_dict):
+def encode_images(format_dict: Dict) -> Dict[str, str]:
     """b64-encodes images in a displaypub format dict
 
     Perhaps this should be handled in json_clean itself?
