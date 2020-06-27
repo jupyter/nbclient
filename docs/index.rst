@@ -10,6 +10,7 @@ Welcome to nbclient
 .. image:: https://codecov.io/github/jupyter/nbclient/coverage.svg?branch=master
    :alt: CodeCov
    :target: https://codecov.io/github/jupyter/nbclient
+
 ---
 
 **NBClient** is a tool for executing Jupyter Notebooks.

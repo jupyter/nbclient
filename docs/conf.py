@@ -39,6 +39,8 @@ extensions = [
     'myst_parser',
 ]
 
+autodoc_mock_imports = ['pytest', 'nbconvert', 'testpath']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -85,6 +87,7 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+default_role = 'any'
 
 # -- Options for HTML output ----------------------------------------------
 
