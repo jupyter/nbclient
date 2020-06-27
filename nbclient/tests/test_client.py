@@ -117,7 +117,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     """
     This function prepares a executor object which has a fake kernel client
     to mock the messages sent over zeromq. The mock kernel client will return
-    the messages passed into this wrapper back from `preproc.kc.iopub_channel.get_msg`
+    the messages passed into this wrapper back from ``preproc.kc.iopub_channel.get_msg``
     callbacks. It also appends a kernel idle message to the end of messages.
     """
     parent_id = 'fake_id'
@@ -235,7 +235,7 @@ def assert_notebooks_equal(expected, actual):
 def notebook_resources():
     """
     Prepare a notebook resources dictionary for executing test
-    notebooks in the `files` folder.
+    notebooks in the ``files`` folder.
     """
     return {'metadata': {'path': os.path.join(current_dir, 'files')}}
 

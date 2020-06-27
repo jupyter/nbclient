@@ -49,8 +49,8 @@ class NotebookClient(LoggingConfigurable):
             The time to wait (in seconds) for output from executions.
             If a cell execution takes longer, a TimeoutError is raised.
 
-            `None` or `-1` will disable the timeout. If `timeout_func` is set,
-            it overrides `timeout`.
+            ``None`` or ``-1`` will disable the timeout. If ``timeout_func`` is set,
+            it overrides ``timeout``.
             """
         ),
     ).tag(config=True)
@@ -65,10 +65,10 @@ class NotebookClient(LoggingConfigurable):
             executions. If a cell execution takes longer, a TimeoutError
             is raised.
 
-            Returning `None` or `-1` will disable the timeout for the cell.
-            Not setting `timeout_func` will cause the preprocessor to
-            default to using the `timeout` trait for all cells. The
-            `timeout_func` trait overrides `timeout` if it is not `None`.
+            Returning ``None`` or ``-1`` will disable the timeout for the cell.
+            Not setting ``timeout_func`` will cause the preprocessor to
+            default to using the ``timeout`` trait for all cells. The
+            ``timeout_func`` trait overrides ``timeout`` if it is not ``None``.
             """
         ),
     ).tag(config=True)
@@ -99,10 +99,10 @@ class NotebookClient(LoggingConfigurable):
         False,
         help=dedent(
             """
-            If `False` (default), when a cell raises an error the
+            If ``False`` (default), when a cell raises an error the
             execution is stopped and a `CellExecutionError`
             is raised.
-            If `True`, execution errors are ignored and the execution
+            If ``True``, execution errors are ignored and the execution
             is continued until the end of the notebook. Output from
             exceptions is included in the cell output in both cases.
             """
@@ -142,10 +142,10 @@ class NotebookClient(LoggingConfigurable):
         False,
         help=dedent(
             """
-            If `False` (default), then the kernel will continue waiting for
+            If ``False`` (default), then the kernel will continue waiting for
             iopub messages until it receives a kernel idle message, or until a
             timeout occurs, at which point the currently executing cell will be
-            skipped. If `True`, then an error will be raised after the first
+            skipped. If ``True``, then an error will be raised after the first
             timeout. This option generally does not need to be used, but may be
             useful in contexts where there is the possibility of executing
             notebooks with memory-consuming infinite loops.
@@ -157,7 +157,7 @@ class NotebookClient(LoggingConfigurable):
         True,
         help=dedent(
             """
-            If `True` (default), then the state of the Jupyter widgets created
+            If ``True`` (default), then the state of the Jupyter widgets created
             at the kernel will be stored in the metadata of the notebook.
             """
         ),
@@ -167,7 +167,7 @@ class NotebookClient(LoggingConfigurable):
         True,
         help=dedent(
             """
-            If `True` (default), then the execution timings of each cell will
+            If ``True`` (default), then the execution timings of each cell will
             be stored in the metadata of the notebook.
             """
         ),
@@ -203,9 +203,9 @@ class NotebookClient(LoggingConfigurable):
         default_value='graceful',
         help=dedent(
             """
-            If `graceful` (default), then the kernel is given time to clean
-            up after executing all cells, e.g., to execute its `atexit` hooks.
-            If `immediate`, then the kernel is signaled to immediately
+            If ``graceful`` (default), then the kernel is given time to clean
+            up after executing all cells, e.g., to execute its ``atexit`` hooks.
+            If ``immediate``, then the kernel is signaled to immediately
             terminate.
             """
         ),
@@ -326,7 +326,7 @@ class NotebookClient(LoggingConfigurable):
         Returns
         -------
         kc : KernelClient
-            Kernel client as created by the kernel manager `km`.
+            Kernel client as created by the kernel manager ``km``.
         """
         if not self.kernel_name:
             kn = self.nb.metadata.get('kernelspec', {}).get('name')
@@ -366,14 +366,14 @@ class NotebookClient(LoggingConfigurable):
         Parameters
         ----------
         kwargs :
-            Any options for `self.kernel_manager_class.start_kernel()`. Because
+            Any options for ``self.kernel_manager_class.start_kernel()``. Because
             that defaults to AsyncKernelManager, this will likely include options
-            accepted by `AsyncKernelManager.start_kernel()``, which includes `cwd`.
+            accepted by ``AsyncKernelManager.start_kernel()``, which includes ``cwd``.
 
         Returns
         -------
         kc : KernelClient
-            Kernel client as created by the kernel manager `km`.
+            Kernel client as created by the kernel manager ``km``.
         kernel_id : string-ized version 4 uuid
            The id of the started kernel.
         """
@@ -421,7 +421,7 @@ class NotebookClient(LoggingConfigurable):
         """
         Context manager for setting up the kernel to execute a notebook.
 
-        The assigns the Kernel Manager (`self.km`) if missing and Kernel Client(`self.kc`).
+        The assigns the Kernel Manager (``self.km``) if missing and Kernel Client(``self.kc``).
 
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
@@ -445,7 +445,7 @@ class NotebookClient(LoggingConfigurable):
         """
         Context manager for setting up the kernel to execute a notebook.
 
-        This assigns the Kernel Manager (`self.km`) if missing and Kernel Client(`self.kc`).
+        This assigns the Kernel Manager (``self.km``) if missing and Kernel Client(``self.kc``).
 
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
@@ -498,11 +498,12 @@ class NotebookClient(LoggingConfigurable):
         Parameters
         ----------
         kwargs :
-            Any option for `self.kernel_manager_class.start_kernel()`. Because
+            Any option for ``self.kernel_manager_class.start_kernel()``. Because
             that defaults to AsyncKernelManager, this will likely include options
-            accepted by `AsyncKernelManager.start_kernel()``, which includes `cwd`.
+            accepted by ``jupyter_client.AsyncKernelManager.start_kernel()``,
+            which includes ``cwd``.
 
-            `reset_kc` if True, the kernel client will be reset and a new one
+            ``reset_kc`` if True, the kernel client will be reset and a new one
             will be created (default: False).
 
         Returns
@@ -807,7 +808,7 @@ class NotebookClient(LoggingConfigurable):
         Processes a kernel message, updates cell state, and returns the
         resulting output object that was appended to cell.outputs.
 
-        The input argument `cell` is modified in-place.
+        The input argument *cell* is modified in-place.
 
         Parameters
         ----------

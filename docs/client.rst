@@ -164,9 +164,9 @@ argument::
 
 This widget rendering is not performed against a browser during execution, so
 only widget default states or states manipulated via user code will be
-calculated during execution. `%%javascript` cells will execute upon notebook
+calculated during execution. ``%%javascript`` cells will execute upon notebook
 rendering, enabling complex interactions to function as expected when viewed by
 a UI.
 
 If you can't view widget results after execution, you may need to select
-`Trust Notebook` under the `File` menu.
+:menuselection:`Trust Notebook` under the :menuselection:`File` menu.
