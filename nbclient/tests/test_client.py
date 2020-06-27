@@ -17,7 +17,6 @@ from .base import NBClientTestsBase
 from .. import NotebookClient, execute
 from ..exceptions import CellExecutionError
 
-import IPython
 from traitlets import TraitError
 from nbformat import NotebookNode
 from jupyter_client.asynchronous import AsyncKernelClient
@@ -35,7 +34,6 @@ from unittest.mock import MagicMock, Mock
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
 current_dir = os.path.dirname(__file__)
-IPY_MAJOR = IPython.version_info[0]
 
 
 class AsyncMock(Mock):
