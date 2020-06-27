@@ -39,6 +39,8 @@ extensions = [
     'myst_parser',
 ]
 
+autodoc_mock_imports = ['pytest', 'nbconvert', 'testpath']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
