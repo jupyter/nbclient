@@ -358,6 +358,7 @@ class NotebookClient(LoggingConfigurable):
             if getattr(self, "kc") and self.kc is not None:
                 await ensure_async(self.kc.stop_channels())
                 self.kc = None
+                self.km = None
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
