@@ -644,6 +644,7 @@ class NotebookClient(LoggingConfigurable):
             try:
                 await self._async_check_alive()
             except DeadKernelError:
+                assert self.task_poll_for_reply is not None
                 self.task_poll_for_reply.cancel()
                 return
 

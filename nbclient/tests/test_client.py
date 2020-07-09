@@ -541,7 +541,7 @@ while True: continue
         executor = NotebookClient(input_nb, timeout=1)
 
         with pytest.raises(TimeoutError):
-            output_nb = executor.execute()
+            executor.execute()
         km = executor.start_kernel_manager()
 
         async def is_alive():
@@ -553,7 +553,9 @@ while True: continue
             input_nb, output_nb = executor.execute()
 
     def test_kernel_death_during_execution(self):
-        """Check that an error is raised when the kernel is_alive is false during a cell execution"""
+        """Check that an error is raised when the kernel is_alive is false during a cell
+        execution.
+        """
         filename = os.path.join(current_dir, 'files', 'Autokill.ipynb')
         with io.open(filename, 'r') as f:
             input_nb = nbformat.read(f, 4)
@@ -561,7 +563,7 @@ while True: continue
         executor = NotebookClient(input_nb)
 
         with pytest.raises(RuntimeError):
-            output_nb = executor.execute()
+            executor.execute()
 
     def test_allow_errors(self):
         """
