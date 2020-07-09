@@ -530,8 +530,8 @@ while True: continue
         with pytest.raises(TimeoutError):
             run_notebook(filename, dict(timeout_func=timeout_func), res)
 
-    def test_kernel_death(self):
-        """Check that an error is raised when the kernel is_alive is false"""
+    def test_kernel_death_after_timeout(self):
+        """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
         with io.open(filename, 'r') as f:
             input_nb = nbformat.read(f, 4)
@@ -551,6 +551,17 @@ while True: continue
         # on if jupyter_client or nbconvert catches the dead client first
         with pytest.raises(RuntimeError):
             input_nb, output_nb = executor.execute()
+
+    def test_kernel_death_during_execution(self):
+        """Check that an error is raised when the kernel is_alive is false during a cell execution"""
+        filename = os.path.join(current_dir, 'files', 'Autokill.ipynb')
+        with io.open(filename, 'r') as f:
+            input_nb = nbformat.read(f, 4)
+
+        executor = NotebookClient(input_nb)
+
+        with pytest.raises(RuntimeError):
+            output_nb = executor.execute()
 
     def test_allow_errors(self):
         """
