@@ -74,9 +74,12 @@ def run_notebook(filename, opts, resources=None):
         opts = {'resources': resources, **opts}
     executor = NotebookClient(cleaned_input_nb, **opts)
 
-    # Override terminal size to standardise traceback format
-    with modified_env({'COLUMNS': '80', 'LINES': '24'}):
-        output_nb = executor.execute()
+    with warnings.catch_warnings():
+        # suppress warning from jupyter_client's deprecated cleanup()
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        # Override terminal size to standardise traceback format
+        with modified_env({'COLUMNS': '80', 'LINES': '24'}):
+            output_nb = executor.execute()
 
     return input_nb, output_nb
 
