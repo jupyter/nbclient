@@ -6,6 +6,7 @@ import re
 import threading
 import asyncio
 import datetime
+import warnings
 
 import nbformat
 import sys
@@ -303,11 +304,15 @@ def test_many_parallel_notebooks(capfd):
     res = NBClientTestsBase().build_resources()
     res["metadata"]["path"] = os.path.join(current_dir, "files")
 
-    # run once, to trigger creating the original context
-    run_notebook(input_file, opts, res)
+    with warnings.catch_warnings():
+        # suppress warning from jupyter_client's deprecated cleanup()
+        warnings.simplefilter(action='ignore', category=FutureWarning)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
+        # run once, to trigger creating the original context
+        run_notebook(input_file, opts, res)
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+            executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
 
     captured = capfd.readouterr()
     assert captured.err == ""
