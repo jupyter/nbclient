@@ -6,6 +6,7 @@ import re
 import threading
 import asyncio
 import datetime
+import warnings
 
 import nbformat
 import sys
@@ -73,9 +74,12 @@ def run_notebook(filename, opts, resources=None):
         opts = {'resources': resources, **opts}
     executor = NotebookClient(cleaned_input_nb, **opts)
 
-    # Override terminal size to standardise traceback format
-    with modified_env({'COLUMNS': '80', 'LINES': '24'}):
-        output_nb = executor.execute()
+    with warnings.catch_warnings():
+        # suppress warning from jupyter_client's deprecated cleanup()
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        # Override terminal size to standardise traceback format
+        with modified_env({'COLUMNS': '80', 'LINES': '24'}):
+            output_nb = executor.execute()
 
     return input_nb, output_nb
 
@@ -303,11 +307,15 @@ def test_many_parallel_notebooks(capfd):
     res = NBClientTestsBase().build_resources()
     res["metadata"]["path"] = os.path.join(current_dir, "files")
 
-    # run once, to trigger creating the original context
-    run_notebook(input_file, opts, res)
+    with warnings.catch_warnings():
+        # suppress warning from jupyter_client's deprecated cleanup()
+        warnings.simplefilter(action='ignore', category=FutureWarning)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
+        # run once, to trigger creating the original context
+        run_notebook(input_file, opts, res)
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
+            executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
 
     captured = capfd.readouterr()
     assert captured.err == ""
@@ -530,8 +538,8 @@ while True: continue
         with pytest.raises(TimeoutError):
             run_notebook(filename, dict(timeout_func=timeout_func), res)
 
-    def test_kernel_death(self):
-        """Check that an error is raised when the kernel is_alive is false"""
+    def test_kernel_death_after_timeout(self):
+        """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
         with io.open(filename, 'r') as f:
             input_nb = nbformat.read(f, 4)
@@ -541,7 +549,7 @@ while True: continue
         executor = NotebookClient(input_nb, timeout=1)
 
         with pytest.raises(TimeoutError):
-            output_nb = executor.execute()
+            executor.execute()
         km = executor.start_kernel_manager()
 
         async def is_alive():
@@ -551,6 +559,19 @@ while True: continue
         # on if jupyter_client or nbconvert catches the dead client first
         with pytest.raises(RuntimeError):
             input_nb, output_nb = executor.execute()
+
+    def test_kernel_death_during_execution(self):
+        """Check that an error is raised when the kernel is_alive is false during a cell
+        execution.
+        """
+        filename = os.path.join(current_dir, 'files', 'Autokill.ipynb')
+        with io.open(filename, 'r') as f:
+            input_nb = nbformat.read(f, 4)
+
+        executor = NotebookClient(input_nb)
+
+        with pytest.raises(RuntimeError):
+            executor.execute()
 
     def test_allow_errors(self):
         """

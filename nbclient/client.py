@@ -310,6 +310,7 @@ class NotebookClient(LoggingConfigurable):
     def reset_execution_trackers(self) -> None:
         """Resets any per-execution trackers.
         """
+        self.task_poll_for_reply: t.Optional[asyncio.Future] = None
         self.code_cells_executed = 0
         self._display_id_map = {}
         self.widget_state: t.Dict[str, t.Dict] = {}
@@ -353,10 +354,11 @@ class NotebookClient(LoggingConfigurable):
                 raise
         finally:
             # Remove any state left over even if we failed to stop the kernel
-            await ensure_async(self.km.cleanup())
+            await ensure_async(self.km.cleanup_resources())
             if getattr(self, "kc") and self.kc is not None:
                 await ensure_async(self.kc.stop_channels())
                 self.kc = None
+                self.km = None
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
@@ -584,7 +586,8 @@ class NotebookClient(LoggingConfigurable):
             msg_id: str,
             cell: NotebookNode,
             timeout: t.Optional[int],
-            task_poll_output_msg: asyncio.Future) -> t.Dict:
+            task_poll_output_msg: asyncio.Future,
+            task_poll_kernel_alive: asyncio.Future) -> t.Dict:
 
         assert self.kc is not None
         new_timeout: t.Optional[float] = None
@@ -601,11 +604,13 @@ class NotebookClient(LoggingConfigurable):
                         await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
                     except (asyncio.TimeoutError, Empty):
                         if self.raise_on_iopub_timeout:
+                            task_poll_kernel_alive.cancel()
                             raise CellTimeoutError.error_from_timeout_and_cell(
                                 "Timeout waiting for IOPub output", self.iopub_timeout, cell
                             )
                         else:
                             self.log.warning("Timeout waiting for IOPub output")
+                    task_poll_kernel_alive.cancel()
                     return msg
                 else:
                     if new_timeout is not None:
@@ -613,6 +618,7 @@ class NotebookClient(LoggingConfigurable):
             except Empty:
                 # received no message, check if kernel is still alive
                 assert timeout is not None
+                task_poll_kernel_alive.cancel()
                 await self._async_check_alive()
                 await self._async_handle_timeout(timeout, cell)
 
@@ -631,6 +637,16 @@ class NotebookClient(LoggingConfigurable):
                     self.process_message(msg, cell, cell_index)
                 except CellExecutionComplete:
                     return
+
+    async def _async_poll_kernel_alive(self) -> None:
+        while True:
+            await asyncio.sleep(1)
+            try:
+                await self._async_check_alive()
+            except DeadKernelError:
+                assert self.task_poll_for_reply is not None
+                self.task_poll_for_reply.cancel()
+                return
 
     def _get_timeout(self, cell: t.Optional[NotebookNode]) -> int:
         if self.timeout_func is not None and cell is not None:
@@ -775,13 +791,23 @@ class NotebookClient(LoggingConfigurable):
         cell.outputs = []
         self.clear_before_next_output = False
 
+        task_poll_kernel_alive = asyncio.ensure_future(
+            self._async_poll_kernel_alive()
+        )
         task_poll_output_msg = asyncio.ensure_future(
             self._async_poll_output_msg(parent_msg_id, cell, cell_index)
         )
-        try:
-            exec_reply = await self._async_poll_for_reply(
-                parent_msg_id, cell, exec_timeout, task_poll_output_msg
+        self.task_poll_for_reply = asyncio.ensure_future(
+            self._async_poll_for_reply(
+                parent_msg_id, cell, exec_timeout, task_poll_output_msg, task_poll_kernel_alive
             )
+        )
+        try:
+            exec_reply = await self.task_poll_for_reply
+        except asyncio.CancelledError:
+            # can only be cancelled by task_poll_kernel_alive when the kernel is dead
+            task_poll_output_msg.cancel()
+            raise DeadKernelError("Kernel died")
         except Exception as e:
             # Best effort to cancel request if it hasn't been resolved
             try:
