@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+- Python type hinting added to most interfaces! [#83](https://github.com/jupyter/nbclient/pull/83)
+- Several documentation fixes and improvements were made [#86](https://github.com/jupyter/nbclient/pull/86)
+- An asynchronous heart beat check was added to correctly raise a DeadKernelError when kernels die unexpectantly [#90](https://github.com/jupyter/nbclient/pull/90)
+
 ## 0.4.0
 
 ### Major Changes
