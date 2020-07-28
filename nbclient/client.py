@@ -384,29 +384,12 @@ class NotebookClient(LoggingConfigurable):
         if resource_path and 'cwd' not in kwargs:
             kwargs["cwd"] = resource_path
 
-        # if self.km is a MultiKernelManager, it doesn't have an ipykernel attribute
-        # so no extra_arguments can be passed
         if hasattr(self.km, 'ipykernel') and self.km.ipykernel and self.ipython_hist_file:
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
-        kernel_id = await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments,
-                                       **kwargs))
+        await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
 
-        # if self.km is not a KernelManager, it's probably a MultiKernelManager
-        try:
-            self.km.client
-            km = self.km
-        except AttributeError:
-            try:
-                km = self.km.get_kernel(kernel_id)
-            except AttributeError:
-                raise AttributeError('self.km={} has no client() or get_kernel() method, '
-                                     'what is this?'.format(self.km))
-            # since self.km is a MultiKernelManager, it might not be async
-            # so let's ensure the client is async
-            km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
-
-        self.kc = km.client()
+        self.kc = self.km.client()
         await ensure_async(self.kc.start_channels())
         try:
             await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
@@ -414,7 +397,7 @@ class NotebookClient(LoggingConfigurable):
             await self._async_cleanup_kernel()
             raise
         self.kc.allow_stdin = False
-        return self.kc, kernel_id
+        return self.kc
 
     start_new_kernel_client = run_sync(async_start_new_kernel_client)
 
