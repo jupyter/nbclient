@@ -362,7 +362,7 @@ class NotebookClient(LoggingConfigurable):
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
-    async def async_start_new_kernel_client(self, **kwargs) -> t.Tuple[KernelClient, str]:
+    async def async_start_new_kernel_client(self, **kwargs) -> KernelClient:
         """Creates a new kernel client.
 
         Parameters
