@@ -413,6 +413,7 @@ def test_startnewkernel_with_kernelmanager():
     nb = nbformat.v4.new_notebook()
     km = KernelManager()
     executor = NotebookClient(nb, km=km)
+    executor.start_new_kernel()
     kc = executor.start_new_kernel_client()
     # prove it initalized client
     assert kc is not None
@@ -526,7 +527,7 @@ while True: continue
 
         with pytest.raises(TimeoutError):
             executor.execute()
-        km = executor.start_kernel_manager()
+        km = executor.create_kernel_manager()
 
         async def is_alive():
             return False
