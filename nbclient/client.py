@@ -295,6 +295,7 @@ class NotebookClient(LoggingConfigurable):
         super().__init__(**kw)
         self.nb: NotebookNode = nb
         self.km: t.Optional[KernelManager] = km
+        self.owns_km: bool = km is None  # whether the NotebookClient owns the kernel manager
         self.kc: t.Optional[KernelClient] = None
         self.reset_execution_trackers()
         self.widget_registry: t.Dict[str, t.Dict] = {
@@ -321,13 +322,13 @@ class NotebookClient(LoggingConfigurable):
         # our front-end mimicing Output widgets
         self.comm_objects: t.Dict[str, t.Any] = {}
 
-    def start_kernel_manager(self) -> KernelManager:
+    def create_kernel_manager(self) -> KernelManager:
         """Creates a new kernel manager.
 
         Returns
         -------
-        kc : KernelClient
-            Kernel client as created by the kernel manager ``km``.
+        km : KernelManager
+            Kernel manager whose client class is asynchronous.
         """
         if not self.kernel_name:
             kn = self.nb.metadata.get('kernelspec', {}).get('name')
@@ -362,8 +363,8 @@ class NotebookClient(LoggingConfigurable):
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
-    async def async_start_new_kernel_client(self, **kwargs) -> KernelClient:
-        """Creates a new kernel client.
+    async def async_start_new_kernel(self, **kwargs) -> None:
+        """Creates a new kernel.
 
         Parameters
         ----------
@@ -371,13 +372,6 @@ class NotebookClient(LoggingConfigurable):
             Any options for ``self.kernel_manager_class.start_kernel()``. Because
             that defaults to AsyncKernelManager, this will likely include options
             accepted by ``AsyncKernelManager.start_kernel()``, which includes ``cwd``.
-
-        Returns
-        -------
-        kc : KernelClient
-            Kernel client as created by the kernel manager ``km``.
-        kernel_id : string-ized version 4 uuid
-           The id of the started kernel.
         """
         assert self.km is not None
         resource_path = self.resources.get('metadata', {}).get('path') or None
@@ -389,6 +383,17 @@ class NotebookClient(LoggingConfigurable):
 
         await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
 
+    start_new_kernel = run_sync(async_start_new_kernel)
+
+    async def async_start_new_kernel_client(self) -> KernelClient:
+        """Creates a new kernel client.
+
+        Returns
+        -------
+        kc : KernelClient
+            Kernel client as created by the kernel manager ``km``.
+        """
+        assert self.km is not None
         self.kc = self.km.client()
         await ensure_async(self.kc.start_channels())
         try:
@@ -411,14 +416,17 @@ class NotebookClient(LoggingConfigurable):
         When control returns from the yield it stops the client's zmq channels, and shuts
         down the kernel.
         """
-        cleanup_kc = kwargs.pop('cleanup_kc', True)
+        # by default, cleanup the kernel client if we own the kernel manager
+        # and keep it alive if we don't
+        cleanup_kc = kwargs.pop('cleanup_kc', self.owns_km)
 
         # Can't use run_until_complete on an asynccontextmanager function :(
         if self.km is None:
-            self.km = self.start_kernel_manager()
+            self.km = self.create_kernel_manager()
 
         if not self.km.has_kernel:
-            self.start_new_kernel_client(**kwargs)
+            self.start_new_kernel(**kwargs)
+            self.start_new_kernel_client()
         try:
             yield
         finally:
@@ -437,9 +445,11 @@ class NotebookClient(LoggingConfigurable):
 
         Handlers for SIGINT and SIGTERM are also added to cleanup in case of unexpected shutdown.
         """
-        cleanup_kc = kwargs.pop('cleanup_kc', True)
+        # by default, cleanup the kernel client if we own the kernel manager
+        # and keep it alive if we don't
+        cleanup_kc = kwargs.pop('cleanup_kc', self.owns_km)
         if self.km is None:
-            self.km = self.start_kernel_manager()
+            self.km = self.create_kernel_manager()
 
         # self._cleanup_kernel uses run_async, which ensures the ioloop is running again.
         # This is necessary as the ioloop has stopped once atexit fires.
@@ -459,7 +469,8 @@ class NotebookClient(LoggingConfigurable):
             pass
 
         if not self.km.has_kernel:
-            await self.async_start_new_kernel_client(**kwargs)
+            await self.async_start_new_kernel(**kwargs)
+            await self.async_start_new_kernel_client()
         try:
             yield
         finally:
@@ -496,7 +507,7 @@ class NotebookClient(LoggingConfigurable):
         nb : NotebookNode
             The executed notebook.
         """
-        if reset_kc and self.km:
+        if reset_kc and self.owns_km:
             await self._async_cleanup_kernel()
         self.reset_execution_trackers()
 
