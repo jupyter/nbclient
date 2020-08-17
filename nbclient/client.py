@@ -523,7 +523,13 @@ class NotebookClient(LoggingConfigurable):
             msg_id = await ensure_async(self.kc.kernel_info())
             info_msg = await self.async_wait_for_reply(msg_id)
             if info_msg is not None:
-                self.nb.metadata['language_info'] = info_msg['content']['language_info']
+                if 'language_info' in info_msg['content']:
+                    self.nb.metadata['language_info'] = info_msg['content']['language_info']
+                else:
+                    raise RuntimeError(
+                        'Kernel info received message content has no "language_info" key.'
+                        'Content is:\n' + str(info_msg['content'])
+                    )
             self.set_widgets_metadata()
 
         return self.nb
