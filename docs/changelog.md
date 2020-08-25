@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+
+- HistoryManager setting for ipython kernels no longer applies twice (fix for 5.0 trailets release)
+- Improved error handling around language_info missing
+- `(async_)start_new_kernel_client` is now split into `(async_)start_new_kernel` and `(async_)start_new_kernel_client`
+
 ## 0.4.1
 
 - Python type hinting added to most interfaces! [#83](https://github.com/jupyter/nbclient/pull/83)
