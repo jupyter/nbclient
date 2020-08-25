@@ -378,7 +378,12 @@ class NotebookClient(LoggingConfigurable):
         if resource_path and 'cwd' not in kwargs:
             kwargs["cwd"] = resource_path
 
-        if hasattr(self.km, 'ipykernel') and self.km.ipykernel and self.ipython_hist_file:
+        has_history_manager_arg = any(
+            arg.startswith('--HistoryManager.hist_file') for arg in self.extra_arguments)
+        if (hasattr(self.km, 'ipykernel')
+                and self.km.ipykernel
+                and self.ipython_hist_file
+                and not has_history_manager_arg):
             self.extra_arguments += ['--HistoryManager.hist_file={}'.format(self.ipython_hist_file)]
 
         await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
