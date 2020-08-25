@@ -424,6 +424,28 @@ def test_startnewkernel_with_kernelmanager():
     kc.stop_channels()
 
 
+def test_start_new_kernel_history_file_setting():
+    nb = nbformat.v4.new_notebook()
+    km = KernelManager()
+    executor = NotebookClient(nb, km=km)
+    kc = km.client()
+
+    # Should start empty
+    assert executor.extra_arguments == []
+    # Should assign memory setting for ipykernel
+    executor.start_new_kernel()
+    assert executor.extra_arguments == ['--HistoryManager.hist_file=:memory:']
+    # Should not add a second hist_file assignment
+    executor.start_new_kernel()
+    assert executor.extra_arguments == ['--HistoryManager.hist_file=:memory:']
+
+    # since we are not using the setup_kernel context manager,
+    # cleanup has to be done manually
+    kc.shutdown()
+    km.cleanup()
+    kc.stop_channels()
+
+
 class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 
