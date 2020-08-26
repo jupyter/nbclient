@@ -519,12 +519,6 @@ class NotebookClient(LoggingConfigurable):
         async with self.async_setup_kernel(**kwargs):
             assert self.kc is not None
             self.log.info("Executing notebook with kernel: %s" % self.kernel_name)
-            for index, cell in enumerate(self.nb.cells):
-                # Ignore `'execution_count' in content` as it's always 1
-                # when store_history is False
-                await self.async_execute_cell(
-                    cell, index, execution_count=self.code_cells_executed + 1
-                )
             msg_id = await ensure_async(self.kc.kernel_info())
             info_msg = await self.async_wait_for_reply(msg_id)
             if info_msg is not None:
@@ -535,6 +529,12 @@ class NotebookClient(LoggingConfigurable):
                         'Kernel info received message content has no "language_info" key.'
                         'Content is:\n' + str(info_msg['content'])
                     )
+            for index, cell in enumerate(self.nb.cells):
+                # Ignore `'execution_count' in content` as it's always 1
+                # when store_history is False
+                await self.async_execute_cell(
+                    cell, index, execution_count=self.code_cells_executed + 1
+                )
             self.set_widgets_metadata()
 
         return self.nb
