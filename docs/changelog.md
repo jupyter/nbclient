@@ -1,14 +1,16 @@
 # Changelog
 
-## 0.4.3
+## 0.5.0
 
 - Move `language_info` retrieval before cell execution [#102](https://github.com/jupyter/nbclient/pull/102)
-
-## 0.4.2
-
 - HistoryManager setting for ipython kernels no longer applies twice (fix for 5.0 trailets release)
 - Improved error handling around language_info missing
 - `(async_)start_new_kernel_client` is now split into `(async_)start_new_kernel` and `(async_)start_new_kernel_client`
+
+## 0.4.2 - 0.4.3
+
+These patch releases were removed due to backwards incompatible changes that should have been a minor release.
+If you were using these versions for the couple days they were up, move to 0.5.0 and you shouldn't have any issues.
 
 ## 0.4.1
 
