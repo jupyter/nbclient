@@ -526,7 +526,7 @@ class NotebookClient(LoggingConfigurable):
                     self.nb.metadata['language_info'] = info_msg['content']['language_info']
                 else:
                     raise RuntimeError(
-                        'Kernel info received message content has no "language_info" key.'
+                        'Kernel info received message content has no "language_info" key. '
                         'Content is:\n' + str(info_msg['content'])
                     )
             for index, cell in enumerate(self.nb.cells):

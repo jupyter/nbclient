@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+
+- Move `language_info` retrieval before cell execution [#102](https://github.com/jupyter/nbclient/pull/102)
+
 ## 0.4.2
 
 - HistoryManager setting for ipython kernels no longer applies twice (fix for 5.0 trailets release)
