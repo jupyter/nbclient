@@ -14,8 +14,8 @@ Welcome to nbclient
 ---
 
 **NBClient**, a client library for programmatic notebook execution, is a tool for running Jupyter Notebooks in
-different execution contexts. NBClient was spun out of [nbconvert](https://nbconvert.readthedocs.io/en/latest/)'s
-former `ExecutePreprocessor`.
+different execution contexts. NBClient was spun out of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_'s
+former ``ExecutePreprocessor``.
 
 **NBClient** lets you **execute** notebooks. 
 
