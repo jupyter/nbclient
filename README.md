@@ -10,27 +10,47 @@
 
 # nbclient
 
-A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor.
+**NBClient**, a client library for programmatic notebook execution, is a tool for running Jupyter Notebooks in
+different execution contexts. NBClient was spun out of [nbconvert](https://nbconvert.readthedocs.io/en/latest/)'s
+former `ExecutePreprocessor`.
 
-**NBClient** is a tool for executing Jupyter Notebooks.
+**NBClient** lets you **execute** notebooks. 
 
-NBClient lets you:
+## Interactive Demo
 
-- **execute** notebooks
+To demo **NBClient** interactively, click this Binder badge to start the demo:
 
-Similar in nature to jupyter_client, as the jupyter_client is to the jupyter
-protocol nbclient is to notebooks allowing for execution contexts to be run.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter/nbclient/master?filepath=binder%2Frun_nbclient.ipynb)
 
-## Origins
+## Installation
 
-This library used to be part of [nbconvert](https://nbconvert.readthedocs.io/en/latest/) and was extracted into its own library for easier updating and importing by downstream libraries and applications.
+In a terminal, run:
 
-## Python Version Support
-
-This library currently supports python 3.6+ versions. As minor python
-versions are officially sunset by the python org nbclient will similarly
-drop support in the future.
+    python3 -m pip install nbclient
 
 ## Documentation
 
-See [readthedocs](https://nbclient.readthedocs.io/en/latest/) for more in-depth details about the project and API capabilities.
+See [ReadTheDocs](https://nbclient.readthedocs.io/en/latest/) for more in-depth details about the project and the
+[API Reference](https://nbclient.readthedocs.io/en/latest/reference/index.html).
+
+
+## Python Version Support
+
+This library currently supports Python 3.6+ versions. As minor Python
+versions are officially sunset by the Python org, nbclient will similarly
+drop support in the future.
+
+## Origins
+
+This library used to be part of the [nbconvert](https://nbconvert.readthedocs.io/en/latest/) project. NBClient
+extracted nbconvert's `ExecutePreprocessor`into its own library for easier updating and importing by
+downstream libraries and applications.
+
+## Relationship to JupyterClient
+
+NBClient and JupyterClient are distinct projects.
+
+`jupyter_client` is a client library for the jupyter protocol. Specifically, `jupyter_client` provides the Python API
+for starting, managing and communicating with Jupyter kernels.
+ 
+While, nbclient allows notebooks to be run in different execution contexts.
