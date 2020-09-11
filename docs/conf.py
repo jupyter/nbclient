@@ -54,8 +54,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'nbclient'
-copyright = '2020, jupyter team'
-author = 'jupyter team'
+copyright = '2020, Project Jupyter'
+author = 'Project Jupyter'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

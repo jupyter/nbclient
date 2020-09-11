@@ -1,3 +1,3 @@
 # Change Log
 
-See the [nbclient documentation](https://nbclient.readthedocs.io/changelog.html)
+See the Change Log in the [nbclient documentation](https://nbclient.readthedocs.io/en/latest/changelog.html).
