@@ -4,10 +4,9 @@ from nbformat import v4 as nbformat
 
 
 class NBClientTestsBase(unittest.TestCase):
-    """Contains test functions preprocessor tests"""
 
     def build_notebook(self, with_json_outputs=False):
-        """Build a notebook in memory for use with preprocessor tests"""
+        """Build a notebook in memory for use with NotebookClient tests"""
 
         outputs = [
             nbformat.new_output("stream", name="stdout", text="a"),

@@ -66,7 +66,7 @@ class NotebookClient(LoggingConfigurable):
             is raised.
 
             Returning ``None`` or ``-1`` will disable the timeout for the cell.
-            Not setting ``timeout_func`` will cause the preprocessor to
+            Not setting ``timeout_func`` will cause the client to
             default to using the ``timeout`` trait for all cells. The
             ``timeout_func`` trait overrides ``timeout`` if it is not ``None``.
             """
