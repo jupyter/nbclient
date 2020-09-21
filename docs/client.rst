@@ -36,8 +36,7 @@ class::
 **Load**: Assuming that ``notebook_filename`` contains the path to a notebook,
 we can load it with::
 
-    with open(notebook_filename) as f:
-        nb = nbformat.read(f, as_version=4)
+    nb = nbformat.read(notebook_filename, as_version=4)
 
 **Configure**: Next, we configure the notebook execution mode::
 
@@ -109,8 +108,7 @@ and raise a ``CellExecutionError``. Conveniently, the source cell causing
 the error and the original error name and message are also printed.
 After an error, we can still save the notebook as before::
 
-    with open('executed_notebook.ipynb', mode='w', encoding='utf-8') as f:
-        nbformat.write(nb, f)
+    nbformat.write(nb, 'executed_notebook.ipynb')
 
 The saved notebook contains the output up until the failing cell,
 and includes a full stack-trace and error (which can help debugging).
@@ -129,8 +127,7 @@ A useful pattern to execute notebooks while handling errors is the following::
         print(msg)
         raise
     finally:
-        with open(notebook_filename_out, mode='w', encoding='utf-8') as f:
-            nbformat.write(nb, f)
+        nbformat.write(nb, notebook_filename_out)
 
 This will save the executed notebook regardless of execution errors.
 In case of errors, however, an additional message is printed and the
