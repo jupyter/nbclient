@@ -1074,7 +1074,7 @@ def execute(
     km : AsyncKernelManager, optional
       If supplied, the specified kernel manager will be used for code execution.
     kwargs :
-      Any other options for ExecutePreprocessor, e.g. timeout, kernel_name
+      Any other options for NotebookClient, e.g. timeout, kernel_name
     """
     resources = {}
     if cwd is not None:
