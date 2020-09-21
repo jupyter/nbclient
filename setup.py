@@ -47,7 +47,7 @@ setup(
     author='Jupyter Development Team',
     author_email='jupyter@googlegroups.com',
     url='https://jupyter.org',
-    description="A client library for executing notebooks. Formally nbconvert's ExecutePreprocessor.",
+    description="A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor.",
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['nbclient'],
