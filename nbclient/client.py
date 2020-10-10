@@ -341,7 +341,7 @@ class NotebookClient(LoggingConfigurable):
             self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
 
         # If the current kernel manager is still using the default (synchronous) KernelClient class,
-        # switch to the async version since that's what NBClient expects.  Any custom kernel client 
+        # switch to the async version since that's what NBClient expects.  Any custom kernel client
         # classes must also support async method calls.
         if self.km.client_class == 'jupyter_client.client.KernelClient':
             self.km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
