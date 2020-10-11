@@ -23,7 +23,7 @@ def check_patch_tornado() -> None:
     """If tornado is imported, add the patched asyncio.Future to its tuple of acceptable Futures"""
     # original from vaex/asyncio.py
     if 'tornado' in sys.modules:
-        import tornado.concurrent
+        import tornado.concurrent  # type: ignore
         if asyncio.Future not in tornado.concurrent.FUTURES:
             tornado.concurrent.FUTURES = \
                 tornado.concurrent.FUTURES + (asyncio.Future, )  # type: ignore

@@ -339,7 +339,12 @@ class NotebookClient(LoggingConfigurable):
             self.km = self.kernel_manager_class(config=self.config)
         else:
             self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
-        self.km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
+
+        # If the current kernel manager is still using the default (synchronous) KernelClient class,
+        # switch to the async version since that's what NBClient prefers.
+        if self.km.client_class == 'jupyter_client.client.KernelClient':
+            self.km.client_class = 'jupyter_client.asynchronous.AsyncKernelClient'
+
         return self.km
 
     async def _async_cleanup_kernel(self) -> None:
