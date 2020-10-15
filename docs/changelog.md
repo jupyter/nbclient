@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1
+
+- Update kernel client class JIT if it's the synchronous version
+- Several documentation fixes / improvements
+
 ## 0.5.0
 
 - Move `language_info` retrieval before cell execution [#102](https://github.com/jupyter/nbclient/pull/102)
