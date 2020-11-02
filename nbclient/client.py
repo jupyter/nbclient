@@ -444,7 +444,7 @@ class NotebookClient(LoggingConfigurable):
                 self._cleanup_kernel()
 
     @asynccontextmanager
-    async def async_setup_kernel(self, **kwargs) -> t.AsyncGenerator:
+    async def async_setup_kernel(self, **kwargs):
         """
         Context manager for setting up the kernel to execute a notebook.
 
