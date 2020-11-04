@@ -52,7 +52,7 @@ setup(
     long_description_content_type='text/markdown',
     packages=['nbclient'],
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.6.1",
     install_requires=requirements,
     extras_require=extras_require,
     project_urls={
@@ -74,5 +74,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
 )
