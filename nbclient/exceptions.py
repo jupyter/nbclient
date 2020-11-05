@@ -68,6 +68,9 @@ class CellExecutionError(CellControlSignal):
         self.ename = ename
         self.evalue = evalue
 
+    def __reduce__(self) -> tuple:
+        return type(self), (self.traceback, self.ename, self.evalue)
+
     def __str__(self) -> str:
         s = self.__unicode__()
         if not isinstance(s, str):
