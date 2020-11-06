@@ -3,10 +3,10 @@ Welcome to nbclient
 
 .. image:: https://img.shields.io/github/stars/jupyter/nbclient?label=stars&style=social
    :alt: GitHub stars
-   :target: https://githu.com/jupyter/nbclient
-.. image:: https://img.shields.io/travis/jupyter/nbclient
-   :alt: Travis (.org)
-   :target: https://travis-ci.org/jupyter/nbclient
+   :target: https://github.com/jupyter/nbclient
+.. image:: https://github.com/jupyter/nbclient/workflows/CI/badge.svg
+   :alt: GitHub Actions
+   :target: https://github.com/jupyter/nbclient/actions
 .. image:: https://codecov.io/github/jupyter/nbclient/coverage.svg?branch=master
    :alt: CodeCov
    :target: https://codecov.io/github/jupyter/nbclient
@@ -17,7 +17,7 @@ Welcome to nbclient
 different execution contexts. NBClient was spun out of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_'s
 former ``ExecutePreprocessor``.
 
-**NBClient** lets you **execute** notebooks. 
+**NBClient** lets you **execute** notebooks.
 
 Demo
 ----

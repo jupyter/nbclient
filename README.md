@@ -1,5 +1,4 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter/nbclient/master?filepath=binder%2Frun_nbclient.ipynb)
-[![Travis Build Status](https://travis-ci.org/jupyter/nbclient.svg?branch=master)](https://travis-ci.org/jupyter/nbclient)
 [![Build Status](https://github.com/jupyter/nbclient/workflows/CI/badge.svg)](https://github.com/jupyter/nbclient/actions)
 [![Documentation Status](https://readthedocs.org/projects/nbclient/badge/?version=latest)](https://nbclient.readthedocs.io/en/latest/?badge=latest)
 [![image](https://codecov.io/github/jupyter/nbclient/coverage.svg?branch=master)](https://codecov.io/github/jupyter/nbclient?branch=master)
@@ -14,7 +13,7 @@
 different execution contexts. NBClient was spun out of [nbconvert](https://nbconvert.readthedocs.io/en/latest/)'s
 former `ExecutePreprocessor`.
 
-**NBClient** lets you **execute** notebooks. 
+**NBClient** lets you **execute** notebooks.
 
 ## Interactive Demo
 
@@ -52,5 +51,5 @@ NBClient and JupyterClient are distinct projects.
 
 `jupyter_client` is a client library for the jupyter protocol. Specifically, `jupyter_client` provides the Python API
 for starting, managing and communicating with Jupyter kernels.
- 
+
 While, nbclient allows notebooks to be run in different execution contexts.
