@@ -68,7 +68,7 @@ in the file ``executed_notebook.ipynb``.
 Execution arguments (traitlets)
 -------------------------------
 
-The arguments passed to :class:`Executor` are configuration options
+The arguments passed to :class:`NotebookClient` are configuration options
 called `traitlets <https://traitlets.readthedocs.io/en/stable>`_.
 There are many cool things about traitlets. For example,
 they enforce the input type, and they can be accessed/modified as
@@ -156,7 +156,7 @@ converting to html.
 We can tell nbclient to not store the state using the `store_widget_state`
 argument::
 
-    executor = Executor(nb, store_widget_state=False)
+    client = NotebookClient(nb, store_widget_state=False)
 
 This widget rendering is not performed against a browser during execution, so
 only widget default states or states manipulated via user code will be
