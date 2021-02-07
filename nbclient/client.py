@@ -101,10 +101,22 @@ class NotebookClient(LoggingConfigurable):
             """
             If ``False`` (default), when a cell raises an error the
             execution is stopped and a `CellExecutionError`
-            is raised.
+            is raised, except if the error name is in
+            ``allow_error_names``.
             If ``True``, execution errors are ignored and the execution
             is continued until the end of the notebook. Output from
             exceptions is included in the cell output in both cases.
+            """
+        ),
+    ).tag(config=True)
+
+    allow_error_names: t.List[str] = List(
+        Unicode(),
+        help=dedent(
+            """
+            List of error names which won't stop the execution. Use this if the
+            ``allow_errors`` option it too general and you want to allow only
+            specific kinds of errors.
             """
         ),
     ).tag(config=True)
@@ -115,13 +127,14 @@ class NotebookClient(LoggingConfigurable):
             """
             If False (default), errors from executing the notebook can be
             allowed with a ``raises-exception`` tag on a single cell, or the
-            ``allow_errors`` configurable option for all cells. An allowed error
-            will be recorded in notebook output, and execution will continue.
-            If an error occurs when it is not explicitly allowed, a
-            `CellExecutionError` will be raised.
+            ``allow_errors`` or ``allow_error_names`` configurable options for
+            all cells. An allowed error will be recorded in notebook output, and
+            execution will continue. If an error occurs when it is not
+            explicitly allowed, a `CellExecutionError` will be raised.
             If True, `CellExecutionError` will be raised for any error that occurs
-            while executing the notebook. This overrides both the
-            ``allow_errors`` option and the ``raises-exception`` cell tag.
+            while executing the notebook. This overrides the ``allow_errors``
+            and ``allow_error_names`` options and the ``raises-exception`` cell
+            tag.
             """
         ),
     ).tag(config=True)
@@ -731,13 +744,20 @@ class NotebookClient(LoggingConfigurable):
             cell: NotebookNode,
             exec_reply: t.Optional[t.Dict]) -> None:
 
-        cell_allows_errors = self.allow_errors or "raises-exception" in cell.metadata.get(
-            "tags", []
-        )
+        if exec_reply is None:
+            return None
 
-        if self.force_raise_errors or not cell_allows_errors:
-            if (exec_reply is not None) and exec_reply['content']['status'] == 'error':
-                raise CellExecutionError.from_cell_and_msg(cell, exec_reply['content'])
+        exec_reply_content = exec_reply['content']
+        if exec_reply_content['status'] != 'error':
+            return None
+
+        cell_allows_errors = (not self.force_raise_errors) and (
+            self.allow_errors
+            or exec_reply_content.get('ename') in self.allow_error_names
+            or "raises-exception" in cell.metadata.get("tags", []))
+
+        if not cell_allows_errors:
+            raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 
     async def async_execute_cell(
             self,

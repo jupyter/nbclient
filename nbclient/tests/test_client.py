@@ -1414,6 +1414,24 @@ class TestRunCell(NBClientTestsBase):
             'msg_type': 'execute_reply',
             'header': {'msg_type': 'execute_reply'},
             # ERROR
+            'content': {'status': 'error', 'ename': 'NotImplementedError'},
+        }
+    )
+    def test_allow_error_names(self, executor, cell_mock, message_mock):
+        executor.allow_error_names = ['NotImplementedError']
+        # Should NOT raise
+        executor.execute_cell(cell_mock, 0)
+
+        # An error followed by an idle
+        assert message_mock.call_count == 1
+        # Should also consume the message stream
+        assert cell_mock.outputs == []
+
+    @prepare_cell_mocks(
+        reply_msg={
+            'msg_type': 'execute_reply',
+            'header': {'msg_type': 'execute_reply'},
+            # ERROR
             'content': {'status': 'error'},
         }
     )
