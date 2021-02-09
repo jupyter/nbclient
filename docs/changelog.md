@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.2
+
+- Set minimum python version supported to 3.6.1 to avoid 3.6.0 issues
+- CellExecutionError is now unpickleable
+- Added testing for python 3.9
+- Changed travis tests to github actions
+- Documentation referencing an old model instead of NotebookClient was fixed
+- `allow_error_names` option was added for a more specific scope of `allow_errors` to be applied
+
 ## 0.5.1
 
 - Update kernel client class JIT if it's the synchronous version
