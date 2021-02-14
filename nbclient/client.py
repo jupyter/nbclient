@@ -5,8 +5,7 @@ import base64
 import signal
 from textwrap import dedent
 
-from async_generator import asynccontextmanager
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 
 from time import monotonic
 from queue import Empty
