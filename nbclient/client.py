@@ -807,11 +807,16 @@ class NotebookClient(LoggingConfigurable):
             cell['metadata']['execution'] = {}
 
         self.log.debug("Executing cell:\n%s", cell.source)
+
+        cell_allows_errors = (not self.force_raise_errors) and (
+            self.allow_errors
+            or "raises-exception" in cell.metadata.get("tags", []))
+
         parent_msg_id = await ensure_async(
             self.kc.execute(
                 cell.source,
                 store_history=store_history,
-                stop_on_error=not self.allow_errors
+                stop_on_error=not cell_allows_errors
             )
         )
         # We launched a code cell to execute
