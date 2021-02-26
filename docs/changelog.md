@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3
+
+- Fix ipykernel's `stop_on_error` value to take into account `raises-exception` tag and `force_raise_errors` [#137](https://github.com/jupyter/nbclient/pull/137)
+
 ## 0.5.2
 
 - Set minimum python version supported to 3.6.1 to avoid 3.6.0 issues
