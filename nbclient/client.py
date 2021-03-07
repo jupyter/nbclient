@@ -1,3 +1,5 @@
+from os import name as os_name
+from sys import version_info
 import atexit
 import collections
 import datetime
@@ -30,6 +32,11 @@ from .exceptions import (
 )
 from .util import run_sync, ensure_async
 from .output_widget import OutputWidget
+
+
+if os_name == "nt" and version_info.major == 3 and version_info.minor >= 8:
+    # patch c.f. https://github.com/tornadoweb/tornado/issues/2608#issuecomment-491489432
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())   # type: ignore
 
 
 def timestamp() -> str:
