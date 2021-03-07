@@ -33,7 +33,7 @@ from .util import run_sync, ensure_async
 from .output_widget import OutputWidget
 
 
-if os_name = "nt":
+if os_name == "nt":
     # patch c.f. https://github.com/tornadoweb/tornado/issues/2608#issuecomment-491489432
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # python-3.8.x
 
