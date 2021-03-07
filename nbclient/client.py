@@ -34,7 +34,7 @@ from .util import run_sync, ensure_async
 from .output_widget import OutputWidget
 
 
-if os_name == "nt" and version_info.major == 3 and version_info.minor >= 8: 
+if os_name == "nt" and version_info.major == 3 and version_info.minor >= 8:
     # patch c.f. https://github.com/tornadoweb/tornado/issues/2608#issuecomment-491489432
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())   # type: ignore
 
