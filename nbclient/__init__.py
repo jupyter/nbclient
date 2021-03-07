@@ -13,5 +13,5 @@ def _cleanup() -> None:
 # the fix for python3.7: https://github.com/python/cpython/pull/15706/files
 if sys.platform == 'win32':
     if sys.version_info < (3, 7):
-        subprocess._cleanup = _cleanup
-        subprocess._active = None
+        subprocess._cleanup = _cleanup  # type: ignore
+        subprocess._active = None  # type:ignore
