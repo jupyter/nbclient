@@ -88,7 +88,10 @@ class CellExecutionError(CellControlSignal):
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """
-        tb = '\n'.join(msg.get('traceback', []))
+        if msg.get('traceback', []):
+            tb = '\n'.join(msg.get('traceback', []))
+        else:
+            tb = ''
         return cls(
             exec_err_msg.format(
                 cell=cell,
