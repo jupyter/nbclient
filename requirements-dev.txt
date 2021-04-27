@@ -1,7 +1,6 @@
 codecov
 coverage
 ipython
-ipykernel
 ipywidgets
 pytest>=4.1
 pytest-cov>=2.6.1
@@ -16,3 +15,4 @@ pip>=18.1
 wheel>=0.31.0
 setuptools>=38.6.0
 twine>=1.11.0
+ipykernel @ git+https://github.com/ipython/ipykernel.git@master#egg=ipykernel
