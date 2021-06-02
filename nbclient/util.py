@@ -13,7 +13,11 @@ def check_ipython() -> None:
     # original from vaex/asyncio.py
     IPython = sys.modules.get('IPython')
     if IPython:
-        IPython_version = tuple(map(int, IPython.__version__.split('.')))  # type: ignore
+        version_str = IPython.__version__  # type: ignore
+        # We get rid of any trailing ".dev"
+        version_str = version_str.replace(".dev", "")
+
+        IPython_version = tuple(map(int, version_str.split('.')))
         if IPython_version < (7, 0, 0):
             raise RuntimeError(f'You are using IPython {IPython.__version__} '  # type: ignore
                                'while we require 7.0.0+, please update IPython')
