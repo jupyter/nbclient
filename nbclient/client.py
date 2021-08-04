@@ -802,6 +802,10 @@ class NotebookClient(LoggingConfigurable):
         if cell.cell_type != 'code' or not cell.source.strip():
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
+        
+        if "skip-execution" in cell.metadata.get("tags", []):
+            self.log.debug("Skipping tagged cell %s", cell_index)
+            return cell
 
         if self.record_timing and 'execution' not in cell['metadata']:
             cell['metadata']['execution'] = {}
