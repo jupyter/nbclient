@@ -420,7 +420,7 @@ def test_startnewkernel_with_kernelmanager():
     # since we are not using the setup_kernel context manager,
     # cleanup has to be done manually
     kc.shutdown()
-    km.cleanup()
+    km.cleanup_resources()
     kc.stop_channels()
 
 
@@ -442,7 +442,7 @@ def test_start_new_kernel_history_file_setting():
     # since we are not using the setup_kernel context manager,
     # cleanup has to be done manually
     kc.shutdown()
-    km.cleanup()
+    km.cleanup_resources()
     kc.stop_channels()
 
 
