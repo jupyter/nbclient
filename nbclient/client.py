@@ -5,7 +5,12 @@ import base64
 import signal
 from textwrap import dedent
 
-from async_generator import asynccontextmanager
+try:
+    from contextlib import asynccontextmanager
+except ImportError:
+    # Use the backport package async-generator for Python < 3.7.
+    # This should be removed when nbclient drops support for Python 3.6
+    from async_generator import asynccontextmanager  # type: ignore
 from contextlib import contextmanager
 
 from time import monotonic
