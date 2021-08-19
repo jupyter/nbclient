@@ -6,6 +6,8 @@
 import asyncio
 import sys
 import inspect
+import concurrent.futures
+
 from typing import Callable, Awaitable, Any, Union
 
 
@@ -32,6 +34,7 @@ def check_patch_tornado() -> None:
             tornado.concurrent.FUTURES = \
                 tornado.concurrent.FUTURES + (asyncio.Future, )  # type: ignore
 
+pool = concurrent.futures.ThreadPoolExecutor()
 
 def just_run(coro: Awaitable) -> Any:
     """Make the coroutine run, even if there is an event loop running (using nest_asyncio)"""
@@ -48,14 +51,9 @@ def just_run(coro: Awaitable) -> Any:
     else:
         had_running_loop = True
     if had_running_loop:
-        # if there is a running loop, we patch using nest_asyncio
-        # to have reentrant event loops
-        check_ipython()
-        import nest_asyncio
-        nest_asyncio.apply()
-        check_patch_tornado()
-    return loop.run_until_complete(coro)
-
+        return pool.submit(asyncio.run, coro).result()
+    else:
+        return loop.run_until_complete(coro)
 
 def run_sync(coro: Callable) -> Callable:
     """Runs a coroutine and blocks until it has executed.
