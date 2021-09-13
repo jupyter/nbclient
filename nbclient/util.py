@@ -37,7 +37,15 @@ def just_run(coro: Awaitable) -> Any:
     """Make the coroutine run, even if there is an event loop running (using nest_asyncio)"""
     # original from vaex/asyncio.py
     loop = asyncio._get_running_loop()
-    if loop is not None:
+    if loop is None:
+        # Create a temporary event loop
+        loop = asyncio.new_event_loop()
+        try:
+            return loop.run_until_complete(coro)
+        finally:
+            loop.close()
+
+    else:
         # if there is a running loop, we patch using nest_asyncio
         # to have reentrant event loops
         check_ipython()
@@ -45,21 +53,6 @@ def just_run(coro: Awaitable) -> Any:
         nest_asyncio.apply()
         check_patch_tornado()
         return loop.run_until_complete(coro)
-
-    elif hasattr(asyncio, 'run'):  # Python 3.7 +
-        return asyncio.run(coro)
-
-    else:  # Python 3.6
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # we can still get 'There is no current event loop in ...'
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(coro)
-        finally:
-            loop.close()
 
 
 def run_sync(coro: Callable) -> Callable:
