@@ -139,7 +139,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    skip_execution_tag: str = Unicode(
+    skip_cells_with_tag: str = Unicode(
         'skip-execution',
         help=dedent(
             """
@@ -813,7 +813,7 @@ class NotebookClient(LoggingConfigurable):
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
         
-        if self.skip_execution_tag in cell.metadata.get("tags", []):
+        if self.skip_cells_with_tag in cell.metadata.get("tags", []):
             self.log.debug("Skipping tagged cell %s", cell_index)
             return cell
 
