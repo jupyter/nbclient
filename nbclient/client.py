@@ -802,9 +802,7 @@ class NotebookClient(LoggingConfigurable):
         if self.parse_md_expressions and cell.cell_type == 'markdown':
             expressions = self.parse_md_expressions(cell.source)
             if expressions:
-                if not "attachments" in cell:
-                    cell.attachments = {}
-                cell.attachments.update(await self.async_execute_expressions(cell, cell_index, expressions))
+                await self.async_execute_expressions(cell, cell_index, expressions)
 
         if cell.cell_type != 'code' or not cell.source.strip():
             self.log.debug("Skipping non-executing cell %s", cell_index)
@@ -1028,20 +1026,18 @@ class NotebookClient(LoggingConfigurable):
                 self.comm_objects[comm_id].handle_msg(msg)
 
     async def async_execute_expressions(self, cell, cell_index: int, expressions: t.List[str]) -> t.Dict[str, Any]:
-        user_expressions = {f"md-expr-{i}": expr for i, expr in enumerate(expressions)}
-        print(user_expressions)
         parent_msg_id = await ensure_async(
             self.kc.execute(
                 '',
-                silent=False,
-                user_expressions=user_expressions,
+                silent=True,
+                user_expressions={f"md-expr-{i}": expr for i, expr in enumerate(expressions)},
             )
         )
         task_poll_kernel_alive = asyncio.ensure_future(
             self._async_poll_kernel_alive()
         )
         task_poll_expr_msg = asyncio.ensure_future(
-            self._async_poll_expr_msg(parent_msg_id, cell, cell_index)
+            self._async_poll_expr_msg(parent_msg_id)
         )
         exec_timeout = None
         self.task_poll_for_reply = asyncio.ensure_future(
@@ -1063,6 +1059,11 @@ class NotebookClient(LoggingConfigurable):
                     task_poll_expr_msg.cancel()
             finally:
                 raise
+        self._check_raise_for_error(cell, exec_reply)
+        attachments = {key: val["data"] for key, val in exec_reply["content"]["user_expressions"].items()}
+        cell.setdefault("attachments", {}).update(attachments)
+        self.nb['cells'][cell_index] = cell
+        return cell
 
     async def _async_poll_for_expr_reply(
             self,
@@ -1105,24 +1106,17 @@ class NotebookClient(LoggingConfigurable):
 
     async def _async_poll_expr_msg(
             self,
-            parent_msg_id: str,
-            cell: NotebookNode,
-            cell_index: int) -> None:
+            parent_msg_id: str) -> None:
 
         assert self.kc is not None
         while True:
             msg = await ensure_async(self.kc.iopub_channel.get_msg(timeout=None))
             if msg['parent_header'].get('msg_id') == parent_msg_id:
                 try:
-                    # Will raise CellExecutionComplete when completed
-                    # self.process_message(msg, cell, cell_index)
-                    print(msg)
                     msg_type = msg['msg_type']
                     if msg_type == 'status':
                         if msg['content']['execution_state'] == 'idle':
                             raise CellExecutionComplete()
-                    # elif msg_type != 'execute_input':
-                    #     raise ValueError(msg)
                 except CellExecutionComplete:
                     return
 

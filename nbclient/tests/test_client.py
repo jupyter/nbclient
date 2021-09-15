@@ -230,6 +230,10 @@ def assert_notebooks_equal(expected, actual):
         actual_execution_count = actual_cell.get('execution_count', None)
         assert expected_execution_count == actual_execution_count
 
+        expected_execution_count = expected_cell.get('attachments', None)
+        actual_execution_count = actual_cell.get('attachments', None)
+        assert expected_execution_count == actual_execution_count        
+
 
 def notebook_resources():
     """
