@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # nbclient documentation build configuration file, created by
 # sphinx-quickstart on Mon Jan 26 16:00:00 2020.
@@ -19,6 +18,8 @@
 #
 import os
 import sys
+
+import nbclient
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -61,7 +62,6 @@ author = 'Project Jupyter'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-import nbclient
 
 # The short X.Y version.
 version = '.'.join(nbclient.__version__.split('.')[0:2])
@@ -115,7 +115,7 @@ html_static_path = ['_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
-#html_sidebars = {}
+# html_sidebars = {}
 
 html_title = "nbclient"
 

@@ -4,9 +4,9 @@
 # Distributed under the terms of the Modified BSD License.
 
 import asyncio
-import sys
 import inspect
-from typing import Callable, Awaitable, Any, Union
+import sys
+from typing import Any, Awaitable, Callable, Union
 
 
 def check_ipython() -> None:
@@ -19,8 +19,10 @@ def check_ipython() -> None:
 
         IPython_version = tuple(map(int, version_str.split('.')))
         if IPython_version < (7, 0, 0):
-            raise RuntimeError(f'You are using IPython {IPython.__version__} '  # type: ignore
-                               'while we require 7.0.0+, please update IPython')
+            raise RuntimeError(
+                f'You are using IPython {IPython.__version__} '  # type: ignore
+                'while we require 7.0.0+, please update IPython'
+            )
 
 
 def check_patch_tornado() -> None:
@@ -28,9 +30,11 @@ def check_patch_tornado() -> None:
     # original from vaex/asyncio.py
     if 'tornado' in sys.modules:
         import tornado.concurrent  # type: ignore
+
         if asyncio.Future not in tornado.concurrent.FUTURES:
-            tornado.concurrent.FUTURES = \
-                tornado.concurrent.FUTURES + (asyncio.Future, )  # type: ignore
+            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (
+                asyncio.Future,
+            )  # type: ignore
 
 
 def just_run(coro: Awaitable) -> Any:
@@ -52,6 +56,7 @@ def just_run(coro: Awaitable) -> Any:
         # to have reentrant event loops
         check_ipython()
         import nest_asyncio
+
         nest_asyncio.apply()
         check_patch_tornado()
     return loop.run_until_complete(coro)
@@ -74,8 +79,10 @@ def run_sync(coro: Callable) -> Callable:
     result :
         Whatever the coroutine returns.
     """
+
     def wrapped(*args, **kwargs):
         return just_run(coro(*args, **kwargs))
+
     wrapped.__doc__ = coro.__doc__
     return wrapped
 

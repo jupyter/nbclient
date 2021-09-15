@@ -7,14 +7,14 @@ class FakeCustomKernelManager(AsyncKernelManager):
     def __init__(self, *args, **kwargs):
         self.log.info('FakeCustomKernelManager initialized')
         self.expected_methods['__init__'] += 1
-        super(FakeCustomKernelManager, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     async def start_kernel(self, *args, **kwargs):
         self.log.info('FakeCustomKernelManager started a kernel')
         self.expected_methods['start_kernel'] += 1
-        return await super(FakeCustomKernelManager, self).start_kernel(*args, **kwargs)
+        return await super().start_kernel(*args, **kwargs)
 
     def client(self, *args, **kwargs):
         self.log.info('FakeCustomKernelManager created a client')
         self.expected_methods['client'] += 1
-        return super(FakeCustomKernelManager, self).client(*args, **kwargs)
+        return super().client(*args, **kwargs)

@@ -5,17 +5,16 @@
 # Copyright (c) IPython Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-from binascii import b2a_base64
 import math
+import numbers
 import re
 import types
+from binascii import b2a_base64
 from datetime import datetime
-import numbers
 from typing import Dict
 
-
 from ipython_genutils import py3compat
-from ipython_genutils.py3compat import unicode_type, iteritems
+from ipython_genutils.py3compat import iteritems, unicode_type
 
 next_attr_name = '__next__' if py3compat.PY3 else 'next'
 

@@ -7,7 +7,7 @@
 - Support parsing of IPython dev version [#150](https://github.com/jupyter/nbclient/pull/150) ([@cphyc](https://github.com/cphyc))
 - Set `IPYKERNEL_CELL_NAME = <IPY-INPUT>` [#147](https://github.com/jupyter/nbclient/pull/147) ([@davidbrochart](https://github.com/davidbrochart))
 - Print useful error message on exception [#142](https://github.com/jupyter/nbclient/pull/142) ([@certik](https://github.com/certik))
-  
+
 ## 0.5.3
 
 - Fix ipykernel's `stop_on_error` value to take into account `raises-exception` tag and `force_raise_errors` [#137](https://github.com/jupyter/nbclient/pull/137)

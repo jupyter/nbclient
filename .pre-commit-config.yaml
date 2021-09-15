@@ -1,0 +1,40 @@
+ci:
+    autoupdate_schedule: monthly
+    autofix_prs: true
+
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+    - id: check-yaml
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    # - id: check-json
+
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.46"
+    hooks:
+    - id: check-manifest
+      additional_dependencies: [setuptools>=46.4.0]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.9.3
+    hooks:
+    - id: isort
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.25.0
+    hooks:
+    - id: pyupgrade
+      args: [--py36-plus]
+
+  - repo: https://github.com/psf/black
+    rev: 21.7b0
+    hooks:
+    - id: black
+
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.1
+    hooks:
+    - id: flake8

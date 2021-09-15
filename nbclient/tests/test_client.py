@@ -1,35 +1,30 @@
-from base64 import b64encode, b64decode
+import asyncio
+import concurrent.futures
 import copy
-import io
+import datetime
+import functools
 import os
 import re
 import threading
-import asyncio
-import datetime
 import warnings
-
-import nbformat
-import sys
-import pytest
-import functools
-import xmltodict
-
-from .base import NBClientTestsBase
-from .. import NotebookClient, execute
-from ..exceptions import CellExecutionError
-
-from traitlets import TraitError
-from nbformat import NotebookNode
-from jupyter_client import KernelManager
-from jupyter_client.kernelspec import KernelSpecManager
-from nbconvert.filters import strip_ansi
-from testpath import modified_env
-from ipython_genutils.py3compat import string_types
-import concurrent.futures
-
+from base64 import b64decode, b64encode
 from queue import Empty
 from unittest.mock import MagicMock, Mock
 
+import nbformat
+import pytest
+import xmltodict
+from ipython_genutils.py3compat import string_types
+from jupyter_client import KernelManager
+from jupyter_client.kernelspec import KernelSpecManager
+from nbconvert.filters import strip_ansi
+from nbformat import NotebookNode
+from testpath import modified_env
+from traitlets import TraitError
+
+from .. import NotebookClient, execute
+from ..exceptions import CellExecutionError
+from .base import NBClientTestsBase
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
@@ -43,6 +38,7 @@ class AsyncMock(Mock):
 def make_async(mock_value):
     async def _():
         return mock_value
+
     return _()
 
 
@@ -60,7 +56,7 @@ def run_notebook(filename, opts, resources=None):
     running it and the version after running it.
 
     """
-    with io.open(filename) as f:
+    with open(filename) as f:
         input_nb = nbformat.read(f, 4)
 
     cleaned_input_nb = copy.deepcopy(input_nb)
@@ -94,7 +90,7 @@ async def async_run_notebook(filename, opts, resources=None):
     running it and the version after running it.
 
     """
-    with io.open(filename) as f:
+    with open(filename) as f:
         input_nb = nbformat.read(f, 4)
 
     cleaned_input_nb = copy.deepcopy(input_nb)
@@ -130,13 +126,15 @@ def prepare_cell_mocks(*messages, reply_msg=None):
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
         return AsyncMock(
-            return_value=make_async(NBClientTestsBase.merge_dicts(
-                {
-                    'parent_header': {'msg_id': parent_id},
-                    'content': {'status': 'ok', 'execution_count': 1},
-                },
-                reply_msg or {},
-            ))
+            return_value=make_async(
+                NBClientTestsBase.merge_dicts(
+                    {
+                        'parent_header': {'msg_id': parent_id},
+                        'content': {'status': 'ok', 'execution_count': 1},
+                    },
+                    reply_msg or {},
+                )
+            )
         )
 
     def iopub_messages_mock():
@@ -174,7 +172,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
                 iopub_channel=MagicMock(get_msg=message_mock),
                 shell_channel=MagicMock(get_msg=shell_channel_message_mock()),
                 execute=MagicMock(return_value=parent_id),
-                is_alive=MagicMock(return_value=make_async(True))
+                is_alive=MagicMock(return_value=make_async(True)),
             )
             executor.parent_id = parent_id
             return func(self, executor, cell_mock, message_mock)
@@ -333,8 +331,7 @@ def test_async_parallel_notebooks(capfd, tmpdir):
 
     with modified_env({"NBEXECUTE_TEST_PARALLEL_TMPDIR": str(tmpdir)}):
         tasks = [
-            async_run_notebook(input_file.format(label=label), opts, res)
-            for label in ("A", "B")
+            async_run_notebook(input_file.format(label=label), opts, res) for label in ("A", "B")
         ]
         loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.gather(*tasks))
@@ -358,10 +355,7 @@ def test_many_async_parallel_notebooks(capfd):
     # run once, to trigger creating the original context
     run_notebook(input_file, opts, res)
 
-    tasks = [
-        async_run_notebook(input_file, opts, res)
-        for i in range(4)
-    ]
+    tasks = [async_run_notebook(input_file, opts, res) for i in range(4)]
     loop = asyncio.get_event_loop()
     loop.run_until_complete(asyncio.gather(*tasks))
 
@@ -540,7 +534,7 @@ while True: continue
     def test_kernel_death_after_timeout(self):
         """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
-        with io.open(filename, 'r') as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
@@ -553,6 +547,7 @@ while True: continue
 
         async def is_alive():
             return False
+
         km.is_alive = is_alive
         # Will be a RuntimeError or subclass DeadKernelError depending
         # on if jupyter_client or nbconvert catches the dead client first
@@ -564,7 +559,7 @@ while True: continue
         execution.
         """
         filename = os.path.join(current_dir, 'files', 'Autokill.ipynb')
-        with io.open(filename, 'r') as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         executor = NotebookClient(input_nb)
@@ -582,10 +577,7 @@ while True: continue
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, dict(allow_errors=False), res)
             self.assertIsInstance(str(exc.value), str)
-            if sys.version_info >= (3, 0):
-                assert u"# üñîçø∂é" in str(exc.value)
-            else:
-                assert u"# üñîçø∂é".encode('utf8', 'replace') in str(exc.value)
+            assert "# üñîçø∂é" in str(exc.value)
 
     def test_force_raise_errors(self):
         """
@@ -598,15 +590,12 @@ while True: continue
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, dict(force_raise_errors=True), res)
             self.assertIsInstance(str(exc.value), str)
-            if sys.version_info >= (3, 0):
-                assert u"# üñîçø∂é" in str(exc.value)
-            else:
-                assert u"# üñîçø∂é".encode('utf8', 'replace') in str(exc.value)
+            assert "# üñîçø∂é" in str(exc.value)
 
     def test_reset_kernel_client(self):
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
-        with io.open(filename) as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         executor = NotebookClient(
@@ -631,7 +620,7 @@ while True: continue
     def test_cleanup_kernel_client(self):
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
-        with io.open(filename) as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         executor = NotebookClient(
@@ -653,7 +642,7 @@ while True: continue
 
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
-        with io.open(filename) as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         cleaned_input_nb = copy.deepcopy(input_nb)
@@ -675,14 +664,14 @@ while True: continue
         expected = FakeCustomKernelManager.expected_methods.items()
 
         for method, call_count in expected:
-            self.assertNotEqual(call_count, 0, '{} was called'.format(method))
+            self.assertNotEqual(call_count, 0, f'{method} was called')
 
     def test_process_message_wrapper(self):
         outputs = []
 
         class WrappedPreProc(NotebookClient):
             def process_message(self, msg, cell, cell_index):
-                result = super(WrappedPreProc, self).process_message(msg, cell, cell_index)
+                result = super().process_message(msg, cell, cell_index)
                 if result:
                     outputs.append(result)
                 return result
@@ -690,7 +679,7 @@ while True: continue
         current_dir = os.path.dirname(__file__)
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
-        with io.open(filename) as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         original = copy.deepcopy(input_nb)
@@ -703,7 +692,7 @@ while True: continue
         # Test the execute() convenience API
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
 
-        with io.open(filename) as f:
+        with open(filename) as f:
             input_nb = nbformat.read(f, 4)
 
         original = copy.deepcopy(input_nb)
@@ -836,10 +825,10 @@ class TestRunCell(NBClientTestsBase):
     def test_eventual_deadline_iopub(self, executor, cell_mock, message_mock):
         # Process a few messages before raising a timeout from iopub
         def message_seq(messages):
-            for message in messages:
-                yield message
+            yield from messages
             while True:
                 yield Empty()
+
         message_mock.side_effect = message_seq(list(message_mock.side_effect)[:-1])
         executor.kc.shell_channel.get_msg = Mock(
             return_value=make_async({'parent_header': {'msg_id': executor.parent_id}})
