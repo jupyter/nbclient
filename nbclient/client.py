@@ -32,6 +32,8 @@ def timestamp() -> str:
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
+MD_EXPRESSIONS_PREFIX = "md-expr"
+
 class NotebookClient(LoggingConfigurable):
     """
     Encompasses a Client for executing cells in a notebook
@@ -1030,7 +1032,7 @@ class NotebookClient(LoggingConfigurable):
             self.kc.execute(
                 '',
                 silent=True,
-                user_expressions={f"md-expr-{i}": expr for i, expr in enumerate(expressions)},
+                user_expressions={f"{MD_EXPRESSIONS_PREFIX}-{i}": expr for i, expr in enumerate(expressions)},
             )
         )
         task_poll_kernel_alive = asyncio.ensure_future(
@@ -1061,7 +1063,10 @@ class NotebookClient(LoggingConfigurable):
                 raise
         self._check_raise_for_error(cell, exec_reply)
         attachments = {key: val["data"] for key, val in exec_reply["content"]["user_expressions"].items()}
-        cell.setdefault("attachments", {}).update(attachments)
+        cell.setdefault("attachments", {})
+        # remove old expressions from cell
+        cell["attachments"] = {key: val for key, val in cell["attachments"].items() if not key.startswith(MD_EXPRESSIONS_PREFIX)}
+        cell["attachments"].update(attachments)
         self.nb['cells'][cell_index] = cell
         return cell
 
