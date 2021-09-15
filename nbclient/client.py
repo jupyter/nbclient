@@ -143,8 +143,7 @@ class NotebookClient(LoggingConfigurable):
         'skip-execution',
         help=dedent(
             """
-            Name of the cell tag to use to,
-            to denote a cell that should be skipped.
+            Name of the cell tag to use to denote a cell that should be skipped.
             """
         ),
     ).tag(config=True)
