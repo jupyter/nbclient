@@ -15,3 +15,4 @@ pip>=18.1
 wheel>=0.31.0
 setuptools>=38.6.0
 twine>=1.11.0
+markdown-it-py[plugins]~=1.0.0

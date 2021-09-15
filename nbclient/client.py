@@ -14,7 +14,7 @@ from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
 from nbformat import NotebookNode
 from nbformat.v4 import output_from_msg
-from traitlets import Any, Bool, Dict, Enum, Integer, List, Type, Unicode, default
+from traitlets import Any, Bool, Callable, Dict, Enum, Integer, List, Type, Unicode, default
 from traitlets.config.configurable import LoggingConfigurable
 
 from .exceptions import (
@@ -284,6 +284,16 @@ class NotebookClient(LoggingConfigurable):
             the others.
             """,
     ).tag(config=True)
+
+    parse_md_expressions: t.Optional[t.Callable[[str], t.List[str]]] = Callable(
+        None,
+        allow_none=True,
+        help=dedent(
+            """
+            A function to extract expression variables from a Markdown cell.
+            """
+        )
+    )
 
     resources: t.Dict = Dict(
         help=dedent(
@@ -788,6 +798,14 @@ class NotebookClient(LoggingConfigurable):
             The cell which was just processed.
         """
         assert self.kc is not None
+
+        if self.parse_md_expressions and cell.cell_type == 'markdown':
+            expressions = self.parse_md_expressions(cell.source)
+            if expressions:
+                if not "attachments" in cell:
+                    cell.attachments = {}
+                cell.attachments.update(await self.async_execute_expressions(cell, cell_index, expressions))
+
         if cell.cell_type != 'code' or not cell.source.strip():
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
@@ -1008,6 +1026,105 @@ class NotebookClient(LoggingConfigurable):
             comm_id = msg['content']['comm_id']
             if comm_id in self.comm_objects:
                 self.comm_objects[comm_id].handle_msg(msg)
+
+    async def async_execute_expressions(self, cell, cell_index: int, expressions: t.List[str]) -> t.Dict[str, Any]:
+        user_expressions = {f"md-expr-{i}": expr for i, expr in enumerate(expressions)}
+        print(user_expressions)
+        parent_msg_id = await ensure_async(
+            self.kc.execute(
+                '',
+                silent=True,
+                user_expressions=user_expressions,
+            )
+        )
+        task_poll_kernel_alive = asyncio.ensure_future(
+            self._async_poll_kernel_alive()
+        )
+        task_poll_expr_msg = asyncio.ensure_future(
+            self._async_poll_expr_msg(parent_msg_id, cell, cell_index)
+        )
+        exec_timeout = None
+        self.task_poll_for_reply = asyncio.ensure_future(
+            self._async_poll_for_expr_reply(
+                parent_msg_id, cell, exec_timeout, task_poll_expr_msg, task_poll_kernel_alive
+            )
+        )
+        try:
+            exec_reply = await self.task_poll_for_reply
+        except asyncio.CancelledError:
+            # can only be cancelled by task_poll_kernel_alive when the kernel is dead
+            task_poll_expr_msg.cancel()
+            raise DeadKernelError("Kernel died")
+        except Exception as e:
+            # Best effort to cancel request if it hasn't been resolved
+            try:
+                # Check if the task_poll_output is doing the raising for us
+                if not isinstance(e, CellControlSignal):
+                    task_poll_expr_msg.cancel()
+            finally:
+                raise
+
+    async def _async_poll_for_expr_reply(
+            self,
+            msg_id: str,
+            cell: NotebookNode,
+            timeout: t.Optional[int],
+            task_poll_output_msg: asyncio.Future,
+            task_poll_kernel_alive: asyncio.Future) -> t.Dict:
+
+        assert self.kc is not None
+        new_timeout: t.Optional[float] = None
+        if timeout is not None:
+            deadline = monotonic() + timeout
+            new_timeout = float(timeout)
+        while True:
+            try:
+                msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
+                if msg['parent_header'].get('msg_id') == msg_id:
+                    try:
+                        await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
+                    except (asyncio.TimeoutError, Empty):
+                        if self.raise_on_iopub_timeout:
+                            task_poll_kernel_alive.cancel()
+                            raise CellTimeoutError.error_from_timeout_and_cell(
+                                "Timeout waiting for IOPub output", self.iopub_timeout, cell
+                            )
+                        else:
+                            self.log.warning("Timeout waiting for IOPub output")
+                    task_poll_kernel_alive.cancel()
+                    return msg
+                else:
+                    if new_timeout is not None:
+                        new_timeout = max(0, deadline - monotonic())
+            except Empty:
+                # received no message, check if kernel is still alive
+                assert timeout is not None
+                task_poll_kernel_alive.cancel()
+                await self._async_check_alive()
+                await self._async_handle_timeout(timeout, cell)
+
+    async def _async_poll_expr_msg(
+            self,
+            parent_msg_id: str,
+            cell: NotebookNode,
+            cell_index: int) -> None:
+
+        assert self.kc is not None
+        while True:
+            msg = await ensure_async(self.kc.iopub_channel.get_msg(timeout=None))
+            if msg['parent_header'].get('msg_id') == parent_msg_id:
+                try:
+                    # Will raise CellExecutionComplete when completed
+                    # self.process_message(msg, cell, cell_index)
+                    print(msg)
+                    msg_type = msg['msg_type']
+                    if msg_type == 'status':
+                        if msg['content']['execution_state'] == 'idle':
+                            raise CellExecutionComplete()
+                    # elif msg_type != 'execute_input':
+                    #     raise ValueError(msg)
+                except CellExecutionComplete:
+                    return
 
     def _serialize_widget_state(self, state: t.Dict) -> t.Dict[str, t.Any]:
         """Serialize a widget state, following format in @jupyter-widgets/schema."""

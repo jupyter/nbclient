@@ -248,6 +248,19 @@ def filter_messages_on_error_output(err_output):
 
     return os.linesep.join(filtered_result)
 
+def parse_md_expressions(source: str) -> list:
+    """
+    Parse markdown expressions from a string.
+
+    :param source: The source string to parse.
+    :return: A list of markdown expressions.
+    """
+    from markdown_it import MarkdownIt, tree
+    from mdit_py_plugins.substitution import substitution_plugin
+    mdit = MarkdownIt().use(substitution_plugin)
+    tokens = tree.SyntaxTreeNode(mdit.parse(source))
+    return [t.content for t in tokens.walk() if t.type in ['substitution_inline', 'substitution_block']]
+
 
 @pytest.mark.parametrize(
     ["input_name", "opts"],
@@ -271,6 +284,7 @@ def filter_messages_on_error_output(err_output):
         ("UnicodePy3.ipynb", dict(kernel_name="python")),
         ("update-display-id.ipynb", dict(kernel_name="python")),
         ("Check History in Memory.ipynb", dict(kernel_name="python")),
+        ("Markdown_expressions.ipynb", dict(kernel_name="python", parse_md_expressions=parse_md_expressions)),
     ],
 )
 def test_run_all_notebooks(input_name, opts):
