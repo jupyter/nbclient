@@ -1062,7 +1062,7 @@ class NotebookClient(LoggingConfigurable):
             finally:
                 raise
         self._check_raise_for_error(cell, exec_reply)
-        attachments = {key: val["data"] for key, val in exec_reply["content"]["user_expressions"].items()}
+        attachments = {key: val["data"] if "data" in val else {"traceback": "\n".join(val["traceback"])} for key, val in exec_reply["content"]["user_expressions"].items()}
         cell.setdefault("attachments", {})
         # remove old expressions from cell
         cell["attachments"] = {key: val for key, val in cell["attachments"].items() if not key.startswith(MD_EXPRESSIONS_PREFIX)}
