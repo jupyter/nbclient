@@ -1033,7 +1033,7 @@ class NotebookClient(LoggingConfigurable):
         parent_msg_id = await ensure_async(
             self.kc.execute(
                 '',
-                silent=True,
+                silent=False,
                 user_expressions=user_expressions,
             )
         )
