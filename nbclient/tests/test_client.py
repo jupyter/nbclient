@@ -257,6 +257,7 @@ def notebook_resources():
         ("JupyterWidgets.ipynb", dict(kernel_name="python")),
         ("Skip Exceptions with Cell Tags.ipynb", dict(kernel_name="python")),
         ("Skip Exceptions.ipynb", dict(kernel_name="python", allow_errors=True)),
+        ("Skip Execution with Cell Tag.ipynb", dict(kernel_name="python")),
         ("SVG.ipynb", dict(kernel_name="python")),
         ("Unicode.ipynb", dict(kernel_name="python")),
         ("UnicodePy3.ipynb", dict(kernel_name="python")),

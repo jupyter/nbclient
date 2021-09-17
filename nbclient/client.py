@@ -144,6 +144,15 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
+    skip_cells_with_tag: str = Unicode(
+        'skip-execution',
+        help=dedent(
+            """
+            Name of the cell tag to use to denote a cell that should be skipped.
+            """
+        ),
+    ).tag(config=True)
+
     extra_arguments: t.List = List(Unicode()).tag(config=True)
 
     kernel_name: str = Unicode(
@@ -806,6 +815,10 @@ class NotebookClient(LoggingConfigurable):
         assert self.kc is not None
         if cell.cell_type != 'code' or not cell.source.strip():
             self.log.debug("Skipping non-executing cell %s", cell_index)
+            return cell
+
+        if self.skip_cells_with_tag in cell.metadata.get("tags", []):
+            self.log.debug("Skipping tagged cell %s", cell_index)
             return cell
 
         if self.record_timing and 'execution' not in cell['metadata']:
