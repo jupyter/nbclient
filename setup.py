@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
 import os
+
 from setuptools import setup
 
 # the name of the package
@@ -18,7 +18,7 @@ here = os.path.abspath(local_path)
 
 
 def version():
-    with open(here + '/nbclient/_version.py', 'r') as ver:
+    with open(here + '/nbclient/_version.py') as ver:
         for line in ver.readlines():
             if line.startswith('version ='):
                 return line.split(' = ')[-1].strip()[1:-1]
@@ -26,7 +26,7 @@ def version():
 
 
 def read(path):
-    with open(path, 'r') as fhandle:
+    with open(path) as fhandle:
         return fhandle.read()
 
 
@@ -47,7 +47,9 @@ setup(
     author='Jupyter Development Team',
     author_email='jupyter@googlegroups.com',
     url='https://jupyter.org',
-    description="A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor.",
+    description=(
+        "A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor."
+    ),
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=['nbclient'],

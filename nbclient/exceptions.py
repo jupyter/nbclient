@@ -9,6 +9,7 @@ class CellControlSignal(Exception):
     control actions (not the best model, but it's needed to cover existing
     behavior without major refactors).
     """
+
     pass
 
 
@@ -18,17 +19,13 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
     """
 
     @classmethod
-    def error_from_timeout_and_cell(
-            cls,
-            msg: str,
-            timeout: int,
-            cell: NotebookNode):
+    def error_from_timeout_and_cell(cls, msg: str, timeout: int, cell: NotebookNode):
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
             src = (
                 cell.source
                 if len(src_by_lines) < 11
-                else "{}\n...\n{}".format(src_by_lines[:5], src_by_lines[-5:])
+                else f"{src_by_lines[:5]}\n...\n{src_by_lines[-5:]}"
             )
         else:
             src = "Cell contents not found."
@@ -58,12 +55,8 @@ class CellExecutionError(CellControlSignal):
     failures gracefully.
     """
 
-    def __init__(
-            self,
-            traceback: str,
-            ename: str,
-            evalue: str) -> None:
-        super(CellExecutionError, self).__init__(traceback)
+    def __init__(self, traceback: str, ename: str, evalue: str) -> None:
+        super().__init__(traceback)
         self.traceback = traceback
         self.ename = ename
         self.evalue = evalue
@@ -81,10 +74,7 @@ class CellExecutionError(CellControlSignal):
         return self.traceback
 
     @classmethod
-    def from_cell_and_msg(
-            cls,
-            cell: NotebookNode,
-            msg: Dict):
+    def from_cell_and_msg(cls, cell: NotebookNode, msg: Dict):
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """
@@ -97,11 +87,11 @@ class CellExecutionError(CellControlSignal):
                 evalue=msg.get('evalue', ''),
             ),
             ename=msg.get('ename', '<Error>'),
-            evalue=msg.get('evalue', '')
+            evalue=msg.get('evalue', ''),
         )
 
 
-exec_err_msg: str = u"""\
+exec_err_msg: str = """\
 An error occurred while executing the following cell:
 ------------------
 {cell.source}
@@ -112,7 +102,7 @@ An error occurred while executing the following cell:
 """
 
 
-timeout_err_msg: str = u"""\
+timeout_err_msg: str = """\
 A cell timed out while it was being executed, after {timeout} seconds.
 The message was: {msg}.
 Here is a preview of the cell contents:

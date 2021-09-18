@@ -1,7 +1,8 @@
-import sys
 import subprocess
-from .client import NotebookClient, execute  # noqa: F401
+import sys
+
 from ._version import version as __version__  # noqa: F401
+from .client import NotebookClient, execute  # noqa: F401
 
 
 def _cleanup() -> None:

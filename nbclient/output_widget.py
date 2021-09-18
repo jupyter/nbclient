@@ -1,18 +1,17 @@
-from .jsonutil import json_clean
-from nbformat.v4 import output_from_msg
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from jupyter_client.client import KernelClient
+from nbformat.v4 import output_from_msg
+
+from .jsonutil import json_clean
 
 
 class OutputWidget:
     """This class mimics a front end output widget"""
+
     def __init__(
-            self,
-            comm_id: str,
-            state: Dict[str, Any],
-            kernel_client: KernelClient,
-            executor) -> None:
+        self, comm_id: str, state: Dict[str, Any], kernel_client: KernelClient, executor
+    ) -> None:
 
         self.comm_id: str = comm_id
         self.state: Dict[str, Any] = state
@@ -22,11 +21,7 @@ class OutputWidget:
         self.outputs: List = self.state['outputs']
         self.clear_before_next_output: bool = False
 
-    def clear_output(
-            self,
-            outs: List,
-            msg: Dict,
-            cell_index: int) -> None:
+    def clear_output(self, outs: List, msg: Dict, cell_index: int) -> None:
 
         self.parent_header = msg['parent_header']
         content = msg['content']
@@ -46,34 +41,32 @@ class OutputWidget:
         self.send(msg)
 
     def _publish_msg(
-            self,
-            msg_type: str,
-            data: Optional[Dict] = None,
-            metadata: Optional[Dict] = None,
-            buffers: Optional[List] = None,
-            **keys) -> None:
+        self,
+        msg_type: str,
+        data: Optional[Dict] = None,
+        metadata: Optional[Dict] = None,
+        buffers: Optional[List] = None,
+        **keys
+    ) -> None:
         """Helper for sending a comm message on IOPub"""
         data = {} if data is None else data
         metadata = {} if metadata is None else metadata
         content = json_clean(dict(data=data, comm_id=self.comm_id, **keys))
-        msg = self.kernel_client.session.msg(msg_type, content=content, parent=self.parent_header,
-                                             metadata=metadata)
+        msg = self.kernel_client.session.msg(
+            msg_type, content=content, parent=self.parent_header, metadata=metadata
+        )
         self.kernel_client.shell_channel.send(msg)
 
     def send(
-            self,
-            data: Optional[Dict] = None,
-            metadata: Optional[Dict] = None,
-            buffers: Optional[List] = None) -> None:
+        self,
+        data: Optional[Dict] = None,
+        metadata: Optional[Dict] = None,
+        buffers: Optional[List] = None,
+    ) -> None:
 
         self._publish_msg('comm_msg', data=data, metadata=metadata, buffers=buffers)
 
-    def output(
-            self,
-            outs: List,
-            msg: Dict,
-            display_id: str,
-            cell_index: int) -> None:
+    def output(self, outs: List, msg: Dict, display_id: str, cell_index: int) -> None:
 
         if self.clear_before_next_output:
             self.outputs = []
@@ -84,9 +77,11 @@ class OutputWidget:
         if self.outputs:
             # try to coalesce/merge output text
             last_output = self.outputs[-1]
-            if (last_output['output_type'] == 'stream'
-                    and output['output_type'] == 'stream'
-                    and last_output['name'] == output['name']):
+            if (
+                last_output['output_type'] == 'stream'
+                and output['output_type'] == 'stream'
+                and last_output['name'] == output['name']
+            ):
                 last_output['text'] += output['text']
             else:
                 self.outputs.append(output)

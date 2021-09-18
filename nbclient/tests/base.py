@@ -4,7 +4,6 @@ from nbformat import v4 as nbformat
 
 
 class NBClientTestsBase(unittest.TestCase):
-
     def build_notebook(self, with_json_outputs=False):
         """Build a notebook in memory for use with NotebookClient tests"""
 
