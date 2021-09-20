@@ -37,8 +37,8 @@ applications.
 Python Version Support
 ----------------------
 
-This library currently supports python 3.6+ verisons. As minor python
-versions are officially sunset by the python org nbclient will similarly
+This library currently supports python 3.6+ versions. As minor python
+versions are officially sunset by the python org, nbclient will similarly
 drop support in the future.
 
 Documentation
