@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 A command-line interface for running Jupyter Notebooks.
-Usage: cli.py [OPTIONS] [NOTEBOOK_PATHS]...
+
+Usage: nblclient [OPTIONS] [NOTEBOOK_PATHS]...
     Executes Jupyter Notebooks from the command line.
 
     Expects one or more file paths input as arguments.
@@ -9,7 +9,7 @@ Usage: cli.py [OPTIONS] [NOTEBOOK_PATHS]...
     Errors are raised and printed to the console.
 
     Example:
-        $ python run.py ./src/notebooks.ipynb
+        $ nbclient execute ./src/notebooks.ipynb
 
     Options:
         --help  Show this message and exit.
@@ -45,7 +45,7 @@ def execute(notebook_path, output, timeout, allow_errors, force_raise_errors):
 
     Example:
 
-        $ python run.py ./src/notebooks.ipynb
+        $ nbclient execute ./src/notebooks.ipynb
     """
     # Get the file name
     name = notebook_path.replace(".ipynb", "")
