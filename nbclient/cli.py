@@ -15,9 +15,11 @@ Usage: nblclient [OPTIONS] [NOTEBOOK_PATHS]...
         --help  Show this message and exit.
 """
 
-import click
 import pathlib
+
+import click
 import nbformat
+
 from .client import NotebookClient
 from .exceptions import CellExecutionError
 
