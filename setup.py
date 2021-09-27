@@ -57,6 +57,10 @@ setup(
     python_requires=">=3.6.1",
     install_requires=requirements,
     extras_require=extras_require,
+    entry_points="""
+        [console_scripts]
+        nbclient=nbclient.cli:cli
+    """,
     project_urls={
         'Documentation': 'https://nbclient.readthedocs.io',
         'Funding': 'https://numfocus.org/',
