@@ -87,4 +87,3 @@ def execute(notebook_path, output, timeout, allow_errors, force_raise_errors):
 
 if __name__ == '__main__':
     cli()
-
