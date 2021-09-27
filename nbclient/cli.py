@@ -14,6 +14,7 @@ Usage: cli.py [OPTIONS] [NOTEBOOK_PATHS]...
     Options:
         --help  Show this message and exit.
 """
+
 import click
 import pathlib
 import nbformat
@@ -29,7 +30,9 @@ def cli():
 @cli.command(help="Execute a notebook")
 @click.argument('notebook_path', nargs=1, type=click.Path(exists=True))
 @click.option('-o', '--output', default=None, help='Where to output the result')
-@click.option('-t', '--timeout', default=600, help='How long the script should run before it times out')
+@click.option(
+    '-t', '--timeout', default=600, help='How long the script should run before it times out'
+)
 @click.option('--allow-errors/--no-allow-errors', default=False)
 @click.option('--force-raise-errors/--no-force-raise-errors', default=True)
 def execute(notebook_path, output, timeout, allow_errors, force_raise_errors):
@@ -59,14 +62,12 @@ def execute(notebook_path, output, timeout, allow_errors, force_raise_errors):
 
     # Configure nbclient to run the notebook
     client = NotebookClient(
-        # What we want it to run
         nb,
         timeout=timeout,
         kernel_name='python3',
         allow_errors=allow_errors,
         force_raise_errors=force_raise_errors,
-        # Here's where the path gets set
-        resources={'metadata': {'path': path}}
+        resources={'metadata': {'path': path}},
     )
     try:
         # Run it
@@ -86,3 +87,4 @@ def execute(notebook_path, output, timeout, allow_errors, force_raise_errors):
 
 if __name__ == '__main__':
     cli()
+
