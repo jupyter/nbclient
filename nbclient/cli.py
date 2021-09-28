@@ -71,7 +71,7 @@ class NbClientApp(JupyterApp):
             client.execute()
         except CellExecutionError:
             # If there's an error, print it to the terminal.
-            msg = f"Error executing {input_path}.\n"
+            msg = f"Error executing {input_path}"
             self.log.error(msg)
             # And then raise it too
             raise
