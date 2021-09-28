@@ -1,20 +1,3 @@
-"""
-A command-line interface for running Jupyter Notebooks.
-
-Usage: nblclient [OPTIONS] [NOTEBOOK_PATHS]...
-    Executes Jupyter Notebooks from the command line.
-
-    Expects one or more file paths input as arguments.
-
-    Errors are raised and printed to the console.
-
-    Example:
-        $ nbclient execute ./src/notebooks.ipynb
-
-    Options:
-        --help  Show this message and exit.
-"""
-
 import pathlib
 import logging
 import nbformat
