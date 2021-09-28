@@ -16,76 +16,82 @@ Usage: nblclient [OPTIONS] [NOTEBOOK_PATHS]...
 """
 
 import pathlib
-
-import click
+import logging
 import nbformat
-
+from nbclient import __version__
 from .client import NotebookClient
 from .exceptions import CellExecutionError
+from traitlets import default, Unicode, List
+from traitlets.config import catch_config_error
+from jupyter_core.application import JupyterApp
 
 
-@click.group(help="Run Jupyter Notebooks from the command line")
-def cli():
-    pass
-
-
-@cli.command(help="Execute a notebook")
-@click.argument('notebook_path', nargs=1, type=click.Path(exists=True))
-@click.option('-o', '--output', default=None, help='Where to output the result')
-@click.option(
-    '-t', '--timeout', default=600, help='How long the script should run before it times out'
-)
-@click.option('--allow-errors/--no-allow-errors', default=False)
-@click.option('--force-raise-errors/--no-force-raise-errors', default=True)
-def execute(notebook_path, output, timeout, allow_errors, force_raise_errors):
+class NbClientApp(JupyterApp):
     """
-    Executes Jupyter Notebooks from the command line.
-
-    Expects one or more file paths input as arguments.
-
-    Errors are raised and printed to the console.
-
-    Example:
-
-        $ nbclient execute ./src/notebooks.ipynb
+    An application used to execute a notebook files (``*.ipynb``)
     """
-    # Get the file name
-    name = notebook_path.replace(".ipynb", "")
+    version = __version__
+    name = 'jupyter-execute'
 
-    # Get its parent directory so we can add it to the $PATH
-    path = pathlib.Path(notebook_path).parent.absolute()
+    description = Unicode("An application used to execute a notebook files (*.ipynb)")
+    notebook = List(
+        [],
+        help="Path of notebooks to convert"
+    ).tag(config=True)
 
-    # Set the intput file paths
-    input_path = f"{name}.ipynb"
+    @default('log_level')
+    def _log_level_default(self):
+        return logging.INFO
 
-    # Open up the notebook we're going to run
-    with open(input_path) as f:
-        nb = nbformat.read(f, as_version=4)
+    @catch_config_error
+    def initialize(self, argv=None):
+        super().initialize(argv)
+        self.notebooks = self.get_notebooks()
+        for notebook_path in self.notebooks:
+            self.run_notebook(notebook_path)
 
-    # Configure nbclient to run the notebook
-    client = NotebookClient(
-        nb,
-        timeout=timeout,
-        kernel_name='python3',
-        allow_errors=allow_errors,
-        force_raise_errors=force_raise_errors,
-        resources={'metadata': {'path': path}},
-    )
-    try:
-        # Run it
-        client.execute()
-    except CellExecutionError:
-        # If there's an error, print it to the terminal.
-        msg = f"Error executing {input_path}.\n"
-        click.echo(msg)
-        # And then raise it too
-        raise
-    finally:
-        if output:
-            # Once all that's done, write out the output notebook to the filesystem
-            with open(output, mode='w', encoding='utf-8') as f:
-                nbformat.write(nb, f)
+    def get_notebooks(self):
+        if self.extra_args:
+            notebooks = self.extra_args
+        else:
+            notebooks = self.notebooks
+        return notebooks
+
+    def run_notebook(self, notebook_path):
+        # Log it
+        self.log.info(f"Executing {notebook_path}")
+        
+        # Get the file name
+        name = notebook_path.replace(".ipynb", "")
+
+        # Get its parent directory so we can add it to the $PATH
+        path = pathlib.Path(notebook_path).parent.absolute()
+
+        # Set the intput file paths
+        input_path = f"{name}.ipynb"
+
+        # Open up the notebook we're going to run
+        with open(input_path) as f:
+            nb = nbformat.read(f, as_version=4)
+
+        # Configure nbclient to run the notebook
+        client = NotebookClient(
+            nb,
+            timeout=600,
+            kernel_name='python3',
+            allow_errors=False,
+            force_raise_errors=True,
+            resources={'metadata': {'path': path}},
+        )
+        try:
+            # Run it
+            client.execute()
+        except CellExecutionError:
+            # If there's an error, print it to the terminal.
+            msg = f"Error executing {input_path}.\n"
+            self.log.error(msg)
+            # And then raise it too
+            raise
 
 
-if __name__ == '__main__':
-    cli()
+main = launch_new_instance = NbClientApp.launch_instance
