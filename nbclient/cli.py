@@ -146,6 +146,8 @@ class NbClientApp(JupyterApp):
             kernel_name=self.kernel_name,
             resources={'metadata': {'path': path}},
         )
+
+        # Run it
         client.execute()
 
 
