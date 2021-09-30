@@ -146,15 +146,7 @@ class NbClientApp(JupyterApp):
             kernel_name=self.kernel_name,
             resources={'metadata': {'path': path}},
         )
-        try:
-            # Run it
-            client.execute()
-        except CellExecutionError:
-            # If there's an error, print it to the terminal.
-            msg = f"Error executing {input_path}"
-            self.log.error(msg)
-            # And then raise it too
-            raise
+        client.execute()
 
 
 main = launch_new_instance = NbClientApp.launch_instance
