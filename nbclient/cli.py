@@ -4,14 +4,13 @@ from textwrap import dedent
 
 import nbformat
 from jupyter_core.application import JupyterApp, base_aliases, base_flags
-from traitlets import default, Unicode, List, Integer, Bool
+from traitlets import Bool, Integer, List, Unicode, default
 from traitlets.config import catch_config_error
 
 from nbclient import __version__
 
 from .client import NotebookClient
 from .exceptions import CellExecutionError
-
 
 nbclient_aliases = {}
 nbclient_aliases.update(base_aliases)
