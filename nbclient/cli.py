@@ -15,40 +15,42 @@ from jupyter_core.application import JupyterApp, base_aliases, base_flags
 
 nbclient_aliases = {}
 nbclient_aliases.update(base_aliases)
-nbclient_aliases.update({
-    'timeout' : 'NbClientApp.timeout',
-    'startup_timeout' : 'NbClientApp.startup_timeout',
-    'kernel_name' : 'NbClientApp.kernel_name',
-})
+nbclient_aliases.update(
+    {
+        'timeout': 'NbClientApp.timeout',
+        'startup_timeout': 'NbClientApp.startup_timeout',
+        'kernel_name': 'NbClientApp.kernel_name',
+    }
+)
 
 nbclient_flags = {}
 nbclient_flags.update(base_flags)
-nbclient_flags.update({
-    'allow-errors' : (
-        {
-            'NbClientApp' : {
-                'allow_errors' : True,
+nbclient_flags.update(
+    {
+        'allow-errors': (
+            {
+                'NbClientApp': {
+                    'allow_errors': True,
+                },
             },
-        },
-        "Errors are ignored and execution is continued until the end of the notebook."
+            "Errors are ignored and execution is continued until the end of the notebook.",
         ),
-})
+    }
+)
 
 
 class NbClientApp(JupyterApp):
     """
     An application used to execute a notebook files (``*.ipynb``)
     """
+
     version = __version__
     name = 'jupyter-execute'
     aliases = nbclient_aliases
     flags = nbclient_flags
 
     description = Unicode("An application used to execute a notebook files (*.ipynb)")
-    notebook = List(
-        [],
-        help="Path of notebooks to convert"
-    ).tag(config=True)
+    notebook = List([], help="Path of notebooks to convert").tag(config=True)
     timeout: int = Integer(
         None,
         allow_none=True,
