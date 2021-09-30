@@ -1,16 +1,16 @@
-import pathlib
 import logging
-import nbformat
+import pathlib
 from textwrap import dedent
 
+import nbformat
+from jupyter_core.application import JupyterApp, base_aliases, base_flags
+from traitlets import default, Unicode, List, Integer, Bool
+from traitlets.config import catch_config_error
+
 from nbclient import __version__
+
 from .client import NotebookClient
 from .exceptions import CellExecutionError
-
-from traitlets.config import catch_config_error
-from traitlets import default, Unicode, List, Integer, Bool
-
-from jupyter_core.application import JupyterApp, base_aliases, base_flags
 
 
 nbclient_aliases = {}
