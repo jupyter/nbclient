@@ -239,6 +239,19 @@ def notebook_resources():
     return {'metadata': {'path': os.path.join(current_dir, 'files')}}
 
 
+def filter_messages_on_error_output(err_output):
+    filtered_result = []
+    allowed_lines = [
+        # ipykernel migh be installed without debugpy extension
+        "[IPKernelApp] WARNING | debugpy_stream undefined, debugging will not be enabled",
+    ]
+    for line in err_output.splitlines():
+        if line not in allowed_lines:
+            filtered_result.append(line)
+
+    return "\n".join(filtered_result)
+
+
 @pytest.mark.parametrize(
     ["input_name", "opts"],
     [
@@ -290,7 +303,7 @@ def test_parallel_notebooks(capfd, tmpdir):
         [t.join(timeout=2) for t in threads]
 
     captured = capfd.readouterr()
-    assert captured.err == ""
+    assert filter_messages_on_error_output(captured.err) == ""
 
 
 def test_many_parallel_notebooks(capfd):
@@ -316,7 +329,7 @@ def test_many_parallel_notebooks(capfd):
             executor.map(run_notebook_wrapper, [(input_file, opts, res) for i in range(8)])
 
     captured = capfd.readouterr()
-    assert captured.err == ""
+    assert filter_messages_on_error_output(captured.err) == ""
 
 
 def test_async_parallel_notebooks(capfd, tmpdir):
@@ -338,7 +351,7 @@ def test_async_parallel_notebooks(capfd, tmpdir):
         loop.run_until_complete(asyncio.gather(*tasks))
 
     captured = capfd.readouterr()
-    assert captured.err == ""
+    assert filter_messages_on_error_output(captured.err) == ""
 
 
 def test_many_async_parallel_notebooks(capfd):
@@ -361,7 +374,7 @@ def test_many_async_parallel_notebooks(capfd):
     loop.run_until_complete(asyncio.gather(*tasks))
 
     captured = capfd.readouterr()
-    assert captured.err == ""
+    assert filter_messages_on_error_output(captured.err) == ""
 
 
 def test_execution_timing():
