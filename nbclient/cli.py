@@ -1,6 +1,6 @@
-import sys
 import logging
 import pathlib
+import sys
 from textwrap import dedent
 
 import nbformat
@@ -11,7 +11,6 @@ from traitlets.config import catch_config_error
 from nbclient import __version__
 
 from .client import NotebookClient
-from .exceptions import CellExecutionError
 
 nbclient_aliases = {
     'timeout': 'NbClientApp.timeout',
