@@ -1,3 +1,4 @@
+import sys
 import logging
 import pathlib
 from textwrap import dedent
@@ -117,13 +118,12 @@ class NbClientApp(JupyterApp):
             notebooks = self.extra_args
         else:
             notebooks = self.notebooks
-        return notebooks
 
-    def run_notebook(self, notebook_path):
-        # Log it
-        self.log.info(f"Executing {notebook_path}")
+        if not notebooks:
+            self.print_help()
+            print("jupyter-execute: error: expected path to notebook")
+            sys.exit(-1)
 
-        # Get the file name
         name = notebook_path.replace(".ipynb", "")
 
         # Get its parent directory so we can add it to the $PATH
