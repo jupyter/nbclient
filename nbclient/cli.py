@@ -107,7 +107,7 @@ class NbClientApp(JupyterApp):
 
         # If there are none, throw an error
         if not self.notebooks:
-            self.print_options()
+            self.print_help()
             print("jupyter-execute: error: expected path to notebook")
             sys.exit(-1)
 
