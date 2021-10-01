@@ -32,7 +32,7 @@ nbclient_flags = {
 
 class NbClientApp(JupyterApp):
     """
-    An application used to execute a notebook files (``*.ipynb``)
+    An application used to execute notebook files (``*.ipynb``)
     """
 
     version = __version__
@@ -40,7 +40,7 @@ class NbClientApp(JupyterApp):
     aliases = nbclient_aliases
     flags = nbclient_flags
 
-    description = Unicode("An application used to execute a notebook files (*.ipynb)")
+    description = Unicode("An application used to execute notebook files (*.ipynb)")
     notebooks = List([], help="Path of notebooks to convert").tag(config=True)
     timeout: int = Integer(
         None,
