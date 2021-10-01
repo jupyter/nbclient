@@ -4,7 +4,7 @@ import pathlib
 from textwrap import dedent
 
 import nbformat
-from jupyter_core.application import JupyterApp, base_aliases, base_flags
+from jupyter_core.application import JupyterApp
 from traitlets import Bool, Integer, List, Unicode, default
 from traitlets.config import catch_config_error
 
@@ -13,30 +13,22 @@ from nbclient import __version__
 from .client import NotebookClient
 from .exceptions import CellExecutionError
 
-nbclient_aliases = {}
-nbclient_aliases.update(base_aliases)
-nbclient_aliases.update(
-    {
-        'timeout': 'NbClientApp.timeout',
-        'startup_timeout': 'NbClientApp.startup_timeout',
-        'kernel_name': 'NbClientApp.kernel_name',
-    }
-)
+nbclient_aliases = {
+    'timeout': 'NbClientApp.timeout',
+    'startup_timeout': 'NbClientApp.startup_timeout',
+    'kernel_name': 'NbClientApp.kernel_name',
+}
 
-nbclient_flags = {}
-nbclient_flags.update(base_flags)
-nbclient_flags.update(
-    {
-        'allow-errors': (
-            {
-                'NbClientApp': {
-                    'allow_errors': True,
-                },
+nbclient_flags = {
+    'allow-errors': (
+        {
+            'NbClientApp': {
+                'allow_errors': True,
             },
-            "Errors are ignored and execution is continued until the end of the notebook.",
-        ),
-    }
-)
+        },
+        "Errors are ignored and execution is continued until the end of the notebook.",
+    ),
+}
 
 
 class NbClientApp(JupyterApp):
@@ -109,20 +101,33 @@ class NbClientApp(JupyterApp):
     @catch_config_error
     def initialize(self, argv=None):
         super().initialize(argv)
+
+        # Get notebooks to run
         self.notebooks = self.get_notebooks()
-        for notebook_path in self.notebooks:
-            self.run_notebook(notebook_path)
 
-    def get_notebooks(self):
-        if self.extra_args:
-            notebooks = self.extra_args
-        else:
-            notebooks = self.notebooks
-
-        if not notebooks:
+        # If there are none, throw an error
+        if not self.notebooks:
             self.print_help()
             print("jupyter-execute: error: expected path to notebook")
             sys.exit(-1)
+
+        # Loop and run them one by one
+        [self.run_notebook(path) for path in self.notebooks]
+
+    def get_notebooks(self):
+        # If notebooks were provided from the command line, use those
+        if self.extra_args:
+            notebooks = self.extra_args
+        # If not, look to the class attribute
+        else:
+            notebooks = self.notebooks
+
+        # Return what we got.
+        return notebooks
+
+    def run_notebook(self, notebook_path):
+        # Log it
+        self.log.info(f"Executing {notebook_path}")
 
         name = notebook_path.replace(".ipynb", "")
 
