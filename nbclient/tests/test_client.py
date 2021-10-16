@@ -249,7 +249,7 @@ def filter_messages_on_error_output(err_output):
         if line not in allowed_lines:
             filtered_result.append(line)
 
-    return "\n".join(filtered_result)
+    return os.linesep.join(filtered_result)
 
 
 @pytest.mark.parametrize(
