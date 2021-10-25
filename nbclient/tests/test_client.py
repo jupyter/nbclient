@@ -245,9 +245,7 @@ def filter_messages_on_error_output(err_output):
         # ipykernel migh be installed without debugpy extension
         "[IPKernelApp] WARNING | debugpy_stream undefined, debugging will not be enabled",
     ]
-    for line in err_output.splitlines():
-        if line not in allowed_lines:
-            filtered_result.append(line)
+    filtered_result = [line for line in err_output.splitlines() if line not in allowed_lines]
 
     return os.linesep.join(filtered_result)
 
