@@ -334,7 +334,7 @@ class NotebookClient(LoggingConfigurable):
         self.code_cells_executed = 0
         self._display_id_map = {}
         self.widget_state: t.Dict[str, t.Dict] = {}
-        self.widget_buffers: t.Dict[str, t.Dict[str, t.Dict[str, str]]] = {}
+        self.widget_buffers: t.Dict[str, t.Dict[t.Tuple[str, ...], t.Dict[str, str]]] = {}
         # maps to list of hooks, where the last is used, this is used
         # to support nested use of output widgets.
         self.output_hook_stack: t.Any = collections.defaultdict(list)
@@ -995,7 +995,9 @@ class NotebookClient(LoggingConfigurable):
                 if comm_id not in self.widget_buffers:
                     self.widget_buffers[comm_id] = {}
                 # for each comm, the path uniquely identifies a buffer
-                new_buffers = {tuple(k["path"]): k for k in self._get_buffer_data(msg)}
+                new_buffers: t.Dict[t.Tuple[str, ...], t.Dict[str, str]] = {
+                    tuple(k["path"]): k for k in self._get_buffer_data(msg)
+                }
                 self.widget_buffers[comm_id].update(new_buffers)
         # There are cases where we need to mimic a frontend, to get similar behaviour as
         # when using the Output widget from Jupyter lab/notebook
