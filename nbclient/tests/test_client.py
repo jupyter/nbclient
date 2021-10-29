@@ -1084,7 +1084,7 @@ class TestRunCell(NBClientTestsBase):
                 'comm_id': 'foobar',
                 'data': {'state': {'foo2': 'bar2'}, 'buffer_paths': [['path2']]},
             },
-        }
+        },
     )
     def test_widget_comm_buffer_messages(self, executor, cell_mock, message_mock):
         executor.execute_cell(cell_mock, 0)
@@ -1092,8 +1092,10 @@ class TestRunCell(NBClientTestsBase):
         assert message_mock.call_count == 3
         assert executor.widget_state == {'foobar': {'foo': 'bar', 'foo2': 'bar2'}}
         assert executor.widget_buffers == {
-            'foobar': {('path',): {'data': 'MTIz', 'encoding': 'base64', 'path': ['path']},
-                       ('path2',): {'data': 'MTIz', 'encoding': 'base64', 'path': ['path2']}}
+            'foobar': {
+                ('path',): {'data': 'MTIz', 'encoding': 'base64', 'path': ['path']},
+                ('path2',): {'data': 'MTIz', 'encoding': 'base64', 'path': ['path2']},
+            }
         }
         # Ensure no outputs were generated
         assert cell_mock.outputs == []
