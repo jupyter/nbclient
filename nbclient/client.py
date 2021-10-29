@@ -991,11 +991,12 @@ class NotebookClient(LoggingConfigurable):
         if self.store_widget_state and 'state' in data:  # ignore custom msg'es
             self.widget_state.setdefault(content['comm_id'], {}).update(data['state'])
             if 'buffer_paths' in data and data['buffer_paths']:
-                if content['comm_id'] not in self.widget_buffers:
-                    self.widget_buffers[content['comm_id']] = {}
+                comm_id = content['comm_id']
+                if comm_id not in self.widget_buffers:
+                    self.widget_buffers[comm_id] = {}
                 # for each comm, the path uniquely identifies a buffer
                 new_buffers = {tuple(k["path"]): k for k in self._get_buffer_data(msg)}
-                self.widget_buffers[content['comm_id']].update(new_buffers)
+                self.widget_buffers[comm_id].update(new_buffers)
         # There are cases where we need to mimic a frontend, to get similar behaviour as
         # when using the Output widget from Jupyter lab/notebook
         if msg['msg_type'] == 'comm_open':
