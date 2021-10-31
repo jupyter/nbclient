@@ -17,8 +17,9 @@ Executing notebooks can be very helpful, for example, to run all notebooks
 in Python library in one step, or as a way to automate the data analysis in
 projects involving more than one notebook.
 
-Executing notebooks using the Python API interface
---------------------------------------------------
+Using the Python API interface
+------------------------------
+
 This section will illustrate the Python API interface.
 
 Example
@@ -166,3 +167,60 @@ a UI.
 
 If you can't view widget results after execution, you may need to select
 :menuselection:`Trust Notebook` under the :menuselection:`File` menu.
+
+Using a command-line interface
+------------------------------
+
+This section will illustrate how to run notebooks from your terminal. It supports the most basic use case. For more sophisticated execution options, consider the `papermill <https://pypi.org/project/papermill/>`_ library.
+
+This library's command line tool is available by running `jupyter execute`. It expects notebooks as input arguments and accepts optional flags to modify the default behavior.
+
+Running a notebook is this easy.::
+
+    jupyter execute notebook.ipynb
+
+You can pass more than one notebook as well.::
+
+    jupyter execute notebook.ipynb notebook2.ipynb
+
+By default, notebook errors will be raised and printed into the terminal. You can suppress them by passing the ``--allow-errors`` flag.::
+
+    jupyter execute notebook.ipynb --allow-errors
+
+Other options allow you to modify the timeout length and dictate the kernel in use. A full set of options is available via the help command.::
+
+    jupyter execute --help
+
+    An application used to execute notebook files (*.ipynb)
+
+    Options
+    =======
+    The options below are convenience aliases to configurable class-options,
+    as listed in the "Equivalent to" description-line of the aliases.
+    To see all configurable class-options for some <cmd>, use:
+        <cmd> --help-all
+
+    --allow-errors
+        Errors are ignored and execution is continued until the end of the notebook.
+        Equivalent to: [--NbClientApp.allow_errors=True]
+    --timeout=<Int>
+        The time to wait (in seconds) for output from executions. If a cell
+        execution takes longer, a TimeoutError is raised. ``-1`` will disable the
+        timeout.
+        Default: None
+        Equivalent to: [--NbClientApp.timeout]
+    --startup_timeout=<Int>
+        The time to wait (in seconds) for the kernel to start. If kernel startup
+        takes longer, a RuntimeError is raised.
+        Default: 60
+        Equivalent to: [--NbClientApp.startup_timeout]
+    --kernel_name=<Unicode>
+        Name of kernel to use to execute the cells. If not set, use the kernel_spec
+        embedded in the notebook.
+        Default: ''
+        Equivalent to: [--NbClientApp.kernel_name]
+
+    To see all available configurables, use `--help-all`.
+
+
+
