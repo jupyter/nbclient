@@ -221,6 +221,3 @@ Other options allow you to modify the timeout length and dictate the kernel in u
         Equivalent to: [--NbClientApp.kernel_name]
 
     To see all available configurables, use `--help-all`.
-
-
-
