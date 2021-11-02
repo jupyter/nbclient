@@ -13,11 +13,11 @@ Welcome to nbclient
 
 ---
 
-**NBClient**, a client library for programmatic notebook execution, is a tool for running Jupyter Notebooks in
-different execution contexts. NBClient was spun out of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_'s
-former ``ExecutePreprocessor``.
-
 **NBClient** lets you **execute** notebooks.
+
+A client library for programmatic notebook execution, **NBClient** is a tool for running Jupyter Notebooks in
+different execution contexts, including the command line. NBClient was spun out of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_'s
+former ``ExecutePreprocessor``.
 
 Demo
 ----
@@ -30,9 +30,7 @@ To demo **NBClient** interactively, click the Binder link below:
 Origins
 -------
 
-This library used to be part of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_ and was extracted into its own
-library for easier updating and importing by downstream libraries and
-applications.
+This library used to be part of `nbconvert <https://nbconvert.readthedocs.io/en/latest/>`_ and was extracted into its ownlibrary for easier updating and importing by downstream libraries and applications.
 
 Python Version Support
 ----------------------
@@ -63,7 +61,7 @@ this documentation section will help you.
 
 .. toctree::
    :maxdepth: 3
-   :caption: Reference
+   :caption: Table of Contents
 
    reference/index.rst
    reference/nbclient.tests.rst
