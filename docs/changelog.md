@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.5
+
+- Added CLI to README [#170](https://github.com/jupyter/nbclient/pull/170) ([@palewire](https://github.com/palewire))
+- Add "jupyter execute" command-line interface [#165](https://github.com/jupyter/nbclient/pull/165) ([@palewire](https://github.com/palewire))
+- Fix: updating buffers overwrote previous buffers [#169](https://github.com/jupyter/nbclient/pull/169) ([@maartenbreddels](https://github.com/maartenbreddels))
+- Fix tests for ipykernel without debugpy [#166](https://github.com/jupyter/nbclient/pull/166) ([@frenzymadness](https://github.com/frenzymadness))
+- gitignore Pipfile [#164](https://github.com/jupyter/nbclient/pull/164) ([@palewire](https://github.com/palewire))
+- Fixed CONTRIBUTING.md link [#163](https://github.com/jupyter/nbclient/pull/163) ([@palewire](https://github.com/palewire))
+- Fix typo [#162](https://github.com/jupyter/nbclient/pull/162) ([@The-Compiler](https://github.com/The-Compiler))
+- Move format & lint to pre-commit [#161](https://github.com/jupyter/nbclient/pull/161) ([@chrisjsewell](https://github.com/chrisjsewell))
+- Add `skip-execution` cell tag functionality [#151](https://github.com/jupyter/nbclient/pull/151) ([@chrisjsewell](https://github.com/chrisjsewell))
+
 ## 0.5.4
 
 - Replace `km.cleanup` with `km.cleanup_resources` [#152](https://github.com/jupyter/nbclient/pull/152) ([@davidbrochart](https://github.com/davidbrochart))
