@@ -162,7 +162,7 @@ class NbClientAlias(NbClientApp):
 
     @catch_config_error
     def initialize(self, argv=None):
-        print("This alias to `jupyter run` may be deprecated in the future. Please switch to using run.")
+        print("This alias to `jupyter run` may be deprecated in the future. Please switch to using `run`.")
         super().initialize(argv)
 
 
