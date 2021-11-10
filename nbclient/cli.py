@@ -36,7 +36,7 @@ class NbClientApp(JupyterApp):
     """
 
     version = __version__
-    name = 'jupyter-execute'
+    name = 'jupyter-run'
     aliases = nbclient_aliases
     flags = nbclient_flags
 
@@ -106,7 +106,7 @@ class NbClientApp(JupyterApp):
 
         # If there are none, throw an error
         if not self.notebooks:
-            print("jupyter-execute: error: expected path to notebook")
+            print(f"{self.name}: error: expected path to notebook")
             sys.exit(-1)
 
         # Loop and run them one by one
@@ -154,4 +154,17 @@ class NbClientApp(JupyterApp):
         client.execute()
 
 
-main = NbClientApp.launch_instance
+class NbClientAlias(NbClientApp):
+    """
+    An alias to the run command.
+    """
+    name = 'jupyter-execute'
+
+    @catch_config_error
+    def initialize(self, argv=None):
+        print("This alias to `jupyter run` may be deprecated in the future. Please switch to using run.")
+        super().initialize(argv)
+
+
+run = NbClientApp.launch_instance
+execute = NbClientAlias.launch_instance
