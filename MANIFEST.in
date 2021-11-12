@@ -3,7 +3,6 @@ include MANIFEST.in
 include requirements.txt
 include requirements-dev.txt
 include *.md
-include .bumpversion.cfg
 include tox.ini
 include pyproject.toml
 include .pre-commit-config.yaml
