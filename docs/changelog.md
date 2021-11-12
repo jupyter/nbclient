@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.6
+
+- Changed `jupyter execute` to `jupyter run` [#173](https://github.com/jupyter/nbclient/pull/173) ([@palewire](https://github.com/palewire))
+- Move IPYKERNEL_CELL_NAME from tox to pytest [#172](https://github.com/jupyter/nbclient/pull/172) ([@frenzymadness](https://github.com/frenzymadness))
+
 ## 0.5.5
 
 - Added CLI to README [#170](https://github.com/jupyter/nbclient/pull/170) ([@palewire](https://github.com/palewire))
