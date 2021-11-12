@@ -17,6 +17,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import shutil
 import sys
 
 import nbclient
@@ -174,3 +175,9 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+
+def setup(app):
+    HERE = os.path.abspath(os.path.dirname(__file__))
+    dest = os.path.join(HERE, 'changelog.md')
+    shutil.copy(os.path.join(HERE, '..', 'CHANGELOG.md'), dest)

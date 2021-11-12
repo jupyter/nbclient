@@ -1,7 +1,8 @@
 import subprocess
 import sys
 
-from ._version import version as __version__  # noqa: F401
+from ._version import __version__  # noqa
+from ._version import version_info  # noqa
 from .client import NotebookClient, execute  # noqa: F401
 
 

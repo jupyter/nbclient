@@ -17,14 +17,6 @@ if not local_path:
 here = os.path.abspath(local_path)
 
 
-def version():
-    with open(here + '/nbclient/_version.py') as ver:
-        for line in ver.readlines():
-            if line.startswith('version ='):
-                return line.split(' = ')[-1].strip()[1:-1]
-    raise ValueError('No version found in nbclient/version.py')
-
-
 def read(path):
     with open(path) as fhandle:
         return fhandle.read()
@@ -43,7 +35,6 @@ extras_require = {"test": dev_reqs, "dev": dev_reqs, "sphinx": doc_reqs}
 
 setup(
     name=name,
-    version=version(),
     author='Jupyter Development Team',
     author_email='jupyter@googlegroups.com',
     url='https://jupyter.org',

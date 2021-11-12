@@ -1,24 +1,32 @@
 # Releasing
 
-## Prerequisites
+## Using `jupyter_releaser`
 
-- First check that the CHANGELOG (see `docs/changelog.md`) is up to date for the next release version
-- Ensure dev requirements are installed `pip install -r requirements-dev.txt`
+The recommended way to make a release is to use [`jupyter_releaser`](https://github.com/jupyter-server/jupyter_releaser#checklist-for-adoption).
 
-## Push to GitHub
+## Manual Release
 
-Change from patch to minor or major for appropriate version updates.
+### Prerequisites
+
+- First check that the CHANGELOG.md is up to date for the next release version
+- Install packaging requirements: `pip install tbump build tomlkit==0.7.0`
+
+### Bump version
+
+- `export version=<NEW_VERSION>`
+- `tbump ${version} --no-push`
+
+### Push to GitHub
 
 ```bash
-bumpversion patch
 git push upstream && git push upstream --tags
 ```
 
-## Push to PyPI
+### Push to PyPI
 
 ```bash
 rm -rf dist/*
 rm -rf build/*
-python setup.py sdist bdist_wheel
+python -m build .
 twine upload dist/*
 ```
