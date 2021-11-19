@@ -173,23 +173,23 @@ Using a command-line interface
 
 This section will illustrate how to run notebooks from your terminal. It supports the most basic use case. For more sophisticated execution options, consider the `papermill <https://pypi.org/project/papermill/>`_ library.
 
-This library's command line tool is available by running `jupyter run`. It expects notebooks as input arguments and accepts optional flags to modify the default behavior.
+This library's command line tool is available by running `jupyter execute`. It expects notebooks as input arguments and accepts optional flags to modify the default behavior.
 
 Running a notebook is this easy.::
 
-    jupyter run notebook.ipynb
+    jupyter execute notebook.ipynb
 
 You can pass more than one notebook as well.::
 
-    jupyter run notebook.ipynb notebook2.ipynb
+    jupyter execute notebook.ipynb notebook2.ipynb
 
 By default, notebook errors will be raised and printed into the terminal. You can suppress them by passing the ``--allow-errors`` flag.::
 
-    jupyter run notebook.ipynb --allow-errors
+    jupyter execute notebook.ipynb --allow-errors
 
 Other options allow you to modify the timeout length and dictate the kernel in use. A full set of options is available via the help command.::
 
-    jupyter run --help
+    jupyter execute --help
 
     An application used to execute notebook files (*.ipynb)
 

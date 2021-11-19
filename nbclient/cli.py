@@ -36,7 +36,7 @@ class NbClientApp(JupyterApp):
     """
 
     version = __version__
-    name = 'jupyter-run'
+    name = 'jupyter-execute'
     aliases = nbclient_aliases
     flags = nbclient_flags
 
@@ -154,21 +154,4 @@ class NbClientApp(JupyterApp):
         client.execute()
 
 
-class NbClientAlias(NbClientApp):
-    """
-    An alias to the run command.
-    """
-
-    name = 'jupyter-execute'
-
-    @catch_config_error
-    def initialize(self, argv=None):
-        print(
-            "This alias to `jupyter run` may be deprecated in the future. "
-            "Please switch to using `run`."
-        )
-        super().initialize(argv)
-
-
-run = NbClientApp.launch_instance
-execute = NbClientAlias.launch_instance
+main = NbClientApp.launch_instance
