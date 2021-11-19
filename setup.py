@@ -50,8 +50,7 @@ setup(
     extras_require=extras_require,
     entry_points={
         'console_scripts': [
-            'jupyter-run = nbclient.cli:run',
-            'jupyter-execute = nbclient.cli:execute',
+            'jupyter-execute = nbclient.cli:main',
         ],
     },
     project_urls={
