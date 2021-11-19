@@ -2,11 +2,25 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.9
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.8...0146681d7ffd62cbc675c8d1463a2b016a3d3008))
+
+### Merged PRs
+
+- Remove jupyter-run, keep jupyter-execute [#180](https://github.com/jupyter/nbclient/pull/180) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2021-11-12&to=2021-11-19&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2021-11-12..2021-11-19&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.8
 
 No merged PRs
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.7
 
