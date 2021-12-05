@@ -338,7 +338,7 @@ class NotebookClient(LoggingConfigurable):
         # maps to list of hooks, where the last is used, this is used
         # to support nested use of output widgets.
         self.output_hook_stack: t.Any = collections.defaultdict(list)
-        # our front-end mimicing Output widgets
+        # our front-end mimicking Output widgets
         self.comm_objects: t.Dict[str, t.Any] = {}
 
     def create_kernel_manager(self) -> KernelManager:
@@ -729,7 +729,7 @@ class NotebookClient(LoggingConfigurable):
         return None
 
     wait_for_reply = run_sync(async_wait_for_reply)
-    # Backwards compatability naming for papermill
+    # Backwards compatibility naming for papermill
     _wait_for_reply = wait_for_reply
 
     def _passed_deadline(self, deadline: int) -> bool:
@@ -929,7 +929,7 @@ class NotebookClient(LoggingConfigurable):
 
         parent_msg_id = msg['parent_header'].get('msg_id')
         if self.output_hook_stack[parent_msg_id]:
-            # if we have a hook registered, it will overrride our
+            # if we have a hook registered, it will override our
             # default output behaviour (e.g. OutputWidget)
             hook = self.output_hook_stack[parent_msg_id][-1]
             hook.output(outs, msg, display_id, cell_index)
@@ -964,7 +964,7 @@ class NotebookClient(LoggingConfigurable):
 
         parent_msg_id = msg['parent_header'].get('msg_id')
         if self.output_hook_stack[parent_msg_id]:
-            # if we have a hook registered, it will overrride our
+            # if we have a hook registered, it will override our
             # default clear_output behaviour (e.g. OutputWidget)
             hook = self.output_hook_stack[parent_msg_id][-1]
             hook.clear_output(outs, msg, cell_index)

@@ -132,7 +132,7 @@ class NbClientApp(JupyterApp):
         # Get its parent directory so we can add it to the $PATH
         path = pathlib.Path(notebook_path).parent.absolute()
 
-        # Set the intput file paths
+        # Set the input file paths
         input_path = f"{name}.ipynb"
 
         # Open up the notebook we're going to run
