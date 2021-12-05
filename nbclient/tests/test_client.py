@@ -408,7 +408,7 @@ def test_synchronous_setup_kernel():
     nb = nbformat.v4.new_notebook()
     executor = NotebookClient(nb)
     with executor.setup_kernel():
-        # Prove it initalized client
+        # Prove it initialized client
         assert executor.kc is not None
     # Prove it removed the client (and hopefully cleaned up)
     assert executor.kc is None
@@ -420,7 +420,7 @@ def test_startnewkernel_with_kernelmanager():
     executor = NotebookClient(nb, km=km)
     executor.start_new_kernel()
     kc = executor.start_new_kernel_client()
-    # prove it initalized client
+    # prove it initialized client
     assert kc is not None
     # since we are not using the setup_kernel context manager,
     # cleanup has to be done manually

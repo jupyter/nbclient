@@ -109,7 +109,7 @@ If you were using these versions for the couple days they were up, move to 0.5.0
 ### Fixes
 
 - Fix `OSError: [WinError 6] The handle is invalid` for windows/python<3.7 [#77](https://github.com/jupyter/nbclient/pull/77)
-- Async wapper Exceptions no longer loose thier caused exception information [#65](https://github.com/jupyter/nbclient/pull/65)
+- Async wapper Exceptions no longer loose their caused exception information [#65](https://github.com/jupyter/nbclient/pull/65)
 - `extra_arguments` are now configurable by config settings [#66](https://github.com/jupyter/nbclient/pull/66)
 
 ### Operational
@@ -143,7 +143,7 @@ If you were using these versions for the couple days they were up, move to 0.5.0
 ### Major Changes
 
 - Async support is now available on the client. Methods that support async have an `async_` prefix and can be awaited [#10](https://github.com/jupyter/nbclient/pull/10) [#35](https://github.com/jupyter/nbclient/pull/35) [#37](https://github.com/jupyter/nbclient/pull/37) [#38](https://github.com/jupyter/nbclient/pull/38)
-- Dropped support for Python 3.5 due to async compatability issues [#34](https://github.com/jupyter/nbclient/pull/34)
+- Dropped support for Python 3.5 due to async compatibility issues [#34](https://github.com/jupyter/nbclient/pull/34)
 - Notebook documents now include the [new kernel timing fields](https://github.com/jupyter/nbformat/pull/144) [#32](https://github.com/jupyter/nbclient/pull/32)
 
 ### Fixes
