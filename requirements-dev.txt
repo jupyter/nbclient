@@ -1,7 +1,6 @@
 codecov
 coverage
 ipython
-ipykernel
 ipywidgets
 pytest>=4.1
 pytest-cov>=2.6.1
