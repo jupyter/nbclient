@@ -1,21 +1,13 @@
+import asyncio
 import atexit
 import base64
 import collections
 import datetime
 import signal
-from textwrap import dedent
-
-try:
-    from contextlib import asynccontextmanager
-except ImportError:
-    # Use the backport package async-generator for Python < 3.7.
-    # This should be removed when nbclient drops support for Python 3.6
-    from async_generator import asynccontextmanager  # type: ignore
-
-import asyncio
 import typing as t
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from queue import Empty
+from textwrap import dedent
 from time import monotonic
 
 from jupyter_client import KernelManager

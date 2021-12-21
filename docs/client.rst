@@ -173,7 +173,7 @@ Using a command-line interface
 
 This section will illustrate how to run notebooks from your terminal. It supports the most basic use case. For more sophisticated execution options, consider the `papermill <https://pypi.org/project/papermill/>`_ library.
 
-This library's command line tool is available by running `jupyter execute`. It expects notebooks as input arguments and accepts optional flags to modify the default behavior.
+This library's command line tool is available by running ``jupyter execute``. It expects notebooks as input arguments and accepts optional flags to modify the default behavior.
 
 Running a notebook is this easy.::
 
