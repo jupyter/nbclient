@@ -232,7 +232,7 @@ def assert_notebooks_equal(expected, actual):
 
         expected_execution_count = expected_cell.get('attachments', None)
         actual_execution_count = actual_cell.get('attachments', None)
-        assert expected_execution_count == actual_execution_count        
+        assert expected_execution_count == actual_execution_count
 
 
 def notebook_resources():
@@ -252,6 +252,7 @@ def filter_messages_on_error_output(err_output):
 
     return os.linesep.join(filtered_result)
 
+
 def parse_md_expressions(source: str) -> list:
     """
     Parse markdown expressions from a string.
@@ -261,9 +262,12 @@ def parse_md_expressions(source: str) -> list:
     """
     from markdown_it import MarkdownIt, tree
     from mdit_py_plugins.substitution import substitution_plugin
+
     mdit = MarkdownIt().use(substitution_plugin)
     tokens = tree.SyntaxTreeNode(mdit.parse(source))
-    return [t.content for t in tokens.walk() if t.type in ['substitution_inline', 'substitution_block']]
+    return [
+        t.content for t in tokens.walk() if t.type in ['substitution_inline', 'substitution_block']
+    ]
 
 
 @pytest.mark.parametrize(
@@ -288,7 +292,10 @@ def parse_md_expressions(source: str) -> list:
         ("UnicodePy3.ipynb", dict(kernel_name="python")),
         ("update-display-id.ipynb", dict(kernel_name="python")),
         ("Check History in Memory.ipynb", dict(kernel_name="python")),
-        ("Markdown_expressions.ipynb", dict(kernel_name="python", parse_md_expressions=parse_md_expressions)),
+        (
+            "Markdown_expressions.ipynb",
+            dict(kernel_name="python", parse_md_expressions=parse_md_expressions),
+        ),
     ],
 )
 def test_run_all_notebooks(input_name, opts):

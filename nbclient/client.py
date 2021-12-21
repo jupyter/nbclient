@@ -14,7 +14,18 @@ from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
 from nbformat import NotebookNode
 from nbformat.v4 import output_from_msg
-from traitlets import Any, Bool, Callable, Dict, Enum, Integer, List, Type, Unicode, default
+from traitlets import (
+    Any,
+    Bool,
+    Callable,
+    Dict,
+    Enum,
+    Integer,
+    List,
+    Type,
+    Unicode,
+    default,
+)
 from traitlets.config.configurable import LoggingConfigurable
 
 from .exceptions import (
@@ -33,6 +44,7 @@ def timestamp() -> str:
 
 
 MD_EXPRESSIONS_PREFIX = "md-expr"
+
 
 class NotebookClient(LoggingConfigurable):
     """
@@ -294,7 +306,7 @@ class NotebookClient(LoggingConfigurable):
             """
             A function to extract expression variables from a Markdown cell.
             """
-        )
+        ),
     )
 
     resources: t.Dict = Dict(
@@ -1027,20 +1039,20 @@ class NotebookClient(LoggingConfigurable):
             if comm_id in self.comm_objects:
                 self.comm_objects[comm_id].handle_msg(msg)
 
-    async def async_execute_expressions(self, cell, cell_index: int, expressions: t.List[str]) -> t.Dict[str, Any]:
+    async def async_execute_expressions(
+        self, cell, cell_index: int, expressions: t.List[str]
+    ) -> t.Dict[str, Any]:
         parent_msg_id = await ensure_async(
             self.kc.execute(
                 '',
                 silent=True,
-                user_expressions={f"{MD_EXPRESSIONS_PREFIX}-{i}": expr for i, expr in enumerate(expressions)},
+                user_expressions={
+                    f"{MD_EXPRESSIONS_PREFIX}-{i}": expr for i, expr in enumerate(expressions)
+                },
             )
         )
-        task_poll_kernel_alive = asyncio.ensure_future(
-            self._async_poll_kernel_alive()
-        )
-        task_poll_expr_msg = asyncio.ensure_future(
-            self._async_poll_expr_msg(parent_msg_id)
-        )
+        task_poll_kernel_alive = asyncio.ensure_future(self._async_poll_kernel_alive())
+        task_poll_expr_msg = asyncio.ensure_future(self._async_poll_expr_msg(parent_msg_id))
         exec_timeout = None
         self.task_poll_for_reply = asyncio.ensure_future(
             self._async_poll_for_expr_reply(
@@ -1062,21 +1074,29 @@ class NotebookClient(LoggingConfigurable):
             finally:
                 raise
         self._check_raise_for_error(cell, exec_reply)
-        attachments = {key: val["data"] if "data" in val else {"traceback": "\n".join(val["traceback"])} for key, val in exec_reply["content"]["user_expressions"].items()}
+        attachments = {
+            key: val["data"] if "data" in val else {"traceback": "\n".join(val["traceback"])}
+            for key, val in exec_reply["content"]["user_expressions"].items()
+        }
         cell.setdefault("attachments", {})
         # remove old expressions from cell
-        cell["attachments"] = {key: val for key, val in cell["attachments"].items() if not key.startswith(MD_EXPRESSIONS_PREFIX)}
+        cell["attachments"] = {
+            key: val
+            for key, val in cell["attachments"].items()
+            if not key.startswith(MD_EXPRESSIONS_PREFIX)
+        }
         cell["attachments"].update(attachments)
         self.nb['cells'][cell_index] = cell
         return cell
 
     async def _async_poll_for_expr_reply(
-            self,
-            msg_id: str,
-            cell: NotebookNode,
-            timeout: t.Optional[int],
-            task_poll_output_msg: asyncio.Future,
-            task_poll_kernel_alive: asyncio.Future) -> t.Dict:
+        self,
+        msg_id: str,
+        cell: NotebookNode,
+        timeout: t.Optional[int],
+        task_poll_output_msg: asyncio.Future,
+        task_poll_kernel_alive: asyncio.Future,
+    ) -> t.Dict:
 
         assert self.kc is not None
         new_timeout: t.Optional[float] = None
@@ -1109,9 +1129,7 @@ class NotebookClient(LoggingConfigurable):
                 await self._async_check_alive()
                 await self._async_handle_timeout(timeout, cell)
 
-    async def _async_poll_expr_msg(
-            self,
-            parent_msg_id: str) -> None:
+    async def _async_poll_expr_msg(self, parent_msg_id: str) -> None:
 
         assert self.kc is not None
         while True:
