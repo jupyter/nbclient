@@ -45,7 +45,7 @@ setup(
     long_description_content_type='text/markdown',
     packages=['nbclient'],
     include_package_data=True,
-    python_requires=">=3.6.1",
+    python_requires=">=3.7.0",
     install_requires=requirements,
     extras_require=extras_require,
     entry_points={
@@ -69,9 +69,9 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 )
