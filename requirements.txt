@@ -1,5 +1,4 @@
 traitlets>=4.2
 jupyter_client>=6.1.5
 nbformat>=5.0
-async_generator; python_version<'3.7'
 nest_asyncio
