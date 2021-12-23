@@ -33,6 +33,16 @@ ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
 # see: https://github.com/ipython/ipython/blob/master/docs/source/whatsnew/version8.rst#traceback-improvements  # noqa
 ipython8_input_pat = re.compile(r'Input In \[\d+\],')
 
+hook_methods = [
+    "on_cell_start",
+    "on_cell_execute",
+    "on_cell_complete",
+    "on_cell_error",
+    "on_notebook_start",
+    "on_notebook_complete",
+    "on_notebook_error",
+]
+
 
 class AsyncMock(Mock):
     pass
@@ -740,6 +750,82 @@ while True: continue
             assert 'state' in d
         assert 'version_major' in wdata
         assert 'version_minor' in wdata
+
+    def test_execution_hook(self):
+        filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
+        with open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+        hooks = [MagicMock() for i in range(7)]
+        executor = NotebookClient(input_nb)
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        executor.execute()
+        for hook in hooks[:3]:
+            hook.assert_called_once()
+        hooks[3].assert_not_called()
+        for hook in hooks[4:6]:
+            hook.assert_called_once()
+        hooks[6].assert_not_called()
+
+    def test_error_execution_hook_error(self):
+        filename = os.path.join(current_dir, 'files', 'Error.ipynb')
+        with open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+        hooks = [MagicMock() for i in range(7)]
+        executor = NotebookClient(input_nb)
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        with pytest.raises(CellExecutionError):
+            executor.execute()
+        for hook in hooks[:5]:
+            hook.assert_called_once()
+        hooks[6].assert_not_called()
+
+    def test_error_notebook_hook(self):
+        filename = os.path.join(current_dir, 'files', 'Autokill.ipynb')
+        with open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+        hooks = [MagicMock() for i in range(7)]
+        executor = NotebookClient(input_nb)
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        with pytest.raises(RuntimeError):
+            executor.execute()
+        for hook in hooks[:3]:
+            hook.assert_called_once()
+        hooks[3].assert_not_called()
+        for hook in hooks[4:]:
+            hook.assert_called_once()
+
+    def test_async_execution_hook(self):
+        filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
+        with open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+        hooks = [AsyncMock() for i in range(7)]
+        executor = NotebookClient(input_nb)
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        executor.execute()
+        for hook in hooks[:3]:
+            hook.assert_called_once()
+        hooks[3].assert_not_called()
+        for hook in hooks[4:6]:
+            hook.assert_called_once()
+        hooks[6].assert_not_called()
+
+    def test_error_async_execution_hook(self):
+        filename = os.path.join(current_dir, 'files', 'Error.ipynb')
+        with open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+        hooks = [AsyncMock() for i in range(7)]
+        executor = NotebookClient(input_nb)
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        with pytest.raises(CellExecutionError):
+            executor.execute().execute()
+        for hook in hooks[:5]:
+            hook.assert_called_once()
+        hooks[6].assert_not_called()
 
 
 class TestRunCell(NBClientTestsBase):
@@ -1524,3 +1610,92 @@ class TestRunCell(NBClientTestsBase):
         assert message_mock.call_count == 0
         # Should also consume the message stream
         assert cell_mock.outputs == []
+
+    @prepare_cell_mocks()
+    def test_cell_hooks(self, executor, cell_mock, message_mock):
+        hooks = [MagicMock() for i in range(7)]
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        executor.execute_cell(cell_mock, 0)
+        for hook in hooks[:3]:
+            hook.assert_called_once_with(cell=cell_mock, cell_index=0)
+        for hook in hooks[4:]:
+            hook.assert_not_called()
+
+    @prepare_cell_mocks(
+        {
+            'msg_type': 'error',
+            'header': {'msg_type': 'error'},
+            'content': {'ename': 'foo', 'evalue': 'bar', 'traceback': ['Boom']},
+        },
+        reply_msg={
+            'msg_type': 'execute_reply',
+            'header': {'msg_type': 'execute_reply'},
+            # ERROR
+            'content': {'status': 'error'},
+        },
+    )
+    def test_error_cell_hooks(self, executor, cell_mock, message_mock):
+        hooks = [MagicMock() for i in range(7)]
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        with self.assertRaises(CellExecutionError):
+            executor.execute_cell(cell_mock, 0)
+        for hook in hooks[:4]:
+            hook.assert_called_once_with(cell=cell_mock, cell_index=0)
+        for hook in hooks[5:]:
+            hook.assert_not_called()
+
+    @prepare_cell_mocks(
+        reply_msg={
+            'msg_type': 'execute_reply',
+            'header': {'msg_type': 'execute_reply'},
+            # ERROR
+            'content': {'status': 'error'},
+        }
+    )
+    def test_non_code_cell_hooks(self, executor, cell_mock, message_mock):
+        cell_mock = NotebookNode(source='"foo" = "bar"', metadata={}, cell_type='raw', outputs=[])
+        hooks = [MagicMock() for i in range(7)]
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        executor.execute_cell(cell_mock, 0)
+        for hook in hooks[:1]:
+            hook.assert_called_once_with(cell=cell_mock, cell_index=0)
+        for hook in hooks[1:]:
+            hook.assert_not_called()
+
+    @prepare_cell_mocks()
+    def test_async_cell_hooks(self, executor, cell_mock, message_mock):
+        hooks = [AsyncMock() for i in range(7)]
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        executor.execute_cell(cell_mock, 0)
+        for hook in hooks[:3]:
+            hook.assert_called_once_with(cell=cell_mock, cell_index=0)
+        for hook in hooks[4:]:
+            hook.assert_not_called()
+
+    @prepare_cell_mocks(
+        {
+            'msg_type': 'error',
+            'header': {'msg_type': 'error'},
+            'content': {'ename': 'foo', 'evalue': 'bar', 'traceback': ['Boom']},
+        },
+        reply_msg={
+            'msg_type': 'execute_reply',
+            'header': {'msg_type': 'execute_reply'},
+            # ERROR
+            'content': {'status': 'error'},
+        },
+    )
+    def test_error_async_cell_hooks(self, executor, cell_mock, message_mock):
+        hooks = [AsyncMock() for i in range(7)]
+        for executor_hook, hook in zip(hook_methods, hooks):
+            setattr(executor, executor_hook, hook)
+        with self.assertRaises(CellExecutionError):
+            executor.execute_cell(cell_mock, 0)
+        for hook in hooks[:4]:
+            hook.assert_called_once_with(cell=cell_mock, cell_index=0)
+        for hook in hooks[4:]:
+            hook.assert_not_called()

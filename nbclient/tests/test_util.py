@@ -1,8 +1,10 @@
 import asyncio
+from unittest.mock import MagicMock
 
+import pytest
 import tornado
 
-from nbclient.util import run_sync
+from nbclient.util import run_hook, run_sync
 
 
 @run_sync
@@ -55,3 +57,17 @@ def test_nested_asyncio_with_tornado():
         assert some_sync_function() == 42
 
     ioloop.run_sync(run)
+
+
+@pytest.mark.asyncio
+async def test_run_hook_sync():
+    some_sync_function = MagicMock()
+    await run_hook(some_sync_function)
+    assert some_sync_function.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_run_hook_async():
+    hook = MagicMock(return_value=some_async_function())
+    await run_hook(hook)
+    assert hook.call_count == 1

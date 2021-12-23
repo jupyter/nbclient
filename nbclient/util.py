@@ -7,7 +7,6 @@ import asyncio
 import inspect
 import sys
 from typing import Any, Awaitable, Callable, Optional, Union
-from functools import partial
 
 
 def check_ipython() -> None:
@@ -105,13 +104,9 @@ async def ensure_async(obj: Union[Awaitable, Any]) -> Any:
     return obj
 
 
-def run_hook(hook: Optional[Callable], **kwargs) -> None:
+async def run_hook(hook: Optional[Callable], **kwargs) -> None:
     if hook is None:
         return
-    if inspect.iscoroutinefunction(hook):
-        future = hook(**kwargs)
-    else:
-        loop = asyncio.get_event_loop()
-        hook_with_kwargs = partial(hook, **kwargs)
-        future = loop.run_in_executor(None, hook_with_kwargs)
-    asyncio.ensure_future(future)
+    res = hook(**kwargs)
+    if inspect.isawaitable(res):
+        await res
