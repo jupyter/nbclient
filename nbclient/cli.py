@@ -4,7 +4,7 @@ import sys
 from textwrap import dedent
 
 import nbformat
-from jupyter_core.application import JupyterApp
+from jupyter_core.application import JupyterApp  # type: ignore
 from traitlets import Bool, Integer, List, Unicode, default
 from traitlets.config import catch_config_error
 

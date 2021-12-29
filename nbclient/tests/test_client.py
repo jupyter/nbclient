@@ -13,13 +13,13 @@ from unittest.mock import MagicMock, Mock
 
 import nbformat
 import pytest
-import xmltodict
+import xmltodict  # type: ignore
 from ipython_genutils.py3compat import string_types
 from jupyter_client import KernelManager
 from jupyter_client.kernelspec import KernelSpecManager
-from nbconvert.filters import strip_ansi
+from nbconvert.filters import strip_ansi  # type: ignore
 from nbformat import NotebookNode
-from testpath import modified_env
+from testpath import modified_env  # type: ignore
 from traitlets import TraitError
 
 from .. import NotebookClient, execute

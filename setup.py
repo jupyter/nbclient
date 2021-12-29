@@ -11,9 +11,6 @@ from setuptools import setup
 name = 'nbclient'
 
 local_path = os.path.dirname(__file__)
-# Fix for tox which manipulates execution pathing
-if not local_path:
-    local_path = '.'
 here = os.path.abspath(local_path)
 
 
@@ -31,7 +28,7 @@ long_description = read(os.path.join(os.path.dirname(__file__), "README.md"))
 requirements = read(os.path.join(os.path.dirname(__file__), "requirements.txt"))
 dev_reqs = read_reqs(os.path.join(os.path.dirname(__file__), 'requirements-dev.txt'))
 doc_reqs = read_reqs(os.path.join(os.path.dirname(__file__), 'docs/requirements-doc.txt'))
-extras_require = {"test": dev_reqs, "dev": dev_reqs, "sphinx": doc_reqs}
+extras_require = {"test": dev_reqs, "sphinx": doc_reqs}
 
 setup(
     name=name,

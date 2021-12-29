@@ -19,7 +19,7 @@ jobs:
         python-version: 3.8
     - uses: pre-commit/action@v2.0.0
 
-  build-n-test-n-coverage:
+  build:
     name: Build, test and code coverage
     runs-on: ${{ matrix.os }}
     strategy:
@@ -39,17 +39,24 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -e .[test]
-        pip install tox coverage tox-gh-actions
+        pip install .[test]
+        pip install coverage
+
+    - name: Type check
+      run: mypy nbclient
+
     - name: Run the tests
-      run: tox
+      run: |
+        pytest -vv --maxfail=2 --cov=nbclient --cov-report=xml -W always
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
@@ -58,3 +65,8 @@ jobs:
           env_vars: OS,PYTHON
           name: codecov-umbrella
           fail_ci_if_error: false
+
+    - name: Build documentation
+      run: |
+        pip install .[sphinx]
+        sphinx-build docs docs_build --color -W -bhtml
