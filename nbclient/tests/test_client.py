@@ -27,8 +27,11 @@ from ..exceptions import CellExecutionError
 from .base import NBClientTestsBase
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
-ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
 current_dir = os.path.dirname(__file__)
+ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
+# Tracebacks look different in IPython 8,
+# see: https://github.com/ipython/ipython/blob/master/docs/source/whatsnew/version8.rst#traceback-improvements  # noqa
+ipython8_input_pat = re.compile(r'Input In \[\d+\],')
 
 
 class AsyncMock(Mock):
@@ -201,10 +204,11 @@ def normalize_output(output):
         if isinstance(value, string_types):
             output['data'][key] = normalize_base64(value)
     if 'traceback' in output:
-        tb = [
-            re.sub(ipython_input_pat, '<IPY-INPUT>', strip_ansi(line))
-            for line in output['traceback']
-        ]
+        tb = []
+        for line in output["traceback"]:
+            line = re.sub(ipython_input_pat, '<IPY-INPUT>', strip_ansi(line))
+            line = re.sub(ipython8_input_pat, '<IPY-INPUT>', strip_ansi(line))
+            tb.append(line)
         output['traceback'] = tb
 
     return output
