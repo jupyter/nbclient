@@ -2,6 +2,28 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.10
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.9...e82c5d8d064ac1097f4e12f387b4c47ea5c576ff))
+
+### Merged PRs
+
+- Fix ipywidgets version in tests [#192](https://github.com/jupyter/nbclient/pull/192) ([@martinRenou](https://github.com/martinRenou))
+- Compatibility with IPython 8 where tracebacks are different [#190](https://github.com/jupyter/nbclient/pull/190) ([@frenzymadness](https://github.com/frenzymadness))
+- Drop tox [#187](https://github.com/jupyter/nbclient/pull/187) ([@davidbrochart](https://github.com/davidbrochart))
+- Update README [#185](https://github.com/jupyter/nbclient/pull/185) ([@davidbrochart](https://github.com/davidbrochart))
+- Drop python3.6, test python3.10 [#184](https://github.com/jupyter/nbclient/pull/184) ([@davidbrochart](https://github.com/davidbrochart))
+- Fix typos [#182](https://github.com/jupyter/nbclient/pull/182) ([@kianmeng](https://github.com/kianmeng))
+- Use codecov Github action v2 [#168](https://github.com/jupyter/nbclient/pull/168) ([@takluyver](https://github.com/takluyver))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2021-11-19&to=2022-01-13&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2021-11-19..2022-01-13&type=Issues) | [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2021-11-19..2022-01-13&type=Issues) | [@kianmeng](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akianmeng+updated%3A2021-11-19..2022-01-13&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3AmartinRenou+updated%3A2021-11-19..2022-01-13&type=Issues) | [@takluyver](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Atakluyver+updated%3A2021-11-19..2022-01-13&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.9
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.8...0146681d7ffd62cbc675c8d1463a2b016a3d3008))
@@ -15,8 +37,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2021-11-12&to=2021-11-19&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2021-11-12..2021-11-19&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.8
 
