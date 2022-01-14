@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager, contextmanager
 from queue import Empty
 from textwrap import dedent
 from time import monotonic
+from typing import Optional
 
 from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
@@ -28,7 +29,22 @@ from .output_widget import OutputWidget
 from .util import ensure_async, run_sync
 
 
-def timestamp() -> str:
+def timestamp(msg: Optional[Dict] = None) -> str:
+    if msg and 'header' in msg:  # The test mocks don't provide a header, so tolerate that
+        msg_header = msg['header']
+        if 'date' in msg_header and isinstance(msg_header['date'], datetime.datetime):
+            try:
+                # reformat datetime into expected format
+                formatted_time = datetime.datetime.strftime(
+                    msg_header['date'], '%Y-%m-%dT%H:%M:%S.%fZ'
+                )
+                if (
+                    formatted_time
+                ):  # docs indicate strftime may return empty string, so let's catch that too
+                    return formatted_time
+            except Exception:
+                pass  # fallback to a local time
+
     return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
@@ -618,7 +634,7 @@ class NotebookClient(LoggingConfigurable):
                 msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
                 if msg['parent_header'].get('msg_id') == msg_id:
                     if self.record_timing:
-                        cell['metadata']['execution']['shell.execute_reply'] = timestamp()
+                        cell['metadata']['execution']['shell.execute_reply'] = timestamp(msg)
                     try:
                         await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
                     except (asyncio.TimeoutError, Empty):
@@ -796,7 +812,7 @@ class NotebookClient(LoggingConfigurable):
             self.log.debug("Skipping tagged cell %s", cell_index)
             return cell
 
-        if self.record_timing and 'execution' not in cell['metadata']:
+        if self.record_timing:  # clear execution metadata prior to execution
             cell['metadata']['execution'] = {}
 
         self.log.debug("Executing cell:\n%s", cell.source)
@@ -894,11 +910,11 @@ class NotebookClient(LoggingConfigurable):
         if self.record_timing:
             if msg_type == 'status':
                 if content['execution_state'] == 'idle':
-                    cell['metadata']['execution']['iopub.status.idle'] = timestamp()
+                    cell['metadata']['execution']['iopub.status.idle'] = timestamp(msg)
                 elif content['execution_state'] == 'busy':
-                    cell['metadata']['execution']['iopub.status.busy'] = timestamp()
+                    cell['metadata']['execution']['iopub.status.busy'] = timestamp(msg)
             elif msg_type == 'execute_input':
-                cell['metadata']['execution']['iopub.execute_input'] = timestamp()
+                cell['metadata']['execution']['iopub.execute_input'] = timestamp(msg)
 
         if msg_type == 'status':
             if content['execution_state'] == 'idle':
