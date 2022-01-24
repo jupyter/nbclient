@@ -92,13 +92,6 @@ async def ensure_async(obj: Union[Awaitable, Any]) -> Any:
     and await it if it was not already awaited.
     """
     if inspect.isawaitable(obj):
-        try:
-            result = await obj
-        except RuntimeError as e:
-            if str(e) == 'cannot reuse already awaited coroutine':
-                # obj is already the coroutine's result
-                return obj
-            raise
-        return result
-    # obj doesn't need to be awaited
-    return obj
+        return await obj
+    else:
+        return obj
