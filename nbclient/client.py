@@ -15,7 +15,18 @@ from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
 from nbformat import NotebookNode
 from nbformat.v4 import output_from_msg
-from traitlets import Any, Bool, Dict, Enum, Integer, List, Type, Unicode, default
+from traitlets import (
+    Any,
+    Bool,
+    Callable,
+    Dict,
+    Enum,
+    Integer,
+    List,
+    Type,
+    Unicode,
+    default,
+)
 from traitlets.config.configurable import LoggingConfigurable
 
 from .exceptions import (
@@ -26,7 +37,7 @@ from .exceptions import (
     DeadKernelError,
 )
 from .output_widget import OutputWidget
-from .util import ensure_async, run_sync
+from .util import ensure_async, run_hook, run_sync
 
 
 def timestamp(msg: Optional[Dict] = None) -> str:
@@ -261,6 +272,87 @@ class NotebookClient(LoggingConfigurable):
 
     kernel_manager_class: KernelManager = Type(config=True, help='The kernel manager class to use.')
 
+    on_notebook_start: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes after the kernel manager and kernel client are setup, and
+            cells are about to execute.
+            Called with kwargs `notebook`.
+            """
+        ),
+    ).tag(config=True)
+
+    on_notebook_complete: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes after the kernel is cleaned up.
+            Called with kwargs `notebook`.
+            """
+        ),
+    ).tag(config=True)
+
+    on_notebook_error: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes when the notebook encounters an error.
+            Called with kwargs `notebook`.
+            """
+        ),
+    ).tag(config=True)
+
+    on_cell_start: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes before a cell is executed and before non-executing cells
+            are skipped.
+            Called with kwargs `cell` and `cell_index`.
+            """
+        ),
+    ).tag(config=True)
+
+    on_cell_execute: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes just before a code cell is executed.
+            Called with kwargs `cell` and `cell_index`.
+            """
+        ),
+    ).tag(config=True)
+
+    on_cell_complete: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes after a cell execution is complete. It is
+            called even when a cell results in a failure.
+            Called with kwargs `cell` and `cell_index`.
+            """
+        ),
+    ).tag(config=True)
+
+    on_cell_error: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes when a cell execution results in an error.
+            This is executed even if errors are suppressed with `cell_allows_errors`.
+            Called with kwargs `cell` and `cell_index`.
+            """
+        ),
+    ).tag(config=True)
+
     @default('kernel_manager_class')
     def _kernel_manager_class_default(self) -> KernelManager:
         """Use a dynamic default to avoid importing jupyter_client at startup"""
@@ -442,6 +534,7 @@ class NotebookClient(LoggingConfigurable):
             await self._async_cleanup_kernel()
             raise
         self.kc.allow_stdin = False
+        await run_hook(self.on_notebook_start, notebook=self.nb)
         return self.kc
 
     start_new_kernel_client = run_sync(async_start_new_kernel_client)
@@ -513,10 +606,13 @@ class NotebookClient(LoggingConfigurable):
             await self.async_start_new_kernel_client()
         try:
             yield
+        except RuntimeError as e:
+            await run_hook(self.on_notebook_error, notebook=self.nb)
+            raise e
         finally:
             if cleanup_kc:
                 await self._async_cleanup_kernel()
-
+            await run_hook(self.on_notebook_complete, notebook=self.nb)
             atexit.unregister(self._cleanup_kernel)
             try:
                 loop.remove_signal_handler(signal.SIGINT)
@@ -745,7 +841,9 @@ class NotebookClient(LoggingConfigurable):
             return True
         return False
 
-    def _check_raise_for_error(self, cell: NotebookNode, exec_reply: t.Optional[t.Dict]) -> None:
+    async def _check_raise_for_error(
+        self, cell: NotebookNode, cell_index: int, exec_reply: t.Optional[t.Dict]
+    ) -> None:
 
         if exec_reply is None:
             return None
@@ -759,7 +857,7 @@ class NotebookClient(LoggingConfigurable):
             or exec_reply_content.get('ename') in self.allow_error_names
             or "raises-exception" in cell.metadata.get("tags", [])
         )
-
+        await run_hook(self.on_cell_error, cell=cell, cell_index=cell_index)
         if not cell_allows_errors:
             raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 
@@ -804,6 +902,9 @@ class NotebookClient(LoggingConfigurable):
             The cell which was just processed.
         """
         assert self.kc is not None
+
+        await run_hook(self.on_cell_start, cell=cell, cell_index=cell_index)
+
         if cell.cell_type != 'code' or not cell.source.strip():
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
@@ -821,11 +922,13 @@ class NotebookClient(LoggingConfigurable):
             self.allow_errors or "raises-exception" in cell.metadata.get("tags", [])
         )
 
+        await run_hook(self.on_cell_execute, cell=cell, cell_index=cell_index)
         parent_msg_id = await ensure_async(
             self.kc.execute(
                 cell.source, store_history=store_history, stop_on_error=not cell_allows_errors
             )
         )
+        await run_hook(self.on_cell_complete, cell=cell, cell_index=cell_index)
         # We launched a code cell to execute
         self.code_cells_executed += 1
         exec_timeout = self._get_timeout(cell)
@@ -859,7 +962,7 @@ class NotebookClient(LoggingConfigurable):
 
         if execution_count:
             cell['execution_count'] = execution_count
-        self._check_raise_for_error(cell, exec_reply)
+        await self._check_raise_for_error(cell, cell_index, exec_reply)
         self.nb['cells'][cell_index] = cell
         return cell
 

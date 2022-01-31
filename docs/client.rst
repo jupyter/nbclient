@@ -96,6 +96,36 @@ on both versions. Here the traitlet ``kernel_name`` helps simplify and
 maintain consistency: we can just run a notebook twice, specifying first
 "python2" and then "python3" as the kernel name.
 
+Hooks before and after notebook or cell execution
+-------------------------------------------------
+There are several configurable hooks that allow the user to execute code before and
+after a notebook or a cell is executed. Each one is configured with a function that will be called in its
+respective place in the execution pipeline.
+Each is described below:
+
+**Notebook-level hooks**: These hooks are called with a single extra parameter:
+
+- ``notebook=NotebookNode``: the current notebook being executed.
+
+Here is the available hooks:
+
+- ``on_notebook_start`` will run when the notebook client is initialized, before any execution has happened.
+- ``on_notebook_complete`` will run when the notebook client has finished executing, after kernel cleanup.
+- ``on_notebook_error`` will run when the notebook client has encountered an exception before kernel cleanup.
+
+**Cell-level hooks**: These hooks are called with two parameters:
+
+- ``cell=NotebookNode``: a reference to the current cell.
+- ``cell_index=int``: the index of the cell in the current notebook's list of cells.
+
+Here are the available hooks:
+
+- ``on_cell_start`` will run for all cell types before the cell is executed.
+- ``on_cell_execute`` will run right before the code cell is executed.
+- ``on_cell_complete`` will run after execution, if the cell is executed with no errors.
+- ``on_cell_error`` will run if there is an error during cell execution.
+
+
 Handling errors and exceptions
 ------------------------------
 

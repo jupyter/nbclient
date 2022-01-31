@@ -6,7 +6,7 @@
 import asyncio
 import inspect
 import sys
-from typing import Any, Awaitable, Callable, Union
+from typing import Any, Awaitable, Callable, Optional, Union
 
 
 def check_ipython() -> None:
@@ -102,3 +102,11 @@ async def ensure_async(obj: Union[Awaitable, Any]) -> Any:
         return result
     # obj doesn't need to be awaited
     return obj
+
+
+async def run_hook(hook: Optional[Callable], **kwargs) -> None:
+    if hook is None:
+        return
+    res = hook(**kwargs)
+    if inspect.isawaitable(res):
+        await res

@@ -2,6 +2,7 @@ ipython
 ipykernel
 ipywidgets<8.0.0
 pytest>=4.1
+pytest-asyncio
 pytest-cov>=2.6.1
 check-manifest
 flake8
