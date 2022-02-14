@@ -2,6 +2,24 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.11
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.10...050c7da89a98159e6361b1ad0dbefd215db5f816))
+
+### Merged PRs
+
+- Pin ipython<8 in tests [#198](https://github.com/jupyter/nbclient/pull/198) ([@davidbrochart](https://github.com/davidbrochart))
+- Clear execution metadata, prefer msg header date when recording times [#195](https://github.com/jupyter/nbclient/pull/195) ([@kevin-bates](https://github.com/kevin-bates))
+- Client hooks [#188](https://github.com/jupyter/nbclient/pull/188) ([@devintang3](https://github.com/devintang3))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-01-13&to=2022-02-14&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-01-13..2022-02-14&type=Issues) | [@devintang3](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adevintang3+updated%3A2022-01-13..2022-02-14&type=Issues) | [@kevin-bates](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akevin-bates+updated%3A2022-01-13..2022-02-14&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.10
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.9...e82c5d8d064ac1097f4e12f387b4c47ea5c576ff))
@@ -21,8 +39,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2021-11-19&to=2022-01-13&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2021-11-19..2022-01-13&type=Issues) | [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2021-11-19..2022-01-13&type=Issues) | [@kianmeng](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akianmeng+updated%3A2021-11-19..2022-01-13&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3AmartinRenou+updated%3A2021-11-19..2022-01-13&type=Issues) | [@takluyver](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Atakluyver+updated%3A2021-11-19..2022-01-13&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.9
 
