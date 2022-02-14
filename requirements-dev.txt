@@ -1,4 +1,4 @@
-ipython
+ipython<8.0.0
 ipykernel
 ipywidgets<8.0.0
 pytest>=4.1
