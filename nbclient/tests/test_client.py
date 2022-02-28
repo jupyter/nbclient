@@ -28,10 +28,14 @@ from .base import NBClientTestsBase
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 current_dir = os.path.dirname(__file__)
-ipython_input_pat = re.compile(r'<ipython-input-\d+-[0-9a-f]+>')
+ipython_input_pat = re.compile(
+    r'(<ipython-input-\d+-[0-9a-f]+>|<IPY-INPUT>) in (<module>|<cell line: \d>\(\))'
+)
 # Tracebacks look different in IPython 8,
 # see: https://github.com/ipython/ipython/blob/master/docs/source/whatsnew/version8.rst#traceback-improvements  # noqa
-ipython8_input_pat = re.compile(r'Input In \[\d+\],')
+ipython8_input_pat = re.compile(
+    r'(Input In \[\d+\]|<IPY-INPUT>), in (<module>|<cell line: \d>\(\))'
+)
 
 hook_methods = [
     "on_cell_start",
