@@ -1,4 +1,4 @@
-traitlets>=4.2
+traitlets>=5.0.0
 jupyter_client>=6.1.5
 nbformat>=5.0
 nest_asyncio
