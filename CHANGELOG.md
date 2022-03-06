@@ -2,6 +2,23 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.12
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.11...d20e29e803e5a22379f7a1356e7cf55d4649e9cb))
+
+### Merged PRs
+
+- Require traitlets>=5.0.0 [#204](https://github.com/jupyter/nbclient/pull/204) ([@davidbrochart](https://github.com/davidbrochart))
+- Extend the ignored part of IPython outputs [#202](https://github.com/jupyter/nbclient/pull/202) ([@frenzymadness](https://github.com/frenzymadness))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-02-14&to=2022-03-06&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-02-14..2022-03-06&type=Issues) | [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2022-02-14..2022-03-06&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.11
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.10...050c7da89a98159e6361b1ad0dbefd215db5f816))
@@ -17,8 +34,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-01-13&to=2022-02-14&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-01-13..2022-02-14&type=Issues) | [@devintang3](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adevintang3+updated%3A2022-01-13..2022-02-14&type=Issues) | [@kevin-bates](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akevin-bates+updated%3A2022-01-13..2022-02-14&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.10
 
