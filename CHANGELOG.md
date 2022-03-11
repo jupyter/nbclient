@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.13
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.12...af2315aefbd8d08c1d6a473c289beef1e8ebbecb))
+
+### Merged PRs
+
+- Drop ipython_genutils [#209](https://github.com/jupyter/nbclient/pull/209) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-03-06&to=2022-03-11&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-03-06..2022-03-11&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.12
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.11...d20e29e803e5a22379f7a1356e7cf55d4649e9cb))
@@ -16,8 +32,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-02-14&to=2022-03-06&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-02-14..2022-03-06&type=Issues) | [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2022-02-14..2022-03-06&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.11
 
