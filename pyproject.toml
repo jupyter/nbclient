@@ -37,7 +37,6 @@ python_version = 3.9
 
 [[tool.mypy.overrides]]
 module = [
-    "ipython_genutils.*",
     "nbformat.*",
     "nest_asyncio.*",
     "async_generator.*",

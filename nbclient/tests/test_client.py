@@ -14,7 +14,6 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict  # type: ignore
-from ipython_genutils.py3compat import string_types
 from jupyter_client import KernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi  # type: ignore
@@ -215,7 +214,7 @@ def normalize_output(output):
     if 'image/svg+xml' in output.get('data', {}):
         output['data']['image/svg+xml'] = xmltodict.parse(output['data']['image/svg+xml'])
     for key, value in output.get('data', {}).items():
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             output['data'][key] = normalize_base64(value)
     if 'traceback' in output:
         tb = []
