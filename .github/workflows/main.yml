@@ -71,4 +71,3 @@ jobs:
         pip install .[sphinx]
         cd docs
         make html SPHINXOPTS="-W"
-

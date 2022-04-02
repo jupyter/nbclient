@@ -47,4 +47,3 @@ with open(destination, "w") as f:
     app = NbClientApp()
     f.write(header)
     f.write(app.document_config_options())
-
