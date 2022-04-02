@@ -123,7 +123,7 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             If ``False`` (default), when a cell raises an error the
-            execution is stopped and a `CellExecutionError`
+            execution is stopped and a :py:class:`nbclient.exceptions.CellExecutionError`
             is raised, except if the error name is in
             ``allow_error_names``.
             If ``True``, execution errors are ignored and the execution
