@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Build docs to store
           command: |
-            cd build_docs
+            cd docs
             make html
 
       - store_artifacts:
