@@ -123,7 +123,7 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             If ``False`` (default), when a cell raises an error the
-            execution is stopped and a `CellExecutionError`
+            execution is stopped and a ``CellExecutionError``
             is raised, except if the error name is in
             ``allow_error_names``.
             If ``True``, execution errors are ignored and the execution
@@ -153,8 +153,8 @@ class NotebookClient(LoggingConfigurable):
             ``allow_errors`` or ``allow_error_names`` configurable options for
             all cells. An allowed error will be recorded in notebook output, and
             execution will continue. If an error occurs when it is not
-            explicitly allowed, a `CellExecutionError` will be raised.
-            If True, `CellExecutionError` will be raised for any error that occurs
+            explicitly allowed, a ``CellExecutionError`` will be raised.
+            If True, ``CellExecutionError`` will be raised for any error that occurs
             while executing the notebook. This overrides the ``allow_errors``
             and ``allow_error_names`` options and the ``raises-exception`` cell
             tag.
@@ -279,7 +279,7 @@ class NotebookClient(LoggingConfigurable):
             """
             A callable which executes after the kernel manager and kernel client are setup, and
             cells are about to execute.
-            Called with kwargs `notebook`.
+            Called with kwargs ``notebook``.
             """
         ),
     ).tag(config=True)
@@ -290,7 +290,7 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             A callable which executes after the kernel is cleaned up.
-            Called with kwargs `notebook`.
+            Called with kwargs ``notebook``.
             """
         ),
     ).tag(config=True)
@@ -301,7 +301,7 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             A callable which executes when the notebook encounters an error.
-            Called with kwargs `notebook`.
+            Called with kwargs ``notebook``.
             """
         ),
     ).tag(config=True)
@@ -313,7 +313,7 @@ class NotebookClient(LoggingConfigurable):
             """
             A callable which executes before a cell is executed and before non-executing cells
             are skipped.
-            Called with kwargs `cell` and `cell_index`.
+            Called with kwargs ``cell`` and ``cell_index``.
             """
         ),
     ).tag(config=True)
@@ -324,7 +324,7 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             A callable which executes just before a code cell is executed.
-            Called with kwargs `cell` and `cell_index`.
+            Called with kwargs ``cell`` and ``cell_index``.
             """
         ),
     ).tag(config=True)
@@ -336,7 +336,7 @@ class NotebookClient(LoggingConfigurable):
             """
             A callable which executes after a cell execution is complete. It is
             called even when a cell results in a failure.
-            Called with kwargs `cell` and `cell_index`.
+            Called with kwargs ``cell`` and ``cell_index``.
             """
         ),
     ).tag(config=True)
@@ -347,8 +347,8 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             A callable which executes when a cell execution results in an error.
-            This is executed even if errors are suppressed with `cell_allows_errors`.
-            Called with kwargs `cell` and `cell_index`.
+            This is executed even if errors are suppressed with ``cell_allows_errors``.
+            Called with kwargs ``cell` and ``cell_index``.
             """
         ),
     ).tag(config=True)

@@ -22,8 +22,6 @@ import sys
 
 import nbclient
 
-sys.path.insert(0, os.path.abspath('..'))
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -181,3 +179,7 @@ def setup(app):
     HERE = os.path.abspath(os.path.dirname(__file__))
     dest = os.path.join(HERE, 'changelog.md')
     shutil.copy(os.path.join(HERE, '..', 'CHANGELOG.md'), dest)
+
+    autogen_config = os.path.join(HERE, "autogen_config.py")
+    with open(autogen_config) as f:
+        exec(compile(f.read(), autogen_config, "exec"), {})

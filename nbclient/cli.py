@@ -68,7 +68,7 @@ class NbClientApp(JupyterApp):
         help=dedent(
             """
             When a cell raises an error the default behavior is that
-            execution is stopped and a `CellExecutionError`
+            execution is stopped and a :py:class:`nbclient.exceptions.CellExecutionError`
             is raised.
             If this flag is provided, errors are ignored and execution
             is continued until the end of the notebook.

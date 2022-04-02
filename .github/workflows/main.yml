@@ -69,4 +69,5 @@ jobs:
     - name: Build documentation
       run: |
         pip install .[sphinx]
-        sphinx-build docs docs_build --color -W -bhtml
+        cd docs
+
