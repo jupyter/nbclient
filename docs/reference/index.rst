@@ -7,4 +7,5 @@ This part of the documentation lists the full API reference of all public classe
    :maxdepth: 2
 
    nbclient
+   config_options
    modules
