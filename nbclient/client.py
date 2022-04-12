@@ -480,7 +480,7 @@ class NotebookClient(LoggingConfigurable):
         finally:
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup_resources())
-            if getattr(self, "kc") and self.kc is not None:
+            if getattr(self, "kc", None) and self.kc is not None:
                 await ensure_async(self.kc.stop_channels())  # type:ignore
                 self.kc = None
                 self.km = None
@@ -596,7 +596,7 @@ class NotebookClient(LoggingConfigurable):
         try:
             loop.add_signal_handler(signal.SIGINT, on_signal)
             loop.add_signal_handler(signal.SIGTERM, on_signal)
-        except (NotImplementedError, RuntimeError):
+        except RuntimeError:
             # NotImplementedError: Windows does not support signals.
             # RuntimeError: Raised when add_signal_handler is called outside the main thread
             pass
@@ -617,7 +617,7 @@ class NotebookClient(LoggingConfigurable):
             try:
                 loop.remove_signal_handler(signal.SIGINT)
                 loop.remove_signal_handler(signal.SIGTERM)
-            except (NotImplementedError, RuntimeError):
+            except RuntimeError:
                 pass
 
     async def async_execute(self, reset_kc: bool = False, **kwargs: t.Any) -> NotebookNode:
@@ -701,7 +701,7 @@ class NotebookClient(LoggingConfigurable):
         try:
             out = output_from_msg(msg)
         except ValueError:
-            self.log.error("unhandled iopub msg: " + msg['msg_type'])
+            self.log.error(f"unhandled iopub msg: {msg['msg_type']}")
             return
 
         for cell_idx, output_indices in self._display_id_map[display_id].items():
@@ -1049,7 +1049,7 @@ class NotebookClient(LoggingConfigurable):
         try:
             out = output_from_msg(msg)
         except ValueError:
-            self.log.error("unhandled iopub msg: " + msg_type)
+            self.log.error(f"unhandled iopub msg: {msg_type}")
             return None
 
         if self.clear_before_next_output:
@@ -1091,7 +1091,7 @@ class NotebookClient(LoggingConfigurable):
 
     def clear_display_id_mapping(self, cell_index: int) -> None:
 
-        for display_id, cell_map in self._display_id_map.items():
+        for _, cell_map in self._display_id_map.items():
             if cell_index in cell_map:
                 cell_map[cell_index] = []
 
