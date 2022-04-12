@@ -1034,7 +1034,7 @@ class NotebookClient(LoggingConfigurable):
 
     def output(
         self, outs: t.List, msg: t.Dict, display_id: str, cell_index: int
-    ) -> t.Optional[t.List]:
+    ) -> t.Optional[NotebookNode]:
 
         msg_type = msg['msg_type']
 
@@ -1067,7 +1067,7 @@ class NotebookClient(LoggingConfigurable):
 
         outs.append(out)
 
-        return outs
+        return out
 
     def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
 
@@ -1185,7 +1185,7 @@ def execute(
     cwd: t.Optional[str] = None,
     km: t.Optional[KernelManager] = None,
     **kwargs: t.Any,
-) -> NotebookClient:
+) -> NotebookNode:
     """Execute a notebook's code, updating outputs within the notebook object.
 
     This is a convenient wrapper around NotebookClient. It returns the
@@ -1205,6 +1205,4 @@ def execute(
     resources = {}
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
-    client = NotebookClient(nb=nb, resources=resources, km=km, **kwargs)
-    client.execute()
-    return client
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
