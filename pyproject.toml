@@ -38,8 +38,6 @@ check_untyped_defs = true
 disallow_any_generics = false  # todo
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
-follow_imports = "normal"
-ignore_missing_imports = true
 no_implicit_optional = true
 no_implicit_reexport = false  # todo
 pretty = true
@@ -54,10 +52,14 @@ warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
-    "nbformat.*",
-    "nest_asyncio.*",
     "async_generator.*",
+    "jupyter_core.*",
+    "nbformat.*",
+    "nbconvert.*",
+    "nest_asyncio.*",
+    "testpath",
     "traitlets.*",
+    "xmltodict"
 ]
 ignore_missing_imports = true
 
