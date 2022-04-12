@@ -2,6 +2,28 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.0
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.13...295e0eee4a6b9c5c0ee0d490b4c4058a95c6cb79))
+
+### Maintenance and upkeep improvements
+
+- Fix typings and update mypy settings [#220](https://github.com/jupyter/nbclient/pull/220) ([@blink1073](https://github.com/blink1073))
+- Add missing dep on testpath [#219](https://github.com/jupyter/nbclient/pull/219) ([@blink1073](https://github.com/blink1073))
+- Add more pre-commit hooks and update flake8 [#218](https://github.com/jupyter/nbclient/pull/218) ([@blink1073](https://github.com/blink1073))
+
+### Documentation improvements
+
+- Clean up docs handling [#216](https://github.com/jupyter/nbclient/pull/216) ([@blink1073](https://github.com/blink1073))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-03-11&to=2022-04-12&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-03-11..2022-04-12&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.13
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.12...af2315aefbd8d08c1d6a473c289beef1e8ebbecb))
@@ -15,8 +37,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-03-06&to=2022-03-11&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-03-06..2022-03-11&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.12
 
