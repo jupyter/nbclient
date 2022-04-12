@@ -10,7 +10,7 @@ class OutputWidget:
     """This class mimics a front end output widget"""
 
     def __init__(
-        self, comm_id: str, state: Dict[str, Any], kernel_client: KernelClient, executor
+        self, comm_id: str, state: Dict[str, Any], kernel_client: KernelClient, executor: Any
     ) -> None:
 
         self.comm_id: str = comm_id
@@ -46,7 +46,7 @@ class OutputWidget:
         data: Optional[Dict] = None,
         metadata: Optional[Dict] = None,
         buffers: Optional[List] = None,
-        **keys
+        **keys: Any
     ) -> None:
         """Helper for sending a comm message on IOPub"""
         data = {} if data is None else data
