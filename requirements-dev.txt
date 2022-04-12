@@ -11,5 +11,6 @@ pytest>=4.1
 pytest-asyncio
 pytest-cov>=2.6.1
 setuptools>=60.0
+testpath
 twine>=1.11.0
 xmltodict
