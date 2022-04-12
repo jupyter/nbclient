@@ -19,7 +19,9 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
     """
 
     @classmethod
-    def error_from_timeout_and_cell(cls, msg: str, timeout: int, cell: NotebookNode):
+    def error_from_timeout_and_cell(
+        cls, msg: str, timeout: int, cell: NotebookNode
+    ) -> "CellTimeoutError":
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
             src = (
@@ -74,7 +76,7 @@ class CellExecutionError(CellControlSignal):
         return self.traceback
 
     @classmethod
-    def from_cell_and_msg(cls, cell: NotebookNode, msg: Dict):
+    def from_cell_and_msg(cls, cell: NotebookNode, msg: Dict) -> "CellExecutionError":
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """

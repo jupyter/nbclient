@@ -54,8 +54,10 @@ jobs:
       run: mypy nbclient
 
     - name: Run the tests
+      shell: bash
       run: |
-        pytest -vv --maxfail=2 --cov=nbclient --cov-report=xml -W always
+        args="-vv --maxfail=2 --cov=nbclient --cov-report=xml -W always"
+        pytest $args || pytest $arg --lf
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2

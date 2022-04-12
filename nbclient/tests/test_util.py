@@ -39,10 +39,10 @@ def test_nested_asyncio_with_tornado():
     ioloop = tornado.ioloop.IOLoop.current()
 
     async def some_async_function():
-        future = asyncio.ensure_future(asyncio.sleep(0.1))
+        future: asyncio.Future = asyncio.ensure_future(asyncio.sleep(0.1))
         # this future is a different future after nested-asyncio has patched
         # the asyncio module, check if tornado likes it:
-        ioloop.add_future(future, lambda f: f.result())
+        ioloop.add_future(future, lambda f: f.result())  # type:ignore
         await future
         return 42
 

@@ -6,6 +6,7 @@ include *.md
 include tox.ini
 include pyproject.toml
 include .pre-commit-config.yaml
+include nbclient/py.typed
 
 # Code and test files
 recursive-include nbclient *.ipynb
