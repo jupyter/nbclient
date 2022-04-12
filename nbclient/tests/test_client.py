@@ -13,12 +13,12 @@ from unittest.mock import MagicMock, Mock
 
 import nbformat
 import pytest
-import xmltodict  # type: ignore
+import xmltodict
 from jupyter_client import KernelManager
 from jupyter_client.kernelspec import KernelSpecManager
-from nbconvert.filters import strip_ansi  # type: ignore
+from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
-from testpath import modified_env  # type: ignore
+from testpath import modified_env
 from traitlets import TraitError
 
 from .. import NotebookClient, execute
@@ -126,7 +126,7 @@ async def async_run_notebook(filename, opts, resources=None):
     return input_nb, output_nb
 
 
-def prepare_cell_mocks(*messages, reply_msg=None):
+def prepare_cell_mocks(*messages_input, reply_msg=None):
     """
     This function prepares a executor object which has a fake kernel client
     to mock the messages sent over zeromq. The mock kernel client will return
@@ -134,7 +134,7 @@ def prepare_cell_mocks(*messages, reply_msg=None):
     callbacks. It also appends a kernel idle message to the end of messages.
     """
     parent_id = 'fake_id'
-    messages = list(messages)
+    messages = list(messages_input)
     # Always terminate messages with an idle to exit the loop
     messages.append({'msg_type': 'status', 'content': {'execution_state': 'idle'}})
 
@@ -313,8 +313,10 @@ def test_parallel_notebooks(capfd, tmpdir):
             threading.Thread(target=run_notebook, args=(input_file.format(label=label), opts, res))
             for label in ("A", "B")
         ]
-        [t.start() for t in threads]
-        [t.join(timeout=2) for t in threads]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(timeout=2)
 
     captured = capfd.readouterr()
     assert filter_messages_on_error_output(captured.err) == ""
@@ -695,7 +697,7 @@ while True: continue
             self.assertNotEqual(call_count, 0, f'{method} was called')
 
     def test_process_message_wrapper(self):
-        outputs = []
+        outputs: list = []
 
         class WrappedPreProc(NotebookClient):
             def process_message(self, msg, cell, cell_index):

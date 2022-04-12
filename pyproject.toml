@@ -34,6 +34,23 @@ known_first_party = ["nbclient"]
 
 [tool.mypy]
 python_version = 3.9
+check_untyped_defs = true
+disallow_any_generics = false  # todo
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+follow_imports = "normal"
+ignore_missing_imports = true
+no_implicit_optional = true
+no_implicit_reexport = false  # todo
+pretty = true
+show_error_context = true
+show_error_codes = true
+strict_equality = true
+strict_optional = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -41,7 +58,6 @@ module = [
     "nest_asyncio.*",
     "async_generator.*",
     "traitlets.*",
-    "jupyter_client.*",
 ]
 ignore_missing_imports = true
 

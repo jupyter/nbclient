@@ -9,7 +9,6 @@ from contextlib import asynccontextmanager, contextmanager
 from queue import Empty
 from textwrap import dedent
 from time import monotonic
-from typing import Optional
 
 from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
@@ -40,7 +39,7 @@ from .output_widget import OutputWidget
 from .util import ensure_async, run_hook, run_sync
 
 
-def timestamp(msg: Optional[Dict] = None) -> str:
+def timestamp(msg: t.Optional[Dict] = None) -> str:
     if msg and 'header' in msg:  # The test mocks don't provide a header, so tolerate that
         msg_header = msg['header']
         if 'date' in msg_header and isinstance(msg_header['date'], datetime.datetime):
@@ -78,7 +77,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    timeout_func: t.Any = Any(
+    timeout_func: t.Callable[..., t.Optional[int]] = Any(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -353,8 +352,8 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    @default('kernel_manager_class')
-    def _kernel_manager_class_default(self) -> KernelManager:
+    @default('kernel_manager_class')  # type:ignore[misc]
+    def _kernel_manager_class_default(self) -> t.Type[KernelManager]:
         """Use a dynamic default to avoid importing jupyter_client at startup"""
         from jupyter_client import AsyncKernelManager
 
@@ -403,7 +402,7 @@ class NotebookClient(LoggingConfigurable):
         )
     )
 
-    def __init__(self, nb: NotebookNode, km: t.Optional[KernelManager] = None, **kw) -> None:
+    def __init__(self, nb: NotebookNode, km: t.Optional[KernelManager] = None, **kw: t.Any) -> None:
         """Initializes the execution manager.
 
         Parameters
@@ -458,6 +457,7 @@ class NotebookClient(LoggingConfigurable):
             self.km = self.kernel_manager_class(config=self.config)
         else:
             self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
+        assert self.km is not None
 
         # If the current kernel manager is still using the default (synchronous) KernelClient class,
         # switch to the async version since that's what NBClient prefers.
@@ -481,13 +481,13 @@ class NotebookClient(LoggingConfigurable):
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup_resources())
             if getattr(self, "kc") and self.kc is not None:
-                await ensure_async(self.kc.stop_channels())
+                await ensure_async(self.kc.stop_channels())  # type:ignore
                 self.kc = None
                 self.km = None
 
     _cleanup_kernel = run_sync(_async_cleanup_kernel)
 
-    async def async_start_new_kernel(self, **kwargs) -> None:
+    async def async_start_new_kernel(self, **kwargs: t.Any) -> None:
         """Creates a new kernel.
 
         Parameters
@@ -527,7 +527,7 @@ class NotebookClient(LoggingConfigurable):
         """
         assert self.km is not None
         self.kc = self.km.client()
-        await ensure_async(self.kc.start_channels())
+        await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
         try:
             await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
         except RuntimeError:
@@ -540,7 +540,7 @@ class NotebookClient(LoggingConfigurable):
     start_new_kernel_client = run_sync(async_start_new_kernel_client)
 
     @contextmanager
-    def setup_kernel(self, **kwargs) -> t.Generator:
+    def setup_kernel(self, **kwargs: t.Any) -> t.Generator:
         """
         Context manager for setting up the kernel to execute a notebook.
 
@@ -567,7 +567,7 @@ class NotebookClient(LoggingConfigurable):
                 self._cleanup_kernel()
 
     @asynccontextmanager
-    async def async_setup_kernel(self, **kwargs) -> t.AsyncGenerator:
+    async def async_setup_kernel(self, **kwargs: t.Any) -> t.AsyncGenerator:
         """
         Context manager for setting up the kernel to execute a notebook.
 
@@ -620,7 +620,7 @@ class NotebookClient(LoggingConfigurable):
             except (NotImplementedError, RuntimeError):
                 pass
 
-    async def async_execute(self, reset_kc: bool = False, **kwargs) -> NotebookNode:
+    async def async_execute(self, reset_kc: bool = False, **kwargs: t.Any) -> NotebookNode:
         """
         Executes each code cell.
 
@@ -727,7 +727,7 @@ class NotebookClient(LoggingConfigurable):
             new_timeout = float(timeout)
         while True:
             try:
-                msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
+                msg: t.Dict = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
                 if msg['parent_header'].get('msg_id') == msg_id:
                     if self.record_timing:
                         cell['metadata']['execution']['shell.execute_reply'] = timestamp(msg)
@@ -777,7 +777,7 @@ class NotebookClient(LoggingConfigurable):
                 self.task_poll_for_reply.cancel()
                 return
 
-    def _get_timeout(self, cell: t.Optional[NotebookNode]) -> int:
+    def _get_timeout(self, cell: t.Optional[NotebookNode]) -> t.Optional[int]:
         if self.timeout_func is not None and cell is not None:
             timeout = self.timeout_func(cell)
         else:
@@ -818,7 +818,7 @@ class NotebookClient(LoggingConfigurable):
         cummulative_time = 0
         while True:
             try:
-                msg = await ensure_async(
+                msg: t.Dict = await ensure_async(
                     self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
                 )
             except Empty:
@@ -1067,7 +1067,7 @@ class NotebookClient(LoggingConfigurable):
 
         outs.append(out)
 
-        return out
+        return outs
 
     def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
 
@@ -1167,7 +1167,7 @@ class NotebookClient(LoggingConfigurable):
         removed_hook = self.output_hook_stack[msg_id].pop()
         assert removed_hook == hook
 
-    def on_comm_open_jupyter_widget(self, msg: t.Dict):
+    def on_comm_open_jupyter_widget(self, msg: t.Dict) -> t.Optional[t.Any]:
         content = msg['content']
         data = content['data']
         state = data['state']
@@ -1177,10 +1177,14 @@ class NotebookClient(LoggingConfigurable):
             widget_class = module.get(state['_model_name'])
             if widget_class:
                 return widget_class(comm_id, state, self.kc, self)
+        return None
 
 
 def execute(
-    nb: NotebookNode, cwd: t.Optional[str] = None, km: t.Optional[KernelManager] = None, **kwargs
+    nb: NotebookNode,
+    cwd: t.Optional[str] = None,
+    km: t.Optional[KernelManager] = None,
+    **kwargs: t.Any,
 ) -> NotebookClient:
     """Execute a notebook's code, updating outputs within the notebook object.
 
@@ -1201,4 +1205,6 @@ def execute(
     resources = {}
     if cwd is not None:
         resources['metadata'] = {'path': cwd}
-    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+    client = NotebookClient(nb=nb, resources=resources, km=km, **kwargs)
+    client.execute()
+    return client

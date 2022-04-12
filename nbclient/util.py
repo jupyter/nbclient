@@ -13,14 +13,14 @@ def check_ipython() -> None:
     # original from vaex/asyncio.py
     IPython = sys.modules.get('IPython')
     if IPython:
-        version_str = IPython.__version__  # type: ignore
+        version_str = IPython.__version__
         # We get rid of any trailing ".dev"
         version_str = version_str.replace(".dev", "")
 
         IPython_version = tuple(map(int, version_str.split('.')))
         if IPython_version < (7, 0, 0):
             raise RuntimeError(
-                f'You are using IPython {IPython.__version__} '  # type: ignore
+                f'You are using IPython {IPython.__version__} '
                 'while we require 7.0.0+, please update IPython'
             )
 
@@ -29,7 +29,7 @@ def check_patch_tornado() -> None:
     """If tornado is imported, add the patched asyncio.Future to its tuple of acceptable Futures"""
     # original from vaex/asyncio.py
     if 'tornado' in sys.modules:
-        import tornado.concurrent  # type: ignore
+        import tornado.concurrent
 
         if asyncio.Future not in tornado.concurrent.FUTURES:
             tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (  # type: ignore
@@ -104,7 +104,7 @@ async def ensure_async(obj: Union[Awaitable, Any]) -> Any:
     return obj
 
 
-async def run_hook(hook: Optional[Callable], **kwargs) -> None:
+async def run_hook(hook: Optional[Callable], **kwargs: Any) -> None:
     if hook is None:
         return
     res = hook(**kwargs)
