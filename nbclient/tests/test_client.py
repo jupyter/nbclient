@@ -47,6 +47,7 @@ hook_methods = [
     "on_notebook_error",
 ]
 
+
 def get_executor_with_hooks(nb=None, executor=None, async_hooks=False):
     if async_hooks:
         hooks = {key: AsyncMock() for key in hook_methods}
@@ -60,8 +61,17 @@ def get_executor_with_hooks(nb=None, executor=None, async_hooks=False):
         setattr(executor, k, v)
     return executor, hooks
 
-EXECUTE_REPLY_OK = {'parent_header': {'msg_id': 'fake_id'}, 'content': {'status': 'ok', 'execution_count': 1}}
-EXECUTE_REPLY_ERROR = {'parent_header': {'msg_id': 'fake_id'}, 'content': {'status': 'error'}, 'msg_type': 'execute_reply', 'header': {'msg_type': 'execute_reply'}}
+
+EXECUTE_REPLY_OK = {
+    'parent_header': {'msg_id': 'fake_id'},
+    'content': {'status': 'ok', 'execution_count': 1},
+}
+EXECUTE_REPLY_ERROR = {
+    'parent_header': {'msg_id': 'fake_id'},
+    'content': {'status': 'error'},
+    'msg_type': 'execute_reply',
+    'header': {'msg_type': 'execute_reply'},
+}
 
 
 class AsyncMock(Mock):
@@ -1642,7 +1652,9 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_cell_start"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_execute"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_complete"].assert_called_once_with(cell=cell_mock, cell_index=0)
-        hooks["on_cell_executed"].assert_called_once_with(cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_OK)
+        hooks["on_cell_executed"].assert_called_once_with(
+            cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_OK
+        )
         hooks["on_cell_error"].assert_not_called()
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
@@ -1668,8 +1680,12 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_cell_start"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_execute"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_complete"].assert_called_once_with(cell=cell_mock, cell_index=0)
-        hooks["on_cell_executed"].assert_called_once_with(cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR)
-        hooks["on_cell_error"].assert_called_once_with(cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR)
+        hooks["on_cell_executed"].assert_called_once_with(
+            cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR
+        )
+        hooks["on_cell_error"].assert_called_once_with(
+            cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR
+        )
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
@@ -1702,7 +1718,9 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_cell_start"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_execute"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_complete"].assert_called_once_with(cell=cell_mock, cell_index=0)
-        hooks["on_cell_executed"].assert_called_once_with(cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_OK)
+        hooks["on_cell_executed"].assert_called_once_with(
+            cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_OK
+        )
         hooks["on_cell_error"].assert_not_called()
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
@@ -1728,8 +1746,12 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_cell_start"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_execute"].assert_called_once_with(cell=cell_mock, cell_index=0)
         hooks["on_cell_complete"].assert_called_once_with(cell=cell_mock, cell_index=0)
-        hooks["on_cell_executed"].assert_called_once_with(cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR)
-        hooks["on_cell_error"].assert_called_once_with(cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR)
+        hooks["on_cell_executed"].assert_called_once_with(
+            cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR
+        )
+        hooks["on_cell_error"].assert_called_once_with(
+            cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR
+        )
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
