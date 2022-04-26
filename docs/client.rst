@@ -113,7 +113,7 @@ Here is the available hooks:
 - ``on_notebook_complete`` will run when the notebook client has finished executing, after kernel cleanup.
 - ``on_notebook_error`` will run when the notebook client has encountered an exception before kernel cleanup.
 
-**Cell-level hooks**: These hooks are called with two parameters:
+**Cell-level hooks**: These hooks are called with at least two parameters:
 
 - ``cell=NotebookNode``: a reference to the current cell.
 - ``cell_index=int``: the index of the cell in the current notebook's list of cells.
@@ -123,7 +123,10 @@ Here are the available hooks:
 - ``on_cell_start`` will run for all cell types before the cell is executed.
 - ``on_cell_execute`` will run right before the code cell is executed.
 - ``on_cell_complete`` will run after execution, if the cell is executed with no errors.
+- ``on_cell_executed`` will run right after the code cell is executed.
 - ``on_cell_error`` will run if there is an error during cell execution.
+
+``on_cell_executed`` and ``on_cell_error`` are called with an extra parameter ``execute_reply=dict``.
 
 
 Handling errors and exceptions

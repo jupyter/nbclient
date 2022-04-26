@@ -869,7 +869,9 @@ class NotebookClient(LoggingConfigurable):
             or exec_reply_content.get('ename') in self.allow_error_names
             or "raises-exception" in cell.metadata.get("tags", [])
         )
-        await run_hook(self.on_cell_error, cell=cell, cell_index=cell_index, execute_reply=exec_reply)
+        await run_hook(
+            self.on_cell_error, cell=cell, cell_index=cell_index, execute_reply=exec_reply
+        )
         if not cell_allows_errors:
             raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 
@@ -974,7 +976,9 @@ class NotebookClient(LoggingConfigurable):
 
         if execution_count:
             cell['execution_count'] = execution_count
-        await run_hook(self.on_cell_executed, cell=cell, cell_index=cell_index, execute_reply=exec_reply)
+        await run_hook(
+            self.on_cell_executed, cell=cell, cell_index=cell_index, execute_reply=exec_reply
+        )
         await self._check_raise_for_error(cell, cell_index, exec_reply)
         self.nb['cells'][cell_index] = cell
         return cell
