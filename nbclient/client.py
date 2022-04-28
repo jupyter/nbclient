@@ -837,7 +837,7 @@ class NotebookClient(LoggingConfigurable):
                 await self._async_check_alive()
                 cummulative_time += self.shell_timeout_interval
                 if timeout and cummulative_time > timeout:
-                    await self._async_async_handle_timeout(timeout, cell)
+                    await self._async_handle_timeout(timeout, cell)
                     break
             else:
                 if msg['parent_header'].get('msg_id') == msg_id:
