@@ -750,6 +750,7 @@ class NotebookClient(LoggingConfigurable):
         task_poll_kernel_alive: asyncio.Future,
     ) -> t.Dict:
 
+        msg: t.Dict
         assert self.kc is not None
         new_timeout: t.Optional[float] = None
         if timeout is not None:
@@ -762,7 +763,7 @@ class NotebookClient(LoggingConfigurable):
                     msg = error_on_interrupt_execute_reply
                     msg['parent_header'] = {'msg_id': msg_id}
                 else:
-                    msg: t.Dict = await ensure_async(
+                    msg = await ensure_async(
                         self.kc.shell_channel.get_msg(timeout=new_timeout)
                     )
                 if msg['parent_header'].get('msg_id') == msg_id:
@@ -837,6 +838,7 @@ class NotebookClient(LoggingConfigurable):
             if self.error_on_interrupt:
                 execute_reply = {"content": {**self.error_on_interrupt, "status": "error"}}
                 return execute_reply
+            return None
         else:
             raise CellTimeoutError.error_from_timeout_and_cell(
                 "Cell execution timed out", timeout, cell
