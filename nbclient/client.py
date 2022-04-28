@@ -763,9 +763,7 @@ class NotebookClient(LoggingConfigurable):
                     msg = error_on_interrupt_execute_reply
                     msg['parent_header'] = {'msg_id': msg_id}
                 else:
-                    msg = await ensure_async(
-                        self.kc.shell_channel.get_msg(timeout=new_timeout)
-                    )
+                    msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
                 if msg['parent_header'].get('msg_id') == msg_id:
                     if self.record_timing:
                         cell['metadata']['execution']['shell.execute_reply'] = timestamp(msg)
