@@ -340,6 +340,18 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
+    on_cell_executed: t.Optional[t.Callable] = Callable(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            A callable which executes just after a code cell is executed, whether
+            or not it results in an error.
+            Called with kwargs ``cell``, ``cell_index`` and ``execute_reply``.
+            """
+        ),
+    ).tag(config=True)
+
     on_cell_error: t.Optional[t.Callable] = Callable(
         default_value=None,
         allow_none=True,
@@ -347,7 +359,7 @@ class NotebookClient(LoggingConfigurable):
             """
             A callable which executes when a cell execution results in an error.
             This is executed even if errors are suppressed with ``cell_allows_errors``.
-            Called with kwargs ``cell` and ``cell_index``.
+            Called with kwargs ``cell`, ``cell_index`` and ``execute_reply``.
             """
         ),
     ).tag(config=True)
@@ -857,7 +869,9 @@ class NotebookClient(LoggingConfigurable):
             or exec_reply_content.get('ename') in self.allow_error_names
             or "raises-exception" in cell.metadata.get("tags", [])
         )
-        await run_hook(self.on_cell_error, cell=cell, cell_index=cell_index)
+        await run_hook(
+            self.on_cell_error, cell=cell, cell_index=cell_index, execute_reply=exec_reply
+        )
         if not cell_allows_errors:
             raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 
@@ -962,6 +976,9 @@ class NotebookClient(LoggingConfigurable):
 
         if execution_count:
             cell['execution_count'] = execution_count
+        await run_hook(
+            self.on_cell_executed, cell=cell, cell_index=cell_index, execute_reply=exec_reply
+        )
         await self._check_raise_for_error(cell, cell_index, exec_reply)
         self.nb['cells'][cell_index] = cell
         return cell
