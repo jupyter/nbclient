@@ -106,7 +106,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    error_on_interrupt: t.Optional[t.Dict] = Dict(
+    error_on_timeout: t.Optional[t.Dict] = Dict(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -756,11 +756,11 @@ class NotebookClient(LoggingConfigurable):
         if timeout is not None:
             deadline = monotonic() + timeout
             new_timeout = float(timeout)
-        error_on_interrupt_execute_reply = None
+        error_on_timeout_execute_reply = None
         while True:
             try:
-                if error_on_interrupt_execute_reply:
-                    msg = error_on_interrupt_execute_reply
+                if error_on_timeout_execute_reply:
+                    msg = error_on_timeout_execute_reply
                     msg['parent_header'] = {'msg_id': msg_id}
                 else:
                     msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
@@ -787,7 +787,7 @@ class NotebookClient(LoggingConfigurable):
                 assert timeout is not None
                 task_poll_kernel_alive.cancel()
                 await self._async_check_alive()
-                error_on_interrupt_execute_reply = await self._async_handle_timeout(timeout, cell)
+                error_on_timeout_execute_reply = await self._async_handle_timeout(timeout, cell)
 
     async def _async_poll_output_msg(
         self, parent_msg_id: str, cell: NotebookNode, cell_index: int
@@ -833,8 +833,8 @@ class NotebookClient(LoggingConfigurable):
             self.log.error("Interrupting kernel")
             assert self.km is not None
             await ensure_async(self.km.interrupt_kernel())
-            if self.error_on_interrupt:
-                execute_reply = {"content": {**self.error_on_interrupt, "status": "error"}}
+            if self.error_on_timeout:
+                execute_reply = {"content": {**self.error_on_timeout, "status": "error"}}
                 return execute_reply
             return None
         else:
