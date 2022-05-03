@@ -106,6 +106,24 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
+    error_on_timeout: t.Optional[t.Dict] = Dict(
+        default_value=None,
+        allow_none=True,
+        help=dedent(
+            """
+            If a cell execution was interrupted after a timeout, don't wait for
+            the execute_reply from the kernel (e.g. KeyboardInterrupt error).
+            Instead, return an execute_reply with the given error, which should
+            be of the following form:
+            {
+                'ename': str,  # Exception name, as a string
+                'evalue': str,  # Exception value, as a string
+                'traceback': list(str),  # traceback frames, as strings
+            }
+            """
+        ),
+    ).tag(config=True)
+
     startup_timeout: int = Integer(
         60,
         help=dedent(
@@ -732,14 +750,20 @@ class NotebookClient(LoggingConfigurable):
         task_poll_kernel_alive: asyncio.Future,
     ) -> t.Dict:
 
+        msg: t.Dict
         assert self.kc is not None
         new_timeout: t.Optional[float] = None
         if timeout is not None:
             deadline = monotonic() + timeout
             new_timeout = float(timeout)
+        error_on_timeout_execute_reply = None
         while True:
             try:
-                msg: t.Dict = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
+                if error_on_timeout_execute_reply:
+                    msg = error_on_timeout_execute_reply
+                    msg['parent_header'] = {'msg_id': msg_id}
+                else:
+                    msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
                 if msg['parent_header'].get('msg_id') == msg_id:
                     if self.record_timing:
                         cell['metadata']['execution']['shell.execute_reply'] = timestamp(msg)
@@ -763,7 +787,7 @@ class NotebookClient(LoggingConfigurable):
                 assert timeout is not None
                 task_poll_kernel_alive.cancel()
                 await self._async_check_alive()
-                await self._async_handle_timeout(timeout, cell)
+                error_on_timeout_execute_reply = await self._async_handle_timeout(timeout, cell)
 
     async def _async_poll_output_msg(
         self, parent_msg_id: str, cell: NotebookNode, cell_index: int
@@ -802,13 +826,17 @@ class NotebookClient(LoggingConfigurable):
 
     async def _async_handle_timeout(
         self, timeout: int, cell: t.Optional[NotebookNode] = None
-    ) -> None:
+    ) -> t.Union[None, t.Dict]:
 
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
         if self.interrupt_on_timeout:
             self.log.error("Interrupting kernel")
             assert self.km is not None
             await ensure_async(self.km.interrupt_kernel())
+            if self.error_on_timeout:
+                execute_reply = {"content": {**self.error_on_timeout, "status": "error"}}
+                return execute_reply
+            return None
         else:
             raise CellTimeoutError.error_from_timeout_and_cell(
                 "Cell execution timed out", timeout, cell
