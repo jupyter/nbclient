@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.2
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.1...bd36f50a299fb2e0656386ec487c2bbc67a9a1c4))
+
+### Merged PRs
+
+- Fix documentation generation [#228](https://github.com/jupyter/nbclient/pull/228) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-05-03&to=2022-05-03&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-05-03..2022-05-03&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.1
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.0...571a65faa7b86bb647567373a529d9d8df38dd2f))
@@ -18,8 +34,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-04-12&to=2022-05-03&type=c))
 
 [@brichet](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Abrichet+updated%3A2022-04-12..2022-05-03&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-04-12..2022-05-03&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-04-12..2022-05-03&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.0
 
