@@ -2,6 +2,25 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.1
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.0...571a65faa7b86bb647567373a529d9d8df38dd2f))
+
+### Merged PRs
+
+- [pre-commit.ci] pre-commit autoupdate [#225](https://github.com/jupyter/nbclient/pull/225) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- Add error_on_interrupt trait [#224](https://github.com/jupyter/nbclient/pull/224) ([@davidbrochart](https://github.com/davidbrochart))
+- Fix typo [#223](https://github.com/jupyter/nbclient/pull/223) ([@davidbrochart](https://github.com/davidbrochart))
+- Add on_cell_executed hook [#222](https://github.com/jupyter/nbclient/pull/222) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-04-12&to=2022-05-03&type=c))
+
+[@brichet](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Abrichet+updated%3A2022-04-12..2022-05-03&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-04-12..2022-05-03&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-04-12..2022-05-03&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.0
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.5.13...295e0eee4a6b9c5c0ee0d490b4c4058a95c6cb79))
@@ -21,8 +40,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-03-11&to=2022-04-12&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-03-11..2022-04-12&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.13
 
