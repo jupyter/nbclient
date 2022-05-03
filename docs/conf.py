@@ -183,5 +183,8 @@ def setup(app):
     shutil.copy(os.path.join(HERE, '..', 'CHANGELOG.md'), dest)
 
     autogen_config = os.path.join(HERE, "autogen_config.py")
+    prev_dir = os.getcwd()
+    os.chdir(HERE)
     with open(autogen_config) as f:
         exec(compile(f.read(), autogen_config, "exec"), {})
+    os.chdir(prev_dir)
