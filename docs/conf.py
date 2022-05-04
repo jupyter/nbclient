@@ -38,7 +38,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
-    'autodoc_traits',
+    # 'autodoc_traits',  # TODO
     'myst_parser',
 ]
 
