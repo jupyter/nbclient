@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
+    'autodoc_traits',
     'myst_parser',
 ]
 
@@ -187,4 +188,5 @@ def setup(app):
     os.chdir(HERE)
     with open(autogen_config) as f:
         exec(compile(f.read(), autogen_config, "exec"), {})
+        print('Updated cli docs')
     os.chdir(prev_dir)

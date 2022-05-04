@@ -187,7 +187,7 @@ the state of all the widgets can be stored in the notebook's metadata.
 This allows rendering of the live widgets on for instance nbviewer, or when
 converting to html.
 
-We can tell nbclient to not store the state using the `store_widget_state`
+We can tell nbclient to not store the state using the ``store_widget_state``
 argument::
 
     client = NotebookClient(nb, store_widget_state=False)

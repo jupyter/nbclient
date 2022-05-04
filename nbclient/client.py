@@ -114,12 +114,13 @@ class NotebookClient(LoggingConfigurable):
             If a cell execution was interrupted after a timeout, don't wait for
             the execute_reply from the kernel (e.g. KeyboardInterrupt error).
             Instead, return an execute_reply with the given error, which should
-            be of the following form:
-            {
-                'ename': str,  # Exception name, as a string
-                'evalue': str,  # Exception value, as a string
-                'traceback': list(str),  # traceback frames, as strings
-            }
+            be of the following form::
+
+                {
+                    'ename': str,  # Exception name, as a string
+                    'evalue': str,  # Exception value, as a string
+                    'traceback': list(str),  # traceback frames, as strings
+                }
             """
         ),
     ).tag(config=True)
