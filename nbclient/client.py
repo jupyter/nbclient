@@ -1115,7 +1115,7 @@ class NotebookClient(LoggingConfigurable):
 
         outs.append(out)
 
-        return out
+        return out  # type:ignore[no-any-return]
 
     def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
 
