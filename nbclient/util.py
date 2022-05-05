@@ -62,8 +62,8 @@ def just_run(coro: Awaitable) -> Any:
     return loop.run_until_complete(coro)
 
 
-
 T = TypeVar("T")
+
 
 def run_sync(coro: Callable[..., Awaitable[T]]) -> Callable[..., T]:
     """Runs a coroutine and blocks until it has executed.
