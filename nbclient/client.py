@@ -839,6 +839,7 @@ class NotebookClient(LoggingConfigurable):
                 return execute_reply
             return None
         else:
+            assert cell is not None
             raise CellTimeoutError.error_from_timeout_and_cell(
                 "Cell execution timed out", timeout, cell
             )
@@ -1016,7 +1017,7 @@ class NotebookClient(LoggingConfigurable):
 
     def process_message(
         self, msg: t.Dict, cell: NotebookNode, cell_index: int
-    ) -> t.Optional[t.List]:
+    ) -> t.Optional[NotebookNode]:
         """
         Processes a kernel message, updates cell state, and returns the
         resulting output object that was appended to cell.outputs.
@@ -1034,7 +1035,7 @@ class NotebookClient(LoggingConfigurable):
 
         Returns
         -------
-        output : dict
+        output : NotebookNode
             The execution output payload (or None for no output).
 
         Raises
