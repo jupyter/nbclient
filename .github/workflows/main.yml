@@ -48,8 +48,8 @@ jobs:
         pip install .[test]
         pip install coverage
 
-    # - name: Type check
-    #   run: mypy nbclient
+    - name: Type check
+      run: mypy nbclient
 
     - name: Run the tests
       shell: bash
