@@ -1084,6 +1084,7 @@ class NotebookClient(LoggingConfigurable):
     ) -> t.Optional[NotebookNode]:
 
         msg_type = msg['msg_type']
+        out = None
 
         parent_msg_id = msg['parent_header'].get('msg_id')
         if self.output_hook_stack[parent_msg_id]:
