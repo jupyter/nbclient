@@ -217,7 +217,7 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
                 execute=MagicMock(return_value=parent_id),
                 is_alive=MagicMock(return_value=make_async(True)),
             )
-            executor.parent_id = parent_id  # type:ignore
+            executor.parent_id = parent_id
             return func(self, executor, cell_mock, message_mock)
 
         return test_mock_wrapper
