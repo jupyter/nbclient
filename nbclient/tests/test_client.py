@@ -206,8 +206,8 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
             cell_mock = NotebookNode(
                 source='"foo" = "bar"', metadata={}, cell_type='code', outputs=[]
             )
-            executor = NotebookClient({})  # type:ignore
-            executor.nb = {'cells': [cell_mock]}  # type:ignore
+            executor = NotebookClient({})
+            executor.nb = {'cells': [cell_mock]}
 
             # self.kc.iopub_channel.get_msg => message_mock.side_effect[i]
             message_mock = iopub_messages_mock()
@@ -503,7 +503,7 @@ class TestExecute(NBClientTestsBase):
     maxDiff = None
 
     def test_constructor(self):
-        NotebookClient({})  # type:ignore
+        NotebookClient({})
 
     def test_populate_language_info(self):
         nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
