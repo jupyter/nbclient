@@ -14,11 +14,15 @@ async def some_async_function():
 
 
 def test_nested_asyncio_with_existing_ioloop():
-    ioloop = asyncio.new_event_loop()
-    try:
-        asyncio.set_event_loop(ioloop)
+    async def _test():
         assert some_async_function() == 42
-        assert asyncio.get_event_loop() is ioloop
+        return asyncio.get_running_loop()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        event_loop = loop.run_until_complete(_test())
+        assert event_loop is loop
     finally:
         asyncio._set_running_loop(None)  # it seems nest_asyncio doesn't reset this
 

@@ -9,6 +9,7 @@ import threading
 import warnings
 from base64 import b64decode, b64encode
 from queue import Empty
+from typing import Any
 from unittest.mock import MagicMock, Mock
 
 import nbformat
@@ -78,11 +79,15 @@ class AsyncMock(Mock):
     pass
 
 
-def make_async(mock_value):
-    async def _():
-        return mock_value
-
-    return _()
+def make_future(obj: Any) -> asyncio.Future:
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    future: asyncio.Future = asyncio.Future(loop=loop)
+    future.set_result(obj)
+    return future
 
 
 def normalize_base64(b64_text):
@@ -169,7 +174,7 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
         # Return the message generator for
         # self.kc.shell_channel.get_msg => {'parent_header': {'msg_id': parent_id}}
         return AsyncMock(
-            return_value=make_async(
+            return_value=make_future(
                 NBClientTestsBase.merge_dicts(
                     {
                         'parent_header': {'msg_id': parent_id},
@@ -186,7 +191,7 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
         return AsyncMock(
             side_effect=[
                 # Default the parent_header so mocks don't need to include this
-                make_async(
+                make_future(
                     NBClientTestsBase.merge_dicts({'parent_header': {'msg_id': parent_id}}, msg)
                 )
                 for msg in messages
@@ -215,7 +220,7 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
                 iopub_channel=MagicMock(get_msg=message_mock),
                 shell_channel=MagicMock(get_msg=shell_channel_message_mock()),
                 execute=MagicMock(return_value=parent_id),
-                is_alive=MagicMock(return_value=make_async(True)),
+                is_alive=MagicMock(return_value=make_future(True)),
             )
             executor.parent_id = parent_id
             return func(self, executor, cell_mock, message_mock)
@@ -387,11 +392,15 @@ def test_async_parallel_notebooks(capfd, tmpdir):
     res = notebook_resources()
 
     with modified_env({"NBEXECUTE_TEST_PARALLEL_TMPDIR": str(tmpdir)}):
-        tasks = [
-            async_run_notebook(input_file.format(label=label), opts, res) for label in ("A", "B")
-        ]
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.gather(*tasks))
+
+        async def run_tasks():
+            tasks = [
+                async_run_notebook(input_file.format(label=label), opts, res)
+                for label in ("A", "B")
+            ]
+            await asyncio.gather(*tasks)
+
+        asyncio.run(run_tasks())
 
     captured = capfd.readouterr()
     assert filter_messages_on_error_output(captured.err) == ""
@@ -412,9 +421,11 @@ def test_many_async_parallel_notebooks(capfd):
     # run once, to trigger creating the original context
     run_notebook(input_file, opts, res)
 
-    tasks = [async_run_notebook(input_file, opts, res) for i in range(4)]
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncio.gather(*tasks))
+    async def run_tasks():
+        tasks = [async_run_notebook(input_file, opts, res) for i in range(4)]
+        await asyncio.gather(*tasks)
+
+    asyncio.run(run_tasks())
 
     captured = capfd.readouterr()
     assert filter_messages_on_error_output(captured.err) == ""
@@ -966,7 +977,7 @@ class TestRunCell(NBClientTestsBase):
 
         message_mock.side_effect = message_seq(list(message_mock.side_effect)[:-1])
         executor.kc.shell_channel.get_msg = Mock(
-            return_value=make_async({'parent_header': {'msg_id': executor.parent_id}})
+            return_value=make_future({'parent_header': {'msg_id': executor.parent_id}})
         )
         executor.raise_on_iopub_timeout = True
 
