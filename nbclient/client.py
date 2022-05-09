@@ -114,12 +114,13 @@ class NotebookClient(LoggingConfigurable):
             If a cell execution was interrupted after a timeout, don't wait for
             the execute_reply from the kernel (e.g. KeyboardInterrupt error).
             Instead, return an execute_reply with the given error, which should
-            be of the following form:
-            {
-                'ename': str,  # Exception name, as a string
-                'evalue': str,  # Exception value, as a string
-                'traceback': list(str),  # traceback frames, as strings
-            }
+            be of the following form::
+
+                {
+                    'ename': str,  # Exception name, as a string
+                    'evalue': str,  # Exception value, as a string
+                    'traceback': list(str),  # traceback frames, as strings
+                }
             """
         ),
     ).tag(config=True)
@@ -838,6 +839,7 @@ class NotebookClient(LoggingConfigurable):
                 return execute_reply
             return None
         else:
+            assert cell is not None
             raise CellTimeoutError.error_from_timeout_and_cell(
                 "Cell execution timed out", timeout, cell
             )
@@ -1015,7 +1017,7 @@ class NotebookClient(LoggingConfigurable):
 
     def process_message(
         self, msg: t.Dict, cell: NotebookNode, cell_index: int
-    ) -> t.Optional[t.List]:
+    ) -> t.Optional[NotebookNode]:
         """
         Processes a kernel message, updates cell state, and returns the
         resulting output object that was appended to cell.outputs.
@@ -1033,7 +1035,7 @@ class NotebookClient(LoggingConfigurable):
 
         Returns
         -------
-        output : dict
+        output : NotebookNode
             The execution output payload (or None for no output).
 
         Raises
@@ -1082,6 +1084,7 @@ class NotebookClient(LoggingConfigurable):
     ) -> t.Optional[NotebookNode]:
 
         msg_type = msg['msg_type']
+        out = None
 
         parent_msg_id = msg['parent_header'].get('msg_id')
         if self.output_hook_stack[parent_msg_id]:
@@ -1112,7 +1115,7 @@ class NotebookClient(LoggingConfigurable):
 
         outs.append(out)
 
-        return out
+        return out  # type:ignore[no-any-return]
 
     def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
 

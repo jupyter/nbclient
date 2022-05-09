@@ -6,7 +6,7 @@
 import asyncio
 import inspect
 import sys
-from typing import Any, Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, Optional, TypeVar, Union
 
 
 def check_ipython() -> None:
@@ -62,7 +62,10 @@ def just_run(coro: Awaitable) -> Any:
     return loop.run_until_complete(coro)
 
 
-def run_sync(coro: Callable) -> Callable:
+T = TypeVar("T")
+
+
+def run_sync(coro: Callable[..., Awaitable[T]]) -> Callable[..., T]:
     """Runs a coroutine and blocks until it has executed.
 
     An event loop is created if no one already exists. If an event loop is
