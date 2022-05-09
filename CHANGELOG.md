@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.3
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.2...61d36ce423b00231833c737f59041f33d72a7bb3))
+
+### Bugs fixed
+
+- Clean up docs and typings [#230](https://github.com/jupyter/nbclient/pull/230) ([@blink1073](https://github.com/blink1073))
+
+### Documentation improvements
+
+- Clean up docs and typings [#230](https://github.com/jupyter/nbclient/pull/230) ([@blink1073](https://github.com/blink1073))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-05-03&to=2022-05-09&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-05-03..2022-05-09&type=Issues) | [@chrisjsewell](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Achrisjsewell+updated%3A2022-05-03..2022-05-09&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-05-03..2022-05-09&type=Issues) | [@meeseeksmachine](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ameeseeksmachine+updated%3A2022-05-03..2022-05-09&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.2
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.1...bd36f50a299fb2e0656386ec487c2bbc67a9a1c4))
@@ -15,8 +35,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-05-03&to=2022-05-03&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-05-03..2022-05-03&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.1
 
