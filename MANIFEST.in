@@ -3,7 +3,7 @@ include MANIFEST.in
 include requirements.txt
 include requirements-dev.txt
 include *.md
-include tox.ini
+include pytest.ini
 include pyproject.toml
 include .pre-commit-config.yaml
 include nbclient/py.typed
