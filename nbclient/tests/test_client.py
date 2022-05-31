@@ -510,7 +510,14 @@ def test_start_new_kernel_history_file_setting():
 
 def test_start_new_kernel_client_cleans_up_kernel_on_failure():
     class FakeClient(KernelClient):
-        def start_channels(self, *args, **kwargs) -> None:
+        def start_channels(
+            self,
+            shell: bool = True,
+            iopub: bool = True,
+            stdin: bool = True,
+            hb: bool = True,
+            control: bool = True
+        ) -> None:
             raise Exception("Any error")
 
         def stop_channels(self) -> None:
