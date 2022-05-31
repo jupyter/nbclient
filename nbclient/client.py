@@ -557,11 +557,12 @@ class NotebookClient(LoggingConfigurable):
             Kernel client as created by the kernel manager ``km``.
         """
         assert self.km is not None
-        self.kc = self.km.client()
-        await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
         try:
+            self.kc = self.km.client()
+            await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
             await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
-        except RuntimeError:
+        except Exception as e:
+            self.log.error("Error occurred while starting new kernel client: %s" % str(e))
             await self._async_cleanup_kernel()
             raise
         self.kc.allow_stdin = False
