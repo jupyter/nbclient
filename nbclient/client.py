@@ -39,7 +39,7 @@ from .output_widget import OutputWidget
 from .util import ensure_async, run_hook, run_sync
 
 
-def timestamp(msg: t.Optional[Dict] = None) -> str:
+def timestamp(msg: t.Optional[t.Dict] = None) -> str:
     if msg and 'header' in msg:  # The test mocks don't provide a header, so tolerate that
         msg_header = msg['header']
         if 'date' in msg_header and isinstance(msg_header['date'], datetime.datetime):
@@ -288,7 +288,9 @@ class NotebookClient(LoggingConfigurable):
         """,
     ).tag(config=True)
 
-    kernel_manager_class: KernelManager = Type(config=True, help='The kernel manager class to use.')
+    kernel_manager_class = Type(
+        config=True, klass=KernelManager, help='The kernel manager class to use.'
+    )
 
     on_notebook_start: t.Optional[t.Callable] = Callable(
         default_value=None,
@@ -390,7 +392,7 @@ class NotebookClient(LoggingConfigurable):
 
         return AsyncKernelManager
 
-    _display_id_map: t.Dict[str, t.Dict] = Dict(
+    _display_id_map = Dict(
         help=dedent(
             """
               mapping of locations of outputs with a given display_id
@@ -423,7 +425,7 @@ class NotebookClient(LoggingConfigurable):
             """,
     ).tag(config=True)
 
-    resources: t.Dict = Dict(
+    resources = Dict(
         help=dedent(
             """
             Additional resources used in the conversion process. For example,
@@ -557,11 +559,16 @@ class NotebookClient(LoggingConfigurable):
             Kernel client as created by the kernel manager ``km``.
         """
         assert self.km is not None
-        self.kc = self.km.client()
-        await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
         try:
-            await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
-        except RuntimeError:
+            self.kc = self.km.client()
+            await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
+            await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))  # type:ignore
+        except Exception as e:
+            self.log.error(
+                "Error occurred while starting new kernel client for kernel {}: {}".format(
+                    self.km.kernel_id, str(e)
+                )
+            )
             await self._async_cleanup_kernel()
             raise
         self.kc.allow_stdin = False
@@ -846,7 +853,7 @@ class NotebookClient(LoggingConfigurable):
 
     async def _async_check_alive(self) -> None:
         assert self.kc is not None
-        if not await ensure_async(self.kc.is_alive()):
+        if not await ensure_async(self.kc.is_alive()):  # type:ignore
             self.log.error("Kernel died while waiting for execute reply.")
             raise DeadKernelError("Kernel died")
 
