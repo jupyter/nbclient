@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
-from jupyter_client import KernelManager
+from jupyter_client import KernelManager, KernelClient
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
@@ -506,6 +506,31 @@ def test_start_new_kernel_history_file_setting():
     kc.shutdown()
     km.cleanup_resources()
     kc.stop_channels()
+
+
+def test_start_new_kernel_client_cleans_up_kernel_on_failure():
+    class FakeClient(KernelClient):
+        def start_channels(self, *args, **kwargs) -> None:
+            raise Exception("Any error")
+
+        def stop_channels(self) -> None:
+            pass
+
+    nb = nbformat.v4.new_notebook()
+    km = KernelManager()
+    km.client_factory = FakeClient
+    executor = NotebookClient(nb, km=km)
+    executor.start_new_kernel()
+    assert km.has_kernel
+    assert executor.km is not None
+
+    with pytest.raises(Exception) as err:
+        executor.start_new_kernel_client()
+
+    assert str(err.value.args[0]) == "Any error"
+    assert executor.kc is None
+    assert executor.km is None
+    assert not km.has_kernel
 
 
 class TestExecute(NBClientTestsBase):
