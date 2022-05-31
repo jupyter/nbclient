@@ -211,7 +211,11 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
             cell_mock = NotebookNode(
                 source='"foo" = "bar"', metadata={}, cell_type='code', outputs=[]
             )
-            executor = NotebookClient({})  # type:ignore
+
+            class NotebookClientWithParentID(NotebookClient):
+                parent_id: str
+
+            executor = NotebookClientWithParentID({})  # type:ignore
             executor.nb = {'cells': [cell_mock]}  # type:ignore
 
             # self.kc.iopub_channel.get_msg => message_mock.side_effect[i]
