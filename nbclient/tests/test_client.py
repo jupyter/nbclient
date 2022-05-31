@@ -516,7 +516,7 @@ def test_start_new_kernel_client_cleans_up_kernel_on_failure():
             iopub: bool = True,
             stdin: bool = True,
             hb: bool = True,
-            control: bool = True
+            control: bool = True,
         ) -> None:
             raise Exception("Any error")
 
