@@ -562,7 +562,11 @@ class NotebookClient(LoggingConfigurable):
             await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
             await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))
         except Exception as e:
-            self.log.error("Error occurred while starting new kernel client: %s" % str(e))
+            self.log.error(
+                "Error occurred while starting new kernel client for kernel {}: {}".format(
+                    self.km.kernel_id, str(e)
+                )
+            )
             await self._async_cleanup_kernel()
             raise
         self.kc.allow_stdin = False
