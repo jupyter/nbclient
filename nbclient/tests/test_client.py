@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
-from jupyter_client import KernelManager, KernelClient
+from jupyter_client import KernelClient, KernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
