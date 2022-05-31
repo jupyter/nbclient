@@ -2,6 +2,23 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.4
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.3...01465b8d8597efa81f54f713ad3944fe963ab453))
+
+### Merged PRs
+
+- Make sure kernel is cleaned up in case an error occurred while starting kernel client [#234](https://github.com/jupyter/nbclient/pull/234) ([@CiprianAnton](https://github.com/CiprianAnton))
+- Suppress most warnings in tests [#232](https://github.com/jupyter/nbclient/pull/232) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-05-09&to=2022-05-31&type=c))
+
+[@CiprianAnton](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3ACiprianAnton+updated%3A2022-05-09..2022-05-31&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-05-09..2022-05-31&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.3
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.2...61d36ce423b00231833c737f59041f33d72a7bb3))
@@ -19,8 +36,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-05-03&to=2022-05-09&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-05-03..2022-05-09&type=Issues) | [@chrisjsewell](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Achrisjsewell+updated%3A2022-05-03..2022-05-09&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-05-03..2022-05-09&type=Issues) | [@meeseeksmachine](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ameeseeksmachine+updated%3A2022-05-03..2022-05-09&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.2
 
