@@ -57,7 +57,11 @@ def just_run(coro: Awaitable) -> Any:
 
         nest_asyncio.apply()
         check_patch_tornado()
-    return loop.run_until_complete(coro)
+    res = loop.run_until_complete(coro)
+    if not had_running_loop:
+        loop.stop()
+        loop.close()
+    return res
 
 
 T = TypeVar("T")

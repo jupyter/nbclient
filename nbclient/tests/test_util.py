@@ -1,4 +1,5 @@
 import asyncio
+import unittest.mock
 from unittest.mock import MagicMock
 
 import psutil
@@ -94,3 +95,18 @@ def test_just_run_doesnt_leak_fds():
         just_run(async_sleep())
         diff.append(proc.num_fds() - fds_count)
     assert diff == [0] * 10
+
+
+def test_just_run_clears_new_loop():
+    async def async_sleep():
+        await asyncio.sleep(0.1)
+
+    loop = asyncio.new_event_loop()
+    loop.stop = MagicMock(wraps=loop.stop)
+    loop.close = MagicMock(wraps=loop.close)
+
+    with unittest.mock.patch.object(asyncio, "new_event_loop", return_value=loop):
+        just_run(async_sleep())
+
+    loop.stop.assert_called_once
+    loop.close.assert_called_once
