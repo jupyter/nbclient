@@ -7,6 +7,7 @@ ipywidgets<8.0.0
 mypy
 pip>=18.1
 pre-commit
+psutil
 pytest>=4.1
 pytest-asyncio
 pytest-cov>=2.6.1
