@@ -92,7 +92,7 @@ def test_just_run_doesnt_leak_fds():
 
     diff = []
     for _ in range(10):
-        just_run(async_sleep())
+        just_run(asyncio.sleep(0.01))
         diff.append(proc.num_fds() - fds_count)
     assert diff == [0] * 10
 
