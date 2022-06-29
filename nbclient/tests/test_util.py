@@ -82,12 +82,9 @@ async def test_run_hook_async():
 def test_just_run_doesnt_leak_fds():
     proc = psutil.Process()
 
-    async def async_sleep():
-        await asyncio.sleep(0.01)
-
     # Warmup, just to make sure we're not failing on some initial fds being opened for the first time.
     for _ in range(10):
-        just_run(async_sleep())
+        just_run(asyncio.sleep(0.01))
     fds_count = proc.num_fds()
 
     diff = []
