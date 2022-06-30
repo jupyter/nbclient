@@ -641,7 +641,10 @@ class NotebookClient(LoggingConfigurable):
 
         if not self.km.has_kernel:
             await self.async_start_new_kernel(**kwargs)
+
+        if self.kc is None:
             await self.async_start_new_kernel_client()
+
         try:
             yield
         except RuntimeError as e:
