@@ -597,7 +597,10 @@ class NotebookClient(LoggingConfigurable):
 
         if not self.km.has_kernel:
             self.start_new_kernel(**kwargs)
+
+        if self.kc is None:
             self.start_new_kernel_client()
+
         try:
             yield
         finally:
