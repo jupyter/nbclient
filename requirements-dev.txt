@@ -5,6 +5,7 @@ ipykernel
 ipython
 ipywidgets
 mypy
+nbconvert
 pip>=18.1
 pre-commit
 pytest>=4.1
