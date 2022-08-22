@@ -2,8 +2,8 @@ black
 check-manifest
 flake8
 ipykernel
-ipython<8.0.0
-ipywidgets<8.0.0
+ipython
+ipywidgets
 mypy
 pip>=18.1
 pre-commit
