@@ -2,6 +2,23 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.7
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.6...979fb908dc133cc80a698c74d9b3d9d8af6c7bde))
+
+### Merged PRs
+
+- Fix tests for ipywidgets 8 [#246](https://github.com/jupyter/nbclient/pull/246) ([@frenzymadness](https://github.com/frenzymadness))
+- [pre-commit.ci] pre-commit autoupdate [#236](https://github.com/jupyter/nbclient/pull/236) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-07-01&to=2022-08-23&type=c))
+
+[@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2022-07-01..2022-08-23&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-07-01..2022-08-23&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.6
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.5...b4a7cebf0238d4fbe814e19afbee8df3f610e80d))
@@ -15,8 +32,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-06-30&to=2022-07-01&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-06-30..2022-07-01&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.5
 
