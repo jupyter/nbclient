@@ -2,9 +2,10 @@ black
 check-manifest
 flake8
 ipykernel
-ipython<8.0.0
-ipywidgets<8.0.0
+ipython
+ipywidgets
 mypy
+nbconvert
 pip>=18.1
 pre-commit
 pytest>=4.1
