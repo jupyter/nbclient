@@ -5,65 +5,29 @@
 
 import asyncio
 import inspect
-import sys
-from typing import Any, Awaitable, Callable, Optional, TypeVar, Union
-
-
-def check_ipython() -> None:
-    # original from vaex/asyncio.py
-    IPython = sys.modules.get('IPython')
-    if IPython:
-        version_str = IPython.__version__
-        # We get rid of any trailing ".dev"
-        version_str = version_str.replace(".dev", "")
-
-        IPython_version = tuple(map(int, version_str.split('.')))
-        if IPython_version < (7, 0, 0):
-            raise RuntimeError(
-                f'You are using IPython {IPython.__version__} '
-                'while we require 7.0.0+, please update IPython'
-            )
-
-
-def check_patch_tornado() -> None:
-    """If tornado is imported, add the patched asyncio.Future to its tuple of acceptable Futures"""
-    # original from vaex/asyncio.py
-    if 'tornado' in sys.modules:
-        import tornado.concurrent
-
-        if asyncio.Future not in tornado.concurrent.FUTURES:
-            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (  # type: ignore
-                asyncio.Future,
-            )
-
-
-def just_run(coro: Awaitable) -> Any:
-    """Make the coroutine run, even if there is an event loop running (using nest_asyncio)"""
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
-    if loop is None:
-        had_running_loop = False
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    else:
-        had_running_loop = True
-    if had_running_loop:
-        # if there is a running loop, we patch using nest_asyncio
-        # to have reentrant event loops
-        check_ipython()
-        import nest_asyncio
-
-        nest_asyncio.apply()
-        check_patch_tornado()
-    return loop.run_until_complete(coro)
-
+from typing import Any, Awaitable, Callable, Coroutine, Optional, TypeVar, Union
 
 T = TypeVar("T")
 
 
-def run_sync(coro: Callable[..., Awaitable[T]]) -> Callable[..., T]:
+def just_run(coro: Coroutine[Any, Any, T]) -> T:
+    """Make the coroutine run, even if there is already a running event loop"""
+    try:
+        loop_prev = asyncio.get_running_loop()
+    except RuntimeError:
+        loop_prev = None
+    loop = loop_prev or asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    # private API, but present from CPython 3.3ish-3.10+
+    asyncio.events._set_running_loop(None)
+    res: T = asyncio.run(coro)
+    if loop_prev:
+        asyncio.set_event_loop(loop_prev)
+        asyncio.events._set_running_loop(loop_prev)
+    return res
+
+
+def run_sync(coro: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., T]:
     """Runs a coroutine and blocks until it has executed.
 
     An event loop is created if no one already exists. If an event loop is

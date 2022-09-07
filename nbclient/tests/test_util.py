@@ -20,32 +20,22 @@ def test_nested_asyncio_with_existing_ioloop():
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    try:
-        event_loop = loop.run_until_complete(_test())
-        assert event_loop is loop
-    finally:
-        asyncio._set_running_loop(None)  # it seems nest_asyncio doesn't reset this
+    event_loop = loop.run_until_complete(_test())
+    assert event_loop is loop
+    loop.close()
 
 
 def test_nested_asyncio_with_no_ioloop():
-    asyncio.set_event_loop(None)
-    try:
-        assert some_async_function() == 42
-    finally:
-        asyncio._set_running_loop(None)  # it seems nest_asyncio doesn't reset this
+    assert some_async_function() == 42
 
 
 def test_nested_asyncio_with_tornado():
-    # This tests if tornado accepts the pure-Python Futures, see
-    # https://github.com/tornadoweb/tornado/issues/2753
-    # https://github.com/erdewit/nest_asyncio/issues/23
+    # This tests if tornado accepts the pure-Python Futures
     asyncio.set_event_loop(asyncio.new_event_loop())
     ioloop = tornado.ioloop.IOLoop.current()
 
     async def some_async_function():
-        future: asyncio.Future = asyncio.ensure_future(asyncio.sleep(0.1))
-        # this future is a different future after nested-asyncio has patched
-        # the asyncio module, check if tornado likes it:
+        future: asyncio.Task = asyncio.create_task(asyncio.sleep(0.1))
         ioloop.add_future(future, lambda f: f.result())  # type:ignore
         await future
         return 42
@@ -56,8 +46,7 @@ def test_nested_asyncio_with_tornado():
     async def run():
         # calling some_async_function directly should work
         assert await some_async_function() == 42
-        # but via a sync function (using nested-asyncio) can lead to issues:
-        # https://github.com/tornadoweb/tornado/issues/2753
+        # but via a sync function can lead to issues
         assert some_sync_function() == 42
 
     ioloop.run_sync(run)
