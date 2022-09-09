@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.8
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.7...f7d72b2c6937fc30add18b7413f89b691d1710be))
+
+### Merged PRs
+
+- Fix tests compatibility with IPython 8.5.0 [#251](https://github.com/jupyter/nbclient/pull/251) ([@frenzymadness](https://github.com/frenzymadness))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-08-23&to=2022-09-09&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-08-23..2022-09-09&type=Issues) | [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2022-08-23..2022-09-09&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.7
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.6...979fb908dc133cc80a698c74d9b3d9d8af6c7bde))
@@ -16,8 +32,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-07-01&to=2022-08-23&type=c))
 
 [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2022-07-01..2022-08-23&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-07-01..2022-08-23&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.6
 
