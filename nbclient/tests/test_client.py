@@ -643,6 +643,7 @@ while True: continue
         with executor.setup_kernel():
             assert executor.kc is not None
             info_msg = executor.wait_for_reply(executor.kc.kernel_info())
+            assert info_msg is not None
             assert 'name' in info_msg["content"]["language_info"]
 
     def test_kernel_death_after_timeout(self):
