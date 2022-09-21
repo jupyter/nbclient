@@ -653,9 +653,10 @@ while True: continue
             return False
 
         km.is_alive = is_alive
-        # Will be a RuntimeError or subclass DeadKernelError depending
+        # Will be a RuntimeError, TimeoutError, or subclass DeadKernelError
+        # depending
         # on if jupyter_client or nbconvert catches the dead client first
-        with pytest.raises(RuntimeError):
+        with pytest.raises((RuntimeError, TimeoutError)):
             input_nb, output_nb = executor.execute()
 
     def test_kernel_death_during_execution(self):
