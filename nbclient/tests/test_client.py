@@ -635,6 +635,15 @@ while True: continue
         with pytest.raises(TimeoutError):
             run_notebook(filename, dict(timeout_func=timeout_func), res)
 
+    def test_sync_kernel_manager(self):
+        nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
+        executor = NotebookClient(nb, kernel_name="python", kernel_manager_class=KernelManager)
+        nb = executor.execute()
+        assert 'language_info' in nb.metadata
+        with executor.setup_kernel():
+            info_msg = executor.wait_for_reply(executor.kc.kernel_info())
+            assert 'name' in info_msg["content"]["language_info"]
+
     def test_kernel_death_after_timeout(self):
         """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
