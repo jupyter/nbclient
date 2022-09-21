@@ -641,6 +641,7 @@ while True: continue
         nb = executor.execute()
         assert 'language_info' in nb.metadata
         with executor.setup_kernel():
+            assert executor.kc is not None
             info_msg = executor.wait_for_reply(executor.kc.kernel_info())
             assert 'name' in info_msg["content"]["language_info"]
 
