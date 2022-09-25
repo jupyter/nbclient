@@ -57,13 +57,6 @@ jobs:
         args="-vv --maxfail=2 --cov=nbclient --cov-report=xml -W always"
         pytest $args || pytest $arg --lf
 
-    - name: Run the tests against client 8
-      shell: bash
-      run: |
-        pip install jupyter_client@https://github.com/blink1073/jupyter_client/archive/refs/heads/synchronous_managers.zip
-        args="-vv --maxfail=2 --cov=nbclient --cov-report=xml -W always"
-        pytest $args || pytest $arg --lf
-
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
