@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: ["main"]
   pull_request:
 
 jobs:
@@ -71,3 +72,10 @@ jobs:
         pip install .[sphinx]
         cd docs
         make html SPHINXOPTS="-W"
+
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+    - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
