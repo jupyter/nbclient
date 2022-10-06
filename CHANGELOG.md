@@ -2,6 +2,25 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.7.0
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.8...449f17d0374f43694d2203d216c97dd4ac7f2c0e))
+
+### Maintenance and upkeep improvements
+
+- Cleanup CI [#254](https://github.com/jupyter/nbclient/pull/254) ([@blink1073](https://github.com/blink1073))
+- Handle client 8 support [#253](https://github.com/jupyter/nbclient/pull/253) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-09-09&to=2022-10-06&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-09-09..2022-10-06&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-09-09..2022-10-06&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.8
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.7...f7d72b2c6937fc30add18b7413f89b691d1710be))
@@ -15,8 +34,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-08-23&to=2022-09-09&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-08-23..2022-09-09&type=Issues) | [@frenzymadness](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Afrenzymadness+updated%3A2022-08-23..2022-09-09&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.7
 
