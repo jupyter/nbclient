@@ -635,6 +635,17 @@ while True: continue
         with pytest.raises(TimeoutError):
             run_notebook(filename, dict(timeout_func=timeout_func), res)
 
+    def test_sync_kernel_manager(self):
+        nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
+        executor = NotebookClient(nb, kernel_name="python", kernel_manager_class=KernelManager)
+        nb = executor.execute()
+        assert 'language_info' in nb.metadata
+        with executor.setup_kernel():
+            assert executor.kc is not None
+            info_msg = executor.wait_for_reply(executor.kc.kernel_info())
+            assert info_msg is not None
+            assert 'name' in info_msg["content"]["language_info"]
+
     def test_kernel_death_after_timeout(self):
         """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
@@ -653,9 +664,10 @@ while True: continue
             return False
 
         km.is_alive = is_alive
-        # Will be a RuntimeError or subclass DeadKernelError depending
+        # Will be a RuntimeError, TimeoutError, or subclass DeadKernelError
+        # depending
         # on if jupyter_client or nbconvert catches the dead client first
-        with pytest.raises(RuntimeError):
+        with pytest.raises((RuntimeError, TimeoutError)):
             input_nb, output_nb = executor.execute()
 
     def test_kernel_death_during_execution(self):
