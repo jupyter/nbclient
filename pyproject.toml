@@ -48,7 +48,6 @@ test = [
     "ipython",
     "ipywidgets",
     "nbconvert",
-    "pip>=18.1",
     "pytest-asyncio",
     "pytest-cov>=2.6.1",
     "pytest>=4.1",
@@ -116,7 +115,7 @@ known_first_party = [
     "nbclient",
 ]
 
-[pytest.ini_options]
+[tool.pytest.ini_options]
 addopts = "-raXs --durations 10 --color=yes --doctest-modules"
 asyncio_mode = "auto"
 
