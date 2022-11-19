@@ -78,7 +78,7 @@ Source = "https://github.com/jupyter/nbclient"
 Tracker = "https://github.com/jupyter/nbclient/issues"
 
 [tool.hatch.version]
-path = "nbclient/__init__.py"
+path = "nbclient/_version.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
