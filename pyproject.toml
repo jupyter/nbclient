@@ -1,45 +1,132 @@
-# Example configuration for Black.
+[build-system]
+requires = [
+    "hatchling>=1.10.0",
+]
+build-backend = "hatchling.build"
 
-# NOTE: you have to use single-quoted strings in TOML for regular expressions.
-# It's the equivalent of r-strings in Python.  Multiline strings are treated as
-# verbose regular expressions by Black.  Use [ ] to denote a significant space
-# character.
+[project]
+name = "nbclient"
+dynamic = [
+    "version",
+]
+description = "A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor."
+readme = "README.md"
+license = "BSD"
+requires-python = ">=3.7.0"
+authors = [
+    { name = "Jupyter Development Team", email = "jupyter@googlegroups.com" },
+]
+keywords = [
+    "executor",
+    "jupyter",
+    "notebook",
+    "pipeline",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "jupyter_client>=6.1.5",
+    "nbformat>=5.0",
+    "nest_asyncio",
+    "traitlets>=5.2.2",
+]
+
+[project.optional-dependencies]
+docs = [
+    "autodoc-traits",
+    "mock",
+    "moto",
+    "myst-parser",
+    "sphinx-book-theme",
+    "sphinx>=1.7",
+]
+test = [
+    "flaky",
+    "ipykernel",
+    "ipython",
+    "ipywidgets",
+    "nbconvert",
+    "pip>=18.1",
+    "pytest-asyncio",
+    "pytest-cov>=2.6.1",
+    "pytest>=4.1",
+    "testpath",
+    "xmltodict",
+]
+dev = [
+    "pre-commit",
+]
+
+[project.scripts]
+jupyter-execute = "nbclient.cli:main"
+
+[project.urls]
+Documentation = "https://nbclient.readthedocs.io"
+Funding = "https://numfocus.org/"
+Homepage = "https://jupyter.org"
+Source = "https://github.com/jupyter/nbclient"
+Tracker = "https://github.com/jupyter/nbclient/issues"
+
+[tool.hatch.version]
+path = "nbclient/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/nbclient",
+]
+
+[tool.hatch.envs.docs]
+features = ["docs"]
+[tool.hatch.envs.docs.scripts]
+build = "make -C docs html SPHINXOPTS='-W'"
+
+[tool.hatch.envs.test]
+features = ["test"]
+[tool.hatch.envs.test.scripts]
+test = "python -m pytest -vv {args}"
+nowarn = "test -W default {args}"
+
+[tool.hatch.envs.cov]
+features = ["test"]
+dependencies = ["coverage", "pytest-cov"]
+[tool.hatch.envs.cov.scripts]
+test = "python -m pytest -vv --cov nbclient --cov-branch --cov-report term-missing:skip-covered {args}"
+nowarn = "test -W default {args}"
 
 [tool.black]
 line-length = 100
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data
-  | profiling
-)/
-'''
+include = "\\.pyi?$"
+exclude = "/(\n    \\.git\n  | \\.hg\n  | \\.mypy_cache\n  | \\.tox\n  | \\.venv\n  | _build\n  | buck-out\n  | build\n  | dist\n\n  # The following are specific to Black, you probably don't want those.\n  | blib2to3\n  | tests/data\n  | profiling\n)/\n"
 skip-string-normalization = true
 
 [tool.isort]
 profile = "black"
-known_first_party = ["nbclient"]
+known_first_party = [
+    "nbclient",
+]
+
+[pytest.ini_options]
+addopts = "-raXs --durations 10 --color=yes --doctest-modules"
+asyncio_mode = "auto"
 
 [tool.mypy]
 python_version = 3.9
 check_untyped_defs = true
-disallow_any_generics = false  # todo
+disallow_any_generics = false
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 no_implicit_optional = true
-no_implicit_reexport = false  # todo
+no_implicit_reexport = false
 pretty = true
 show_error_context = true
 show_error_codes = true
@@ -53,32 +140,26 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = [
     "async_generator.*",
-    "jupyter_core.*",
-    "nbformat.*",
-    "nbconvert.*",
     "nest_asyncio.*",
     "testpath",
-    "traitlets.*",
-    "xmltodict"
+    "xmltodict",
 ]
 ignore_missing_imports = true
 
-[tool.jupyter-releaser]
-skip = ["check-links"]
-
-[tool.check-manifest]
-ignore = [".mailmap", "*.yml", "*.yaml"]
-
-[tool.tbump.version]
-current = "0.7.0"
-regex = '''
-  (?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)
-  ((?P<channel>a|b|rc|.dev)(?P<release>\d+))?
-'''
-
-[tool.tbump.git]
-message_template = "Bump to {new_version}"
-tag_template = "v{new_version}"
-
-[[tool.tbump.file]]
-src = "nbclient/_version.py"
+[tool.flake8]
+ignore = "E501, W503, E402"
+builtins = "c, get_config"
+exclude = """
+.cache,
+.github,
+docs,
+setup.py"""
+enable-extensions = "G"
+extend-ignore = """
+G001, G002, G004, G200, G201, G202,
+# black adds spaces around ':'
+E203,"""
+per-file-ignores = """
+# B011: Do not call assert False since python -O removes these calls
+# F841 local variable 'foo' is assigned to but never used
+nbclient/tests/*: B011, F841"""

@@ -1,7 +1,6 @@
 ci:
     autoupdate_schedule: monthly
     autofix_prs: true
-    skip: [check-jsonschema]
 
 repos:
 
@@ -39,24 +38,46 @@ repos:
         files: \.py$
         args: [--profile=black]
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.990
+    hooks:
+      - id: mypy
+        additional_dependencies: [jupyter_client, jupyter_core, nbformat, nbconvert]
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.10.1
+    hooks:
+      - id: validate-pyproject
+        stages: [manual]
+
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.16
+    hooks:
+      - id: mdformat
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.2.2
+    hooks:
+      - id: pyupgrade
+        args: [--py37-plus]
+
   - repo: https://github.com/PyCQA/doc8
     rev: v1.0.0
     hooks:
       - id: doc8
         args: [--max-line-length=200]
 
-  - repo: https://github.com/pycqa/flake8
-    rev: 5.0.4
+
+  - repo: https://github.com/john-hen/Flake8-pyproject
+    rev: 1.1.0.post0
     hooks:
-      - id: flake8
+      - id: Flake8-pyproject
+        alias: flake8
         additional_dependencies:
           ["flake8-bugbear==22.6.22", "flake8-implicit-str-concat==0.2.0"]
+        stages: [manual]
 
-  - repo: https://github.com/sirosen/check-jsonschema
-    rev: 0.18.4
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.19.1
     hooks:
-      - id: check-jsonschema
-        name: "Check GitHub Workflows"
-        files: ^\.github/workflows/
-        types: [yaml]
-        args: ["--schemafile", "https://json.schemastore.org/github-workflow"]
+      - id: check-github-workflows

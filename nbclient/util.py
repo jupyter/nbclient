@@ -32,9 +32,9 @@ def check_patch_tornado() -> None:
         import tornado.concurrent
 
         if asyncio.Future not in tornado.concurrent.FUTURES:
-            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (  # type: ignore
+            tornado.concurrent.FUTURES = tornado.concurrent.FUTURES + (
                 asyncio.Future,
-            )
+            )  # type:ignore[assignment]
 
 
 def just_run(coro: Awaitable) -> Any:
