@@ -15,7 +15,6 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
-from flaky import flaky
 from jupyter_client import KernelClient, KernelManager
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
@@ -364,7 +363,6 @@ def test_parallel_notebooks(capfd, tmpdir):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
-@flaky
 def test_many_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
 
