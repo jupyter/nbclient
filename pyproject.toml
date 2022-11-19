@@ -42,14 +42,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-docs = [
-    "autodoc-traits",
-    "mock",
-    "moto",
-    "myst-parser",
-    "sphinx-book-theme",
-    "sphinx>=1.7",
-]
 test = [
     "flaky",
     "ipykernel",
@@ -62,6 +54,15 @@ test = [
     "pytest>=4.1",
     "testpath",
     "xmltodict",
+]
+docs = [
+    "autodoc-traits",
+    "mock",
+    "moto",
+    "myst-parser",
+    "sphinx-book-theme",
+    "sphinx>=1.7",
+    "nbclient[test]",
 ]
 dev = [
     "pre-commit",

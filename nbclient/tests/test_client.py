@@ -38,6 +38,10 @@ ipython8_input_pat = re.compile(
     r'((Cell|Input) In \[\d+\]|<IPY-INPUT>), (in )?(line \d|<module>|<cell line: \d>\(\))'
 )
 
+
+# Avoid warnings from pydev.
+os.environ['PYDEVD_DISABLE_FILE_VALIDATION'] = '1'
+
 hook_methods = [
     "on_cell_start",
     "on_cell_execute",
