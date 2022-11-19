@@ -54,23 +54,6 @@ jobs:
           pip install codecov
           codecov
 
-  test_minimum_versions:
-    name: Test Minimum Versions
-    timeout-minutes: 20
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-        with:
-          python_version: "3.8"
-      - uses: jupyterlab/maintainer-tools/.github/actions/install-minimums@v1
-        with:
-          only_create_file: 1
-      - name: Run the unit tests
-        run: |
-          export PIP_CONSTRAINT="./contraints_file.txt"
-          hatch run test:nowarn || hatch run test:nowarn --lf
-
   test_prereleases:
     name: Test Prereleases
     runs-on: ubuntu-latest
@@ -129,7 +112,6 @@ jobs:
       - build
       - pre_commit
       - test_docs
-      - test_minimum_versions
       - test_prereleases
       - check_links
       - check_release
