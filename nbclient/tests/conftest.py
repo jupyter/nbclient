@@ -1,6 +1,4 @@
-import asyncio
 import os
-import sys
 
 # This is important for ipykernel to show the same string
 # instead of randomly generated file names in outputs.
