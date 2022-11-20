@@ -47,7 +47,7 @@ jobs:
       - name: Base Setup
         uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
       - name: Run the tests
-        run: hatch run cov:test || hatch run test:test
+        run: hatch run cov:test || hatch run test:test --lf
 
       - name: Upload coverage to Codecov
         run: |
@@ -121,7 +121,6 @@ jobs:
         uses: jupyter-server/jupyter_releaser/.github/actions/check-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
 
   tests_check: # This job does nothing and is only used for the branch protection
     if: always()
