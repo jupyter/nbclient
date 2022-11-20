@@ -36,7 +36,7 @@ classifiers = [
 ]
 dependencies = [
     "jupyter_client>=6.1.12",
-    "nbformat>=5.0",
+    "nbformat>=5.0.2",
     "nest_asyncio",
     "traitlets>=5.2.2",
 ]
