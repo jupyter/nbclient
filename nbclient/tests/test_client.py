@@ -363,6 +363,7 @@ def test_parallel_notebooks(capfd, tmpdir):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
+@pytest.mark.skipif(os.name == 'nt', reason='warns about event loop on Windows')
 def test_many_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
 
