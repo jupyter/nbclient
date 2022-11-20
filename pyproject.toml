@@ -38,7 +38,7 @@ dependencies = [
     "jupyter_client>=6.1.12",
     "nbformat>=5.0.2",
     "nest_asyncio",
-    "traitlets>=5.2.2",
+    "traitlets>=5.3",
 ]
 
 [project.optional-dependencies]
