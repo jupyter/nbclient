@@ -69,7 +69,7 @@ jobs:
       - name: Run the unit tests
         run: |
           export PIP_CONSTRAINT="./contraints_file.txt"
-          hatch run test:nowarn || -v hatch run test:nowarn --lf
+          hatch run test:nowarn || hatch -v run test:nowarn --lf
 
   test_prereleases:
     name: Test Prereleases
