@@ -16,6 +16,7 @@ import nbformat
 import pytest
 import xmltodict
 from jupyter_client import KernelClient, KernelManager
+from jupyter_client._version import version_info
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
@@ -518,6 +519,7 @@ def test_start_new_kernel_history_file_setting():
     kc.stop_channels()
 
 
+@pytest.mark.skipif(int(version_info[0]) < 7, reason="requires client 7+")
 def test_start_new_kernel_client_cleans_up_kernel_on_failure():
     class FakeClient(KernelClient):
         def start_channels(
