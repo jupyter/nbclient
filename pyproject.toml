@@ -48,8 +48,8 @@ test = [
     "ipywidgets",
     "nbconvert",
     "pytest-asyncio",
-    "pytest-cov>=2.6.1",
-    "pytest>=4.1",
+    "pytest-cov>=4.0",
+    "pytest>=7.0",
     "testpath",
     "xmltodict",
 ]
