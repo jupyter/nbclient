@@ -1,10 +1,12 @@
 import asyncio
+import unittest.mock
 from unittest.mock import MagicMock
 
+import psutil  # type: ignore
 import pytest
 import tornado
 
-from nbclient.util import run_hook, run_sync
+from nbclient.util import just_run, run_hook, run_sync
 
 
 @run_sync
@@ -75,3 +77,27 @@ async def test_run_hook_async():
     hook = MagicMock(return_value=some_async_function())
     await run_hook(hook)
     assert hook.call_count == 1
+
+
+def test_just_run_doesnt_leak_fds():
+    proc = psutil.Process()
+
+    # Warmup, just to make sure we're not failing on some initial fds being opened for the first time.
+    for _ in range(10):
+        just_run(asyncio.sleep(0.01))
+    fds_count = proc.num_fds()
+
+    diff = []
+    for _ in range(10):
+        just_run(asyncio.sleep(0.01))
+        diff.append(proc.num_fds() - fds_count)
+    assert diff == [0] * 10
+
+
+def test_just_run_clears_new_loop():
+    loop = asyncio.new_event_loop()
+
+    with unittest.mock.patch.object(asyncio, "new_event_loop", return_value=loop):
+        just_run(asyncio.sleep(0.01))
+
+    assert loop.is_closed()
