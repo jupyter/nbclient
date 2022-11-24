@@ -16,6 +16,7 @@ import nbformat
 import pytest
 import xmltodict
 from jupyter_client import KernelClient, KernelManager
+from jupyter_client._version import version_info
 from jupyter_client.kernelspec import KernelSpecManager
 from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
@@ -36,6 +37,10 @@ ipython_input_pat = re.compile(
 ipython8_input_pat = re.compile(
     r'((Cell|Input) In \[\d+\]|<IPY-INPUT>), (in )?(line \d|<module>|<cell line: \d>\(\))'
 )
+
+
+# Avoid warnings from pydev.
+os.environ['PYDEVD_DISABLE_FILE_VALIDATION'] = '1'
 
 hook_methods = [
     "on_cell_start",
@@ -215,8 +220,9 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
             class NotebookClientWithParentID(NotebookClient):
                 parent_id: str
 
-            executor = NotebookClientWithParentID({})  # type:ignore
-            executor.nb = {'cells': [cell_mock]}  # type:ignore
+            nb = nbformat.v4.new_notebook()
+            executor = NotebookClientWithParentID(nb)
+            executor.nb.cells = [cell_mock]
 
             # self.kc.iopub_channel.get_msg => message_mock.side_effect[i]
             message_mock = iopub_messages_mock()
@@ -358,6 +364,7 @@ def test_parallel_notebooks(capfd, tmpdir):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
+@pytest.mark.skipif(os.name == 'nt', reason='warns about event loop on Windows')
 def test_many_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
 
@@ -512,6 +519,7 @@ def test_start_new_kernel_history_file_setting():
     kc.stop_channels()
 
 
+@pytest.mark.skipif(int(version_info[0]) < 7, reason="requires client 7+")
 def test_start_new_kernel_client_cleans_up_kernel_on_failure():
     class FakeClient(KernelClient):
         def start_channels(
@@ -550,7 +558,7 @@ class TestExecute(NBClientTestsBase):
     maxDiff = None
 
     def test_constructor(self):
-        NotebookClient({})  # type:ignore
+        NotebookClient(nbformat.v4.new_notebook())
 
     def test_populate_language_info(self):
         nb = nbformat.v4.new_notebook()  # Certainly has no language_info.

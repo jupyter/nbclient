@@ -25,13 +25,14 @@ To demo **NBClient** interactively, click this Binder badge to start the demo:
 
 In a terminal, run:
 
-    python3 -m pip install nbclient
+```
+python3 -m pip install nbclient
+```
 
 ## Documentation
 
 See [ReadTheDocs](https://nbclient.readthedocs.io/en/latest/) for more in-depth details about the project and the
 [API Reference](https://nbclient.readthedocs.io/en/latest/reference/index.html).
-
 
 ## Python Version Support
 

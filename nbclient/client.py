@@ -508,7 +508,7 @@ class NotebookClient(LoggingConfigurable):
             # Remove any state left over even if we failed to stop the kernel
             await ensure_async(self.km.cleanup_resources())
             if getattr(self, "kc", None) and self.kc is not None:
-                await ensure_async(self.kc.stop_channels())  # type:ignore
+                await ensure_async(self.kc.stop_channels())  # type:ignore[func-returns-value]
                 self.kc = None
                 self.km = None
 
@@ -556,7 +556,9 @@ class NotebookClient(LoggingConfigurable):
         try:
             self.kc = self.km.client()
             await ensure_async(self.kc.start_channels())  # type:ignore[func-returns-value]
-            await ensure_async(self.kc.wait_for_ready(timeout=self.startup_timeout))  # type:ignore
+            await ensure_async(
+                self.kc.wait_for_ready(timeout=self.startup_timeout)  # type:ignore[attr-defined]
+            )
         except Exception as e:
             self.log.error(
                 "Error occurred while starting new kernel client for kernel {}: {}".format(
@@ -853,7 +855,7 @@ class NotebookClient(LoggingConfigurable):
 
     async def _async_check_alive(self) -> None:
         assert self.kc is not None
-        if not await ensure_async(self.kc.is_alive()):  # type:ignore
+        if not await ensure_async(self.kc.is_alive()):  # type:ignore[attr-defined]
             self.log.error("Kernel died while waiting for execute reply.")
             raise DeadKernelError("Kernel died")
 
@@ -1091,7 +1093,7 @@ class NotebookClient(LoggingConfigurable):
     ) -> t.Optional[NotebookNode]:
 
         msg_type = msg['msg_type']
-        out = None
+        out: t.Optional[NotebookNode] = None
 
         parent_msg_id = msg['parent_header'].get('msg_id')
         if self.output_hook_stack[parent_msg_id]:
@@ -1122,7 +1124,7 @@ class NotebookClient(LoggingConfigurable):
 
         outs.append(out)
 
-        return out  # type:ignore[no-any-return]
+        return out
 
     def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
 

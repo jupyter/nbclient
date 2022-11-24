@@ -42,7 +42,7 @@
 ### Merged PRs
 
 - Fix tests for ipywidgets 8 [#246](https://github.com/jupyter/nbclient/pull/246) ([@frenzymadness](https://github.com/frenzymadness))
-- [pre-commit.ci] pre-commit autoupdate [#236](https://github.com/jupyter/nbclient/pull/236) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [#236](https://github.com/jupyter/nbclient/pull/236) ([@pre-commit-ci](https://github.com/pre-commit-ci))
 
 ### Contributors to this release
 
@@ -131,7 +131,7 @@
 
 ### Merged PRs
 
-- [pre-commit.ci] pre-commit autoupdate [#225](https://github.com/jupyter/nbclient/pull/225) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [#225](https://github.com/jupyter/nbclient/pull/225) ([@pre-commit-ci](https://github.com/pre-commit-ci))
 - Add error_on_interrupt trait [#224](https://github.com/jupyter/nbclient/pull/224) ([@davidbrochart](https://github.com/davidbrochart))
 - Fix typo [#223](https://github.com/jupyter/nbclient/pull/223) ([@davidbrochart](https://github.com/davidbrochart))
 - Add on_cell_executed hook [#222](https://github.com/jupyter/nbclient/pull/222) ([@davidbrochart](https://github.com/davidbrochart))
@@ -197,7 +197,7 @@
 
 ### Merged PRs
 
-- Pin ipython<8 in tests [#198](https://github.com/jupyter/nbclient/pull/198) ([@davidbrochart](https://github.com/davidbrochart))
+- Pin ipython\<8 in tests [#198](https://github.com/jupyter/nbclient/pull/198) ([@davidbrochart](https://github.com/davidbrochart))
 - Clear execution metadata, prefer msg header date when recording times [#195](https://github.com/jupyter/nbclient/pull/195) ([@kevin-bates](https://github.com/kevin-bates))
 - Client hooks [#188](https://github.com/jupyter/nbclient/pull/188) ([@devintang3](https://github.com/devintang3))
 
@@ -331,7 +331,7 @@ If you were using these versions for the couple days they were up, move to 0.5.0
 
 ### Fixes
 
-- Fix `OSError: [WinError 6] The handle is invalid` for windows/python<3.7 [#77](https://github.com/jupyter/nbclient/pull/77)
+- Fix `OSError: [WinError 6] The handle is invalid` for windows/python\<3.7 [#77](https://github.com/jupyter/nbclient/pull/77)
 - Async wapper Exceptions no longer loose their caused exception information [#65](https://github.com/jupyter/nbclient/pull/65)
 - `extra_arguments` are now configurable by config settings [#66](https://github.com/jupyter/nbclient/pull/66)
 

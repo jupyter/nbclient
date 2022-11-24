@@ -1,6 +1,0 @@
-autodoc-traits
-mock
-moto
-myst-parser
-Sphinx>=1.7
-sphinx-book-theme
