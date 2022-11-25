@@ -35,9 +35,9 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "jupyter_client>=6.1.12",
-    "nbformat>=5.1",
-    "traitlets>=5.3",
+    "jupyter_client>=6.1.12,<8",
+    "nbformat>=5.1,<6",
+    "traitlets>=5.3<6",
 ]
 
 [project.optional-dependencies]
