@@ -35,7 +35,7 @@ ipython_input_pat = re.compile(
 # Tracebacks look different in IPython 8,
 # see: https://github.com/ipython/ipython/blob/master/docs/source/whatsnew/version8.rst#traceback-improvements  # noqa
 ipython8_input_pat = re.compile(
-    r'((Cell|Input) In\[\d+\]|<IPY-INPUT>), (in )?(line \d|<module>|<cell line: \d>\(\))'
+    r'((Cell|Input) In\s?\[\d+\]|<IPY-INPUT>), (in )?(line \d|<module>|<cell line: \d>\(\))'
 )
 
 
