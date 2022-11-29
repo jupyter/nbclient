@@ -2,6 +2,27 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.7.1
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.0...168340e8313e63fd9e037280f98ed22d47e2231b))
+
+### Maintenance and upkeep improvements
+
+- CI Refactor [#257](https://github.com/jupyter/nbclient/pull/257) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+- Remove nest-asyncio [#259](https://github.com/jupyter/nbclient/pull/259) ([@davidbrochart](https://github.com/davidbrochart))
+- Add upper bound to dependencies [#258](https://github.com/jupyter/nbclient/pull/258) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-10-06&to=2022-11-29&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-10-06..2022-11-29&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-10-06..2022-11-29&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-10-06..2022-11-29&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.7.0
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.6.8...449f17d0374f43694d2203d216c97dd4ac7f2c0e))
@@ -18,8 +39,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-09-09&to=2022-10-06&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-09-09..2022-10-06&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-09-09..2022-10-06&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.8
 
