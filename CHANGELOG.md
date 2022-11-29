@@ -2,6 +2,24 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.7.2
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.1...e6f8b9f7001f9988a29bb011a0f6052987e6507a))
+
+### Merged PRs
+
+- Allow space after In [#264](https://github.com/jupyter/nbclient/pull/264) ([@davidbrochart](https://github.com/davidbrochart))
+- Fix jupyter_core pinning [#263](https://github.com/jupyter/nbclient/pull/263) ([@davidbrochart](https://github.com/davidbrochart))
+- Update README, add Python 3.11 [#260](https://github.com/jupyter/nbclient/pull/260) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-11-29&to=2022-11-29&type=c))
+
+[@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-11-29..2022-11-29&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.7.1
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.0...168340e8313e63fd9e037280f98ed22d47e2231b))
@@ -20,8 +38,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-10-06&to=2022-11-29&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-10-06..2022-11-29&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-10-06..2022-11-29&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-10-06..2022-11-29&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.7.0
 
