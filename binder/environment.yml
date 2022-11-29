@@ -5,6 +5,6 @@ dependencies:
   - numpy
   - pandas
   - matplotlib
-  - nteract-scrapbook
+  - scrapbook
   - nbformat
   - nbclient

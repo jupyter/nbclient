@@ -36,8 +36,8 @@ classifiers = [
 ]
 dependencies = [
     "jupyter_client>=6.1.12",
+    "jupyter_core>=4.12,!=~5.0",
     "nbformat>=5.1",
-    "nest_asyncio",
     "traitlets>=5.3",
 ]
 
@@ -153,7 +153,6 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = [
     "async_generator.*",
-    "nest_asyncio.*",
     "testpath",
     "xmltodict",
 ]
