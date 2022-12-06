@@ -5,7 +5,7 @@ ci:
 repos:
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
       - id: end-of-file-fixer
       - id: check-case-conflict
@@ -21,7 +21,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.2.0
+    rev: v3.3.0
     hooks:
     - id: pyupgrade
       args: [--py37-plus]
@@ -39,7 +39,7 @@ repos:
         args: [--profile=black]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.990
+    rev: v0.991
     hooks:
       - id: mypy
         additional_dependencies: [jupyter_client, jupyter_core>=5.1, nbformat, nbconvert]
@@ -56,7 +56,7 @@ repos:
       - id: mdformat
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.2.2
+    rev: v3.3.0
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
@@ -69,7 +69,7 @@ repos:
 
 
   - repo: https://github.com/john-hen/Flake8-pyproject
-    rev: 1.1.0.post0
+    rev: 1.2.2
     hooks:
       - id: Flake8-pyproject
         alias: flake8
@@ -78,6 +78,6 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.19.1
+    rev: 0.19.2
     hooks:
       - id: check-github-workflows
