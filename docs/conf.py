@@ -57,7 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'nbclient'
-copyright = '2020, Project Jupyter'
+copyright = '2020, Project Jupyter'  # noqa
 author = 'Project Jupyter'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -179,14 +179,13 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 
 def setup(app):
-    HERE = os.path.abspath(os.path.dirname(__file__))
-    dest = os.path.join(HERE, 'changelog.md')
-    shutil.copy(os.path.join(HERE, '..', 'CHANGELOG.md'), dest)
+    here = os.path.abspath(os.path.dirname(__file__))
+    dest = os.path.join(here, 'changelog.md')
+    shutil.copy(os.path.join(here, '..', 'CHANGELOG.md'), dest)
 
-    autogen_config = os.path.join(HERE, "autogen_config.py")
+    autogen_config = os.path.join(here, "autogen_config.py")
     prev_dir = os.getcwd()
-    os.chdir(HERE)
+    os.chdir(here)
     with open(autogen_config) as f:
-        exec(compile(f.read(), autogen_config, "exec"), {})
-        print('Updated cli docs')
+        exec(compile(f.read(), autogen_config, "exec"), {})  # noqa
     os.chdir(prev_dir)

@@ -106,7 +106,6 @@ class NbClientApp(JupyterApp):
 
         # If there are none, throw an error
         if not self.notebooks:
-            print(f"{self.name}: error: expected path to notebook")
             sys.exit(-1)
 
         # Loop and run them one by one

@@ -23,8 +23,9 @@ from nbformat import NotebookNode
 from testpath import modified_env
 from traitlets import TraitError
 
-from .. import NotebookClient, execute
-from ..exceptions import CellExecutionError
+from nbclient import NotebookClient, execute
+from nbclient.exceptions import CellExecutionError
+
 from .base import NBClientTestsBase
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
@@ -311,25 +312,30 @@ def filter_messages_on_error_output(err_output):
 @pytest.mark.parametrize(
     ["input_name", "opts"],
     [
-        ("Other Comms.ipynb", dict(kernel_name="python")),
-        ("Clear Output.ipynb", dict(kernel_name="python")),
-        ("Empty Cell.ipynb", dict(kernel_name="python")),
-        ("Factorials.ipynb", dict(kernel_name="python")),
-        ("HelloWorld.ipynb", dict(kernel_name="python")),
-        ("Inline Image.ipynb", dict(kernel_name="python")),
+        ("Other Comms.ipynb", {"kernel_name": "python"}),
+        ("Clear Output.ipynb", {"kernel_name": "python"}),
+        ("Empty Cell.ipynb", {"kernel_name": "python"}),
+        ("Factorials.ipynb", {"kernel_name": "python"}),
+        ("HelloWorld.ipynb", {"kernel_name": "python"}),
+        ("Inline Image.ipynb", {"kernel_name": "python"}),
         (
             "Interrupt.ipynb",
-            dict(kernel_name="python", timeout=1, interrupt_on_timeout=True, allow_errors=True),
+            {
+                "kernel_name": "python",
+                "timeout": 1,
+                "interrupt_on_timeout": True,
+                "allow_errors": True,
+            },
         ),
-        ("JupyterWidgets.ipynb", dict(kernel_name="python")),
-        ("Skip Exceptions with Cell Tags.ipynb", dict(kernel_name="python")),
-        ("Skip Exceptions.ipynb", dict(kernel_name="python", allow_errors=True)),
-        ("Skip Execution with Cell Tag.ipynb", dict(kernel_name="python")),
-        ("SVG.ipynb", dict(kernel_name="python")),
-        ("Unicode.ipynb", dict(kernel_name="python")),
-        ("UnicodePy3.ipynb", dict(kernel_name="python")),
-        ("update-display-id.ipynb", dict(kernel_name="python")),
-        ("Check History in Memory.ipynb", dict(kernel_name="python")),
+        ("JupyterWidgets.ipynb", {"kernel_name": "python"}),
+        ("Skip Exceptions with Cell Tags.ipynb", {"kernel_name": "python"}),
+        ("Skip Exceptions.ipynb", {"kernel_name": "python", "allow_errors": True}),
+        ("Skip Execution with Cell Tag.ipynb", {"kernel_name": "python"}),
+        ("SVG.ipynb", {"kernel_name": "python"}),
+        ("Unicode.ipynb", {"kernel_name": "python"}),
+        ("UnicodePy3.ipynb", {"kernel_name": "python"}),
+        ("update-display-id.ipynb", {"kernel_name": "python"}),
+        ("Check History in Memory.ipynb", {"kernel_name": "python"}),
     ],
 )
 def test_run_all_notebooks(input_name, opts):
@@ -345,7 +351,7 @@ def test_parallel_notebooks(capfd, tmpdir):
     The two notebooks spawned here use the filesystem to check that the other notebook
     wrote to the filesystem."""
 
-    opts = dict(kernel_name="python")
+    opts = {"kernel_name": "python"}
     input_name = "Parallel Execute {label}.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
     res = notebook_resources()
@@ -371,7 +377,7 @@ def test_many_parallel_notebooks(capfd):
     Specifically, many IPython kernels when run simultaneously would encounter errors
     due to using the same SQLite history database.
     """
-    opts = dict(kernel_name="python", timeout=5)
+    opts = {"kernel_name": "python", "timeout": 5}
     input_name = "HelloWorld.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
     res = NBClientTestsBase().build_resources()
@@ -397,7 +403,7 @@ def test_async_parallel_notebooks(capfd, tmpdir):
     The two notebooks spawned here use the filesystem to check that the other notebook
     wrote to the filesystem."""
 
-    opts = dict(kernel_name="python")
+    opts = {"kernel_name": "python"}
     input_name = "Parallel Execute {label}.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
     res = notebook_resources()
@@ -423,7 +429,7 @@ def test_many_async_parallel_notebooks(capfd):
     Specifically, many IPython kernels when run simultaneously would encounter errors
     due to using the same SQLite history database.
     """
-    opts = dict(kernel_name="python", timeout=5)
+    opts = {"kernel_name": "python", "timeout": 5}
     input_name = "HelloWorld.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
     res = NBClientTestsBase().build_resources()
@@ -446,7 +452,7 @@ def test_execution_timing():
     """Compare the execution timing information stored in the cell with the
     actual time it took to run the cell. Also check for the cell timing string
     format."""
-    opts = dict(kernel_name="python")
+    opts = {"kernel_name": "python"}
     input_name = "Sleep1s.ipynb"
     input_file = os.path.join(current_dir, "files", input_name)
     res = notebook_resources()
@@ -555,7 +561,7 @@ def test_start_new_kernel_client_cleans_up_kernel_on_failure():
 class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 
-    maxDiff = None
+    maxDiff = None  # noqa
 
     def test_constructor(self):
         NotebookClient(nbformat.v4.new_notebook())
@@ -596,7 +602,7 @@ class TestExecute(NBClientTestsBase):
         filename = os.path.join(current_dir, 'files', 'Disable Stdin.ipynb')
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
-        input_nb, output_nb = run_notebook(filename, dict(allow_errors=True), res)
+        input_nb, output_nb = run_notebook(filename, {"allow_errors": True}, res)
 
         # We need to special-case this particular notebook, because the
         # traceback contains machine-specific stuff like where IPython
@@ -619,7 +625,7 @@ class TestExecute(NBClientTestsBase):
         res['metadata']['path'] = os.path.dirname(filename)
 
         with pytest.raises(TimeoutError) as err:
-            run_notebook(filename, dict(timeout=1), res)
+            run_notebook(filename, {"timeout": 1}, res)
         self.assertEqual(
             str(err.value.args[0]),
             """A cell timed out while it was being executed, after 1 seconds.
@@ -641,7 +647,7 @@ while True: continue
             return 10
 
         with pytest.raises(TimeoutError):
-            run_notebook(filename, dict(timeout_func=timeout_func), res)
+            run_notebook(filename, {"timeout_func": timeout_func}, res)
 
     def test_sync_kernel_manager(self):
         nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
@@ -699,7 +705,7 @@ while True: continue
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
-            run_notebook(filename, dict(allow_errors=False), res)
+            run_notebook(filename, {"allow_errors": False}, res)
             self.assertIsInstance(str(exc.value), str)
             assert "# üñîçø∂é" in str(exc.value)
 
@@ -712,7 +718,7 @@ while True: continue
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
-            run_notebook(filename, dict(force_raise_errors=True), res)
+            run_notebook(filename, {"force_raise_errors": True}, res)
             self.assertIsInstance(str(exc.value), str)
             assert "# üñîçø∂é" in str(exc.value)
 
@@ -826,7 +832,7 @@ while True: continue
     def test_widgets(self):
         """Runs a test notebook with widgets and checks the widget state is saved."""
         input_file = os.path.join(current_dir, 'files', 'JupyterWidgets.ipynb')
-        opts = dict(kernel_name="python")
+        opts = {"kernel_name": "python"}
         res = self.build_resources()
         res['metadata']['path'] = os.path.dirname(input_file)
         input_nb, output_nb = run_notebook(input_file, opts, res)
