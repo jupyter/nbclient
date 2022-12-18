@@ -12,13 +12,13 @@ from nbclient import __version__
 
 from .client import NotebookClient
 
-nbclient_aliases = {
+nbclient_aliases: dict = {
     'timeout': 'NbClientApp.timeout',
     'startup_timeout': 'NbClientApp.startup_timeout',
     'kernel_name': 'NbClientApp.kernel_name',
 }
 
-nbclient_flags = {
+nbclient_flags: dict = {
     'allow-errors': (
         {
             'NbClientApp': {
