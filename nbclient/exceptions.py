@@ -3,7 +3,7 @@ from typing import Dict
 from nbformat import NotebookNode
 
 
-class CellControlSignal(Exception):
+class CellControlSignal(Exception):  # noqa
     """
     A custom exception used to indicate that the exception is used for cell
     control actions (not the best model, but it's needed to cover existing

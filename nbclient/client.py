@@ -14,18 +14,7 @@ from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
 from nbformat import NotebookNode
 from nbformat.v4 import output_from_msg
-from traitlets import (
-    Any,
-    Bool,
-    Callable,
-    Dict,
-    Enum,
-    Integer,
-    List,
-    Type,
-    Unicode,
-    default,
-)
+from traitlets import Any, Bool, Callable, Dict, Enum, Integer, List, Type, Unicode, default
 from traitlets.config.configurable import LoggingConfigurable
 
 from .exceptions import (
@@ -784,7 +773,7 @@ class NotebookClient(LoggingConfigurable):
                             task_poll_kernel_alive.cancel()
                             raise CellTimeoutError.error_from_timeout_and_cell(
                                 "Timeout waiting for IOPub output", self.iopub_timeout, cell
-                            )
+                            ) from None
                         else:
                             self.log.warning("Timeout waiting for IOPub output")
                     task_poll_kernel_alive.cancel()
@@ -1003,7 +992,7 @@ class NotebookClient(LoggingConfigurable):
         except asyncio.CancelledError:
             # can only be cancelled by task_poll_kernel_alive when the kernel is dead
             task_poll_output_msg.cancel()
-            raise DeadKernelError("Kernel died")
+            raise DeadKernelError("Kernel died") from None
         except Exception as e:
             # Best effort to cancel request if it hasn't been resolved
             try:

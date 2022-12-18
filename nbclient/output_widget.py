@@ -46,7 +46,7 @@ class OutputWidget:
         data: Optional[Dict] = None,
         metadata: Optional[Dict] = None,
         buffers: Optional[List] = None,
-        **keys: Any
+        **keys: Any,
     ) -> None:
         """Helper for sending a comm message on IOPub"""
         data = {} if data is None else data
@@ -105,7 +105,8 @@ class OutputWidget:
     def handle_msg(self, msg: Dict) -> None:
         content = msg['content']
         comm_id = content['comm_id']
-        assert comm_id == self.comm_id
+        if comm_id != self.comm_id:
+            raise AssertionError('Mismatched comm id')
         data = content['data']
         if 'state' in data:
             self.set_state(data['state'])

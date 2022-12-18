@@ -33,12 +33,12 @@ def test_nested_asyncio_with_tornado():
     # This tests if tornado accepts the pure-Python Futures, see
     # https://github.com/tornadoweb/tornado/issues/2753
     asyncio.set_event_loop(asyncio.new_event_loop())
-    ioloop = tornado.ioloop.IOLoop.current()  # type: ignore
+    ioloop = tornado.ioloop.IOLoop.current()
 
     async def some_async_function():
         future: asyncio.Future = asyncio.ensure_future(asyncio.sleep(0.1))
         # the asyncio module, check if tornado likes it:
-        ioloop.add_future(future, lambda f: f.result())
+        ioloop.add_future(future, lambda f: f.result())  # type:ignore
         await future
         return 42
 
