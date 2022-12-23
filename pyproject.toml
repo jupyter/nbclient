@@ -60,6 +60,7 @@ docs = [
     "moto",
     "myst-parser",
     "sphinx-book-theme",
+    "sphinxcontrib_spelling",
     "sphinx>=1.7",
     "nbclient[test]",
 ]
@@ -114,7 +115,7 @@ dependencies = [
   "black[jupyter]==22.10.0",
   "mdformat>0.7",
   "mdformat-gfm>=0.3.5",
-  "ruff==0.0.181"
+  "ruff==0.0.189"
 ]
 detached = true
 [tool.hatch.envs.lint.scripts]
@@ -201,3 +202,13 @@ ignore = [
 # S101 Use of `assert` detected
 "nbclient/tests/*" = ["S101"]
 "nbclient/client.py" = ["S101"]
+
+[tool.interrogate]
+ignore-init-module=true
+ignore-private=true
+ignore-semiprivate=true
+ignore-property-decorators=true
+ignore-nested-functions=true
+ignore-nested-classes=true
+fail-under=100
+exclude = ["*/tests", "docs"]

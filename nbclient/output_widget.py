@@ -1,3 +1,4 @@
+"""An output widget mimic."""
 from typing import Any, Dict, List, Optional
 
 from jupyter_client.client import KernelClient
@@ -12,7 +13,7 @@ class OutputWidget:
     def __init__(
         self, comm_id: str, state: Dict[str, Any], kernel_client: KernelClient, executor: Any
     ) -> None:
-
+        """Initialize the widget."""
         self.comm_id: str = comm_id
         self.state: Dict[str, Any] = state
         self.kernel_client: KernelClient = kernel_client
@@ -22,7 +23,7 @@ class OutputWidget:
         self.clear_before_next_output: bool = False
 
     def clear_output(self, outs: List, msg: Dict, cell_index: int) -> None:
-
+        """Clear output."""
         self.parent_header = msg['parent_header']
         content = msg['content']
         if content.get('wait'):
@@ -36,6 +37,7 @@ class OutputWidget:
                 self.executor.widget_state[self.comm_id]['outputs'] = self.outputs
 
     def sync_state(self) -> None:
+        """Sync state."""
         state = {'outputs': self.outputs}
         msg = {'method': 'update', 'state': state, 'buffer_paths': []}
         self.send(msg)
@@ -63,11 +65,11 @@ class OutputWidget:
         metadata: Optional[Dict] = None,
         buffers: Optional[List] = None,
     ) -> None:
-
+        """Send a comm message."""
         self._publish_msg('comm_msg', data=data, metadata=metadata, buffers=buffers)
 
     def output(self, outs: List, msg: Dict, display_id: str, cell_index: int) -> None:
-
+        """Handle output."""
         if self.clear_before_next_output:
             self.outputs = []
             self.clear_before_next_output = False
@@ -93,6 +95,7 @@ class OutputWidget:
             self.executor.widget_state[self.comm_id]['outputs'] = self.outputs
 
     def set_state(self, state: Dict) -> None:
+        """Set the state."""
         if 'msg_id' in state:
             msg_id = state.get('msg_id')
             if msg_id:
@@ -103,6 +106,7 @@ class OutputWidget:
                 self.msg_id = msg_id
 
     def handle_msg(self, msg: Dict) -> None:
+        """Handle a message."""
         content = msg['content']
         comm_id = content['comm_id']
         if comm_id != self.comm_id:

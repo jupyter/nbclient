@@ -1,3 +1,4 @@
+"""nbclient cli."""
 import logging
 import pathlib
 import sys
@@ -99,6 +100,7 @@ class NbClientApp(JupyterApp):
 
     @catch_config_error
     def initialize(self, argv=None):
+        """Initialize the app."""
         super().initialize(argv)
 
         # Get notebooks to run
@@ -112,6 +114,7 @@ class NbClientApp(JupyterApp):
         [self.run_notebook(path) for path in self.notebooks]
 
     def get_notebooks(self):
+        """Get the notebooks for the app."""
         # If notebooks were provided from the command line, use those
         if self.extra_args:
             notebooks = self.extra_args
@@ -123,6 +126,7 @@ class NbClientApp(JupyterApp):
         return notebooks
 
     def run_notebook(self, notebook_path):
+        """Run a notebook by path."""
         # Log it
         self.log.info(f"Executing {notebook_path}")
 
