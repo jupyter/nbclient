@@ -42,6 +42,13 @@ extensions = [
     'myst_parser',
 ]
 
+try:
+    import enchant  # type:ignore  # noqa
+
+    extensions += ["sphinxcontrib.spelling"]
+except ImportError:
+    pass
+
 autodoc_mock_imports = ['pytest', 'nbconvert', 'testpath']
 
 # Add any paths that contain templates here, relative to this directory.

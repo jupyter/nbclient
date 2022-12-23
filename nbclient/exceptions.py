@@ -1,3 +1,4 @@
+"""Exceptions for nbclient."""
 from typing import Dict
 
 from nbformat import NotebookNode
@@ -22,6 +23,7 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
     def error_from_timeout_and_cell(
         cls, msg: str, timeout: int, cell: NotebookNode
     ) -> "CellTimeoutError":
+        """Create an error from a timeout on a cell."""
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
             src = (
@@ -35,6 +37,8 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
 
 
 class DeadKernelError(RuntimeError):
+    """A dead kernel error."""
+
     pass
 
 
@@ -58,21 +62,25 @@ class CellExecutionError(CellControlSignal):
     """
 
     def __init__(self, traceback: str, ename: str, evalue: str) -> None:
+        """Initialize the error."""
         super().__init__(traceback)
         self.traceback = traceback
         self.ename = ename
         self.evalue = evalue
 
     def __reduce__(self) -> tuple:
+        """Reduce implementation."""
         return type(self), (self.traceback, self.ename, self.evalue)
 
     def __str__(self) -> str:
+        """Str repr."""
         s = self.__unicode__()
         if not isinstance(s, str):
             s = s.encode('utf8', 'replace')
         return s
 
     def __unicode__(self) -> str:
+        """Unicode repr."""
         return self.traceback
 
     @classmethod

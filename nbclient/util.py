@@ -10,6 +10,7 @@ from jupyter_core.utils import ensure_async, run_sync  # noqa: F401
 
 
 async def run_hook(hook: Optional[Callable], **kwargs: Any) -> None:
+    """Run a hook callback."""
     if hook is None:
         return
     res = hook(**kwargs)

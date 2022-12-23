@@ -1,3 +1,4 @@
+"""nbclient implementation."""
 import asyncio
 import atexit
 import base64
@@ -29,6 +30,7 @@ from .util import ensure_async, run_hook, run_sync
 
 
 def timestamp(msg: t.Optional[t.Dict] = None) -> str:
+    """Get the timestamp for a message."""
     if msg and 'header' in msg:  # The test mocks don't provide a header, so tolerate that
         msg_header = msg['header']
         if 'date' in msg_header and isinstance(msg_header['date'], datetime.datetime):
@@ -615,6 +617,7 @@ class NotebookClient(LoggingConfigurable):
         atexit.register(self._cleanup_kernel)
 
         def on_signal():
+            """Handle signals."""
             asyncio.ensure_future(self._async_cleanup_kernel())
             atexit.unregister(self._cleanup_kernel)
 
@@ -699,6 +702,7 @@ class NotebookClient(LoggingConfigurable):
     execute = run_sync(async_execute)
 
     def set_widgets_metadata(self) -> None:
+        """Set with widget metadata."""
         if self.widget_state:
             self.nb.metadata.widgets = {
                 'application/vnd.jupyter.widget-state+json': {
@@ -851,7 +855,7 @@ class NotebookClient(LoggingConfigurable):
     async def async_wait_for_reply(
         self, msg_id: str, cell: t.Optional[NotebookNode] = None
     ) -> t.Optional[t.Dict]:
-
+        """Wait for a message reply."""
         assert self.kc is not None
         # wait for finish, with timeout
         timeout = self._get_timeout(cell)
@@ -1080,6 +1084,7 @@ class NotebookClient(LoggingConfigurable):
     def output(
         self, outs: t.List, msg: t.Dict, display_id: str, cell_index: int
     ) -> t.Optional[NotebookNode]:
+        """Handle output."""
 
         msg_type = msg['msg_type']
         out: t.Optional[NotebookNode] = None
@@ -1116,7 +1121,7 @@ class NotebookClient(LoggingConfigurable):
         return out
 
     def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
-
+        """Clear output."""
         content = msg['content']
 
         parent_msg_id = msg['parent_header'].get('msg_id')
@@ -1136,13 +1141,13 @@ class NotebookClient(LoggingConfigurable):
             self.clear_display_id_mapping(cell_index)
 
     def clear_display_id_mapping(self, cell_index: int) -> None:
-
+        """Clear a display id mapping for a cell."""
         for _, cell_map in self._display_id_map.items():
             if cell_index in cell_map:
                 cell_map[cell_index] = []
 
     def handle_comm_msg(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
-
+        """Handle a comm message."""
         content = msg['content']
         data = content['data']
         if self.store_widget_state and 'state' in data:  # ignore custom msg'es
@@ -1214,6 +1219,7 @@ class NotebookClient(LoggingConfigurable):
         assert removed_hook == hook
 
     def on_comm_open_jupyter_widget(self, msg: t.Dict) -> t.Optional[t.Any]:
+        """Handle a jupyter widget comm open."""
         content = msg['content']
         data = content['data']
         state = data['state']
