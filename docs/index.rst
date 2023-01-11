@@ -9,7 +9,7 @@ Welcome to nbclient
    :target: https://github.com/jupyter/nbclient/actions
 .. image:: https://codecov.io/github/jupyter/nbclient/coverage.svg?branch=master
    :alt: CodeCov
-   :target: https://codecov.io/github/jupyter/nbclient
+   :target: https://codecov.io/gh/jupyter/nbclient
 
 ---
 
