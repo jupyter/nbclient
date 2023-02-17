@@ -677,7 +677,7 @@ while True: continue
         async def is_alive():
             return False
 
-        km.is_alive = is_alive
+        km.is_alive = is_alive  # type:ignore
         # Will be a RuntimeError, TimeoutError, or subclass DeadKernelError
         # depending
         # on if jupyter_client or nbconvert catches the dead client first
