@@ -43,7 +43,7 @@ def timestamp(msg: t.Optional[t.Dict] = None) -> str:
                     formatted_time
                 ):  # docs indicate strftime may return empty string, so let's catch that too
                     return formatted_time
-            except Exception:
+            except Exception:  # noqa
                 pass  # fallback to a local time
 
     return datetime.datetime.utcnow().isoformat() + 'Z'
@@ -616,7 +616,7 @@ class NotebookClient(LoggingConfigurable):
 
         def on_signal():
             """Handle signals."""
-            asyncio.ensure_future(self._async_cleanup_kernel())
+            self._async_cleanup_kernel_future = asyncio.ensure_future(self._async_cleanup_kernel())
             atexit.unregister(self._cleanup_kernel)
 
         loop = asyncio.get_event_loop()
