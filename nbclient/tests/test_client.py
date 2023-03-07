@@ -561,7 +561,7 @@ def test_start_new_kernel_client_cleans_up_kernel_on_failure():
 class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 
-    maxDiff = None  # noqa
+    maxDiff = None
 
     def test_constructor(self):
         NotebookClient(nbformat.v4.new_notebook())

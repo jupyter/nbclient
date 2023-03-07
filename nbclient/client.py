@@ -43,7 +43,7 @@ def timestamp(msg: t.Optional[t.Dict] = None) -> str:
                     formatted_time
                 ):  # docs indicate strftime may return empty string, so let's catch that too
                     return formatted_time
-            except Exception:
+            except Exception:  # noqa
                 pass  # fallback to a local time
 
     return datetime.datetime.utcnow().isoformat() + 'Z'
@@ -616,7 +616,7 @@ class NotebookClient(LoggingConfigurable):
 
         def on_signal():
             """Handle signals."""
-            asyncio.ensure_future(self._async_cleanup_kernel())
+            self._async_cleanup_kernel_future = asyncio.ensure_future(self._async_cleanup_kernel())
             atexit.unregister(self._cleanup_kernel)
 
         loop = asyncio.get_event_loop()
@@ -750,7 +750,6 @@ class NotebookClient(LoggingConfigurable):
         task_poll_output_msg: asyncio.Future,
         task_poll_kernel_alive: asyncio.Future,
     ) -> t.Dict:
-
         msg: t.Dict
         assert self.kc is not None
         new_timeout: t.Optional[float] = None
@@ -793,7 +792,6 @@ class NotebookClient(LoggingConfigurable):
     async def _async_poll_output_msg(
         self, parent_msg_id: str, cell: NotebookNode, cell_index: int
     ) -> None:
-
         assert self.kc is not None
         while True:
             msg = await ensure_async(self.kc.iopub_channel.get_msg(timeout=None))
@@ -828,7 +826,6 @@ class NotebookClient(LoggingConfigurable):
     async def _async_handle_timeout(
         self, timeout: int, cell: t.Optional[NotebookNode] = None
     ) -> t.Union[None, t.Dict]:
-
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
         if self.interrupt_on_timeout:
             self.log.error("Interrupting kernel")
@@ -886,7 +883,6 @@ class NotebookClient(LoggingConfigurable):
     async def _check_raise_for_error(
         self, cell: NotebookNode, cell_index: int, exec_reply: t.Optional[t.Dict]
     ) -> None:
-
         if exec_reply is None:
             return None
 
