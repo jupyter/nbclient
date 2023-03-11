@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
-from flaky import flaky
+from flaky import flaky  # type:ignore
 from jupyter_client import KernelClient, KernelManager
 from jupyter_client._version import version_info
 from jupyter_client.kernelspec import KernelSpecManager
