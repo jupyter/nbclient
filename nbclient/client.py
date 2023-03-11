@@ -551,7 +551,7 @@ class NotebookClient(LoggingConfigurable):
         except Exception as e:
             self.log.error(
                 "Error occurred while starting new kernel client for kernel {}: {}".format(
-                    self.km.kernel_id, str(e)
+                    getattr(self.km, 'kernel_id', None), str(e)
                 )
             )
             await self._async_cleanup_kernel()

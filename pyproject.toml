@@ -44,6 +44,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+    "flaky",
     "ipykernel",
     "ipython",
     "ipywidgets",

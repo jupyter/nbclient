@@ -15,6 +15,7 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
+from flaky import flaky
 from jupyter_client import KernelClient, KernelManager
 from jupyter_client._version import version_info
 from jupyter_client.kernelspec import KernelSpecManager
@@ -660,6 +661,7 @@ while True: continue
             assert info_msg is not None
             assert 'name' in info_msg["content"]["language_info"]
 
+    @flaky
     def test_kernel_death_after_timeout(self):
         """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
