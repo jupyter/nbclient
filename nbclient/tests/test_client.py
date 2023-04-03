@@ -1830,3 +1830,34 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
+
+    @prepare_cell_mocks(
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stdout', 'text': 'foo1'},
+        },
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stderr', 'text': 'bar1'},
+        },
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stdout', 'text': 'foo2'},
+        },
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stderr', 'text': 'bar2'},
+        },
+    )
+    def test_coalesce_streams(self, executor, cell_mock, message_mock):
+        executor.coalesce_streams = True
+        executor.execute_cell(cell_mock, 0)
+
+        assert cell_mock.outputs == [
+            {'output_type': 'stream', 'name': 'stdout', 'text': 'foo1foo2'},
+            {'output_type': 'stream', 'name': 'stderr', 'text': 'bar1bar2'},
+        ]
