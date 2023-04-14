@@ -708,8 +708,8 @@ while True: continue
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, {"allow_errors": False}, res)
-            self.assertIsInstance(str(exc.value), str)
-            assert "# üñîçø∂é" in str(exc.value)
+        assert isinstance(str(exc.value), str)
+        assert "# üñîçø∂é" in str(exc.value)
 
     def test_force_raise_errors(self):
         """
@@ -721,8 +721,20 @@ while True: continue
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, {"force_raise_errors": True}, res)
-            self.assertIsInstance(str(exc.value), str)
-            assert "# üñîçø∂é" in str(exc.value)
+
+        # verify CellExecutionError contents
+        exc_str = str(exc.value)
+        # print for better debugging with captured output
+        # print(exc_str)
+        assert "Exception: message" in exc_str
+        assert "# üñîçø∂é" in exc_str
+        assert "stderr" in exc_str
+        assert "stdout" in exc_str
+        assert "hello\n" in exc_str
+        assert "errorred\n" in exc_str
+        # stricter check for stream output format
+        assert "\n".join(["", "----- stdout -----", "hello", "---"]) in exc_str
+        assert "\n".join(["", "----- stderr -----", "errorred", "---"]) in exc_str
 
     def test_reset_kernel_client(self):
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')

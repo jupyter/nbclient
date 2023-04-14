@@ -1,5 +1,5 @@
 """Exceptions for nbclient."""
-from typing import Dict
+from typing import Dict, List
 
 from nbformat import NotebookNode
 
@@ -88,10 +88,26 @@ class CellExecutionError(CellControlSignal):
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """
+
+        # collect stream outputs for our error message
+        stream_outputs: List[str] = []
+        for output in cell.outputs:
+            if output["output_type"] == "stream":
+                stream_outputs.append(
+                    stream_output_msg.format(name=output["name"], text=output["text"].rstrip())
+                )
+        if stream_outputs:
+            # add blank line before, trailing separator
+            # if there is any stream output to display
+            stream_outputs.insert(0, "")
+            stream_outputs.append("------------------")
+        stream_output: str = "\n".join(stream_outputs)
+
         tb = '\n'.join(msg.get('traceback', []) or [])
         return cls(
             exec_err_msg.format(
                 cell=cell,
+                stream_output=stream_output,
                 traceback=tb,
                 ename=msg.get('ename', '<Error>'),
                 evalue=msg.get('evalue', ''),
@@ -101,11 +117,16 @@ class CellExecutionError(CellControlSignal):
         )
 
 
+stream_output_msg: str = """\
+----- {name} -----
+{text}"""
+
 exec_err_msg: str = """\
 An error occurred while executing the following cell:
 ------------------
 {cell.source}
 ------------------
+{stream_output}
 
 {traceback}
 {ename}: {evalue}
