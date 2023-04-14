@@ -74,14 +74,10 @@ class CellExecutionError(CellControlSignal):
 
     def __str__(self) -> str:
         """Str repr."""
-        s = self.__unicode__()
-        if not isinstance(s, str):
-            s = s.encode('utf8', 'replace')
-        return s
-
-    def __unicode__(self) -> str:
-        """Unicode repr."""
-        return self.traceback
+        if self.traceback:
+            return self.traceback
+        else:
+            return f"{self.ename}: {self.evalue}"
 
     @classmethod
     def from_cell_and_msg(cls, cell: NotebookNode, msg: Dict) -> "CellExecutionError":
@@ -93,8 +89,6 @@ class CellExecutionError(CellControlSignal):
             exec_err_msg.format(
                 cell=cell,
                 traceback=tb,
-                ename=msg.get('ename', '<Error>'),
-                evalue=msg.get('evalue', ''),
             ),
             ename=msg.get('ename', '<Error>'),
             evalue=msg.get('evalue', ''),
@@ -108,7 +102,6 @@ An error occurred while executing the following cell:
 ------------------
 
 {traceback}
-{ename}: {evalue}
 """
 
 
