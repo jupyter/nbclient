@@ -709,11 +709,13 @@ while True: continue
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, {"allow_errors": False}, res)
+
         assert isinstance(str(exc.value), str)
+        exc_str = strip_ansi(str(exc.value))
         # FIXME: we seem to have an encoding problem on Windows
         # same check in force_raise_errors
         if not sys.platform.startswith("win"):
-            assert "# üñîçø∂é" in str(exc.value)
+            assert "# üñîçø∂é" in exc_str
 
     def test_force_raise_errors(self):
         """
@@ -727,7 +729,7 @@ while True: continue
             run_notebook(filename, {"force_raise_errors": True}, res)
 
         # verify CellExecutionError contents
-        exc_str = str(exc.value)
+        exc_str = strip_ansi(str(exc.value))
         # print for better debugging with captured output
         # print(exc_str)
         assert "Exception: message" in exc_str
