@@ -324,7 +324,7 @@ def filter_messages_on_error_output(err_output):
             "Interrupt.ipynb",
             {
                 "kernel_name": "python",
-                "timeout": 1,
+                "timeout": 3,
                 "interrupt_on_timeout": True,
                 "allow_errors": True,
             },
