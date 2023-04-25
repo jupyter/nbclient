@@ -1017,7 +1017,6 @@ class NotebookClient(LoggingConfigurable):
         await run_hook(
             self.on_cell_executed, cell=cell, cell_index=cell_index, execute_reply=exec_reply
         )
-        await self._check_raise_for_error(cell, cell_index, exec_reply)
 
         if self.coalesce_streams and cell.outputs:
             new_outputs = []
@@ -1055,6 +1054,8 @@ class NotebookClient(LoggingConfigurable):
                         new_outputs.insert(i, stdout)
 
             cell.outputs = new_outputs
+
+        await self._check_raise_for_error(cell, cell_index, exec_reply)
 
         self.nb['cells'][cell_index] = cell
         return cell
