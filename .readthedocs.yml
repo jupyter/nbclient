@@ -10,9 +10,6 @@ sphinx:
 
 formats: all
 
-build:
-  image: latest
-
 python:
   install:
     - method: pip
