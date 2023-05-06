@@ -2,6 +2,56 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.7.4
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.3...20b7d4b6eef33ccd1bbd8d346a7a75522ac67d75))
+
+### Enhancements made
+
+- include stream output in CellExecutionError [#282](https://github.com/jupyter/nbclient/pull/282) ([@minrk](https://github.com/minrk))
+
+### Bugs fixed
+
+- avoid duplicate 'Exception: message' in CellExecutionError [#283](https://github.com/jupyter/nbclient/pull/283) ([@minrk](https://github.com/minrk))
+
+### Maintenance and upkeep improvements
+
+- Use local coverage [#281](https://github.com/jupyter/nbclient/pull/281) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+- Send KeyboardInterrupt a little later in test_run_all_notebooks\[Interrupt.ipynb-opts6\] [#285](https://github.com/jupyter/nbclient/pull/285) ([@kxxt](https://github.com/kxxt))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2023-04-03&to=2023-04-25&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2023-04-03..2023-04-25&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2023-04-03..2023-04-25&type=Issues) | [@kxxt](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akxxt+updated%3A2023-04-03..2023-04-25&type=Issues) | [@minrk](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Aminrk+updated%3A2023-04-03..2023-04-25&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2023-04-03..2023-04-25&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
+## 0.7.3
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.2...aa62bc79274d264e9b9d70a139c9506a740b5d77))
+
+### Maintenance and upkeep improvements
+
+- Fix test stability [#276](https://github.com/jupyter/nbclient/pull/276) ([@blink1073](https://github.com/blink1073))
+- Clean up license [#274](https://github.com/jupyter/nbclient/pull/274) ([@dcsaba89](https://github.com/dcsaba89))
+- Update codecov link [#271](https://github.com/jupyter/nbclient/pull/271) ([@blink1073](https://github.com/blink1073))
+- Add spelling and docstring enforcement [#269](https://github.com/jupyter/nbclient/pull/269) ([@blink1073](https://github.com/blink1073))
+- Adopt ruff and address lint [#267](https://github.com/jupyter/nbclient/pull/267) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+- Add coalesce_streams [#279](https://github.com/jupyter/nbclient/pull/279) ([@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-11-29&to=2023-04-03&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2022-11-29..2023-04-03&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-11-29..2023-04-03&type=Issues) | [@dcsaba89](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adcsaba89+updated%3A2022-11-29..2023-04-03&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2022-11-29..2023-04-03&type=Issues)
+
 ## 0.7.2
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.1...e6f8b9f7001f9988a29bb011a0f6052987e6507a))
@@ -17,8 +67,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2022-11-29&to=2022-11-29&type=c))
 
 [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2022-11-29..2022-11-29&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.7.1
 

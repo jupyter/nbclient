@@ -5,6 +5,7 @@ import datetime
 import functools
 import os
 import re
+import sys
 import threading
 import warnings
 from base64 import b64decode, b64encode
@@ -15,6 +16,7 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
+from flaky import flaky  # type:ignore
 from jupyter_client import KernelClient, KernelManager
 from jupyter_client._version import version_info
 from jupyter_client.kernelspec import KernelSpecManager
@@ -322,7 +324,7 @@ def filter_messages_on_error_output(err_output):
             "Interrupt.ipynb",
             {
                 "kernel_name": "python",
-                "timeout": 1,
+                "timeout": 3,
                 "interrupt_on_timeout": True,
                 "allow_errors": True,
             },
@@ -660,6 +662,7 @@ while True: continue
             assert info_msg is not None
             assert 'name' in info_msg["content"]["language_info"]
 
+    @flaky
     def test_kernel_death_after_timeout(self):
         """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, 'files', 'Interrupt.ipynb')
@@ -706,8 +709,13 @@ while True: continue
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, {"allow_errors": False}, res)
-            self.assertIsInstance(str(exc.value), str)
-            assert "# üñîçø∂é" in str(exc.value)
+
+        assert isinstance(str(exc.value), str)
+        exc_str = strip_ansi(str(exc.value))
+        # FIXME: we seem to have an encoding problem on Windows
+        # same check in force_raise_errors
+        if not sys.platform.startswith("win"):
+            assert "# üñîçø∂é" in exc_str
 
     def test_force_raise_errors(self):
         """
@@ -719,8 +727,23 @@ while True: continue
         res['metadata']['path'] = os.path.dirname(filename)
         with pytest.raises(CellExecutionError) as exc:
             run_notebook(filename, {"force_raise_errors": True}, res)
-            self.assertIsInstance(str(exc.value), str)
-            assert "# üñîçø∂é" in str(exc.value)
+
+        # verify CellExecutionError contents
+        exc_str = strip_ansi(str(exc.value))
+        # print for better debugging with captured output
+        # print(exc_str)
+        assert "Exception: message" in exc_str
+        # FIXME: unicode handling seems to have a problem on Windows
+        # same check in allow_errors
+        if not sys.platform.startswith("win"):
+            assert "# üñîçø∂é" in exc_str
+        assert "stderr" in exc_str
+        assert "stdout" in exc_str
+        assert "hello\n" in exc_str
+        assert "errorred\n" in exc_str
+        # stricter check for stream output format
+        assert "\n".join(["", "----- stdout -----", "hello", "---"]) in exc_str
+        assert "\n".join(["", "----- stderr -----", "errorred", "---"]) in exc_str
 
     def test_reset_kernel_client(self):
         filename = os.path.join(current_dir, 'files', 'HelloWorld.ipynb')
@@ -1828,3 +1851,34 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
+
+    @prepare_cell_mocks(
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stdout', 'text': 'foo1'},
+        },
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stderr', 'text': 'bar1'},
+        },
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stdout', 'text': 'foo2'},
+        },
+        {
+            'msg_type': 'stream',
+            'header': {'msg_type': 'stream'},
+            'content': {'name': 'stderr', 'text': 'bar2'},
+        },
+    )
+    def test_coalesce_streams(self, executor, cell_mock, message_mock):
+        executor.coalesce_streams = True
+        executor.execute_cell(cell_mock, 0)
+
+        assert cell_mock.outputs == [
+            {'output_type': 'stream', 'name': 'stdout', 'text': 'foo1foo2'},
+            {'output_type': 'stream', 'name': 'stderr', 'text': 'bar1bar2'},
+        ]
