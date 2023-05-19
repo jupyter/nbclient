@@ -45,7 +45,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "flaky",
-    "ipykernel",
+    "ipykernel>=6.19.3",
     "ipython",
     "ipywidgets",
     "nbconvert>=7.0.0",
