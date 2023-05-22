@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.8.0
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.4...cb7b4f7f409bbd06d55cc339afdcdea79da0e199))
+
+### Maintenance and upkeep improvements
+
+- Bump min version support [#287](https://github.com/jupyter/nbclient/pull/287) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+- Bump actions/checkout from 2 to 3 [#275](https://github.com/jupyter/nbclient/pull/275) ([@dependabot](https://github.com/dependabot))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2023-04-25&to=2023-05-22&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2023-04-25..2023-05-22&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adependabot+updated%3A2023-04-25..2023-05-22&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2023-04-25..2023-05-22&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.7.4
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.3...20b7d4b6eef33ccd1bbd8d346a7a75522ac67d75))
@@ -27,8 +47,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2023-04-03&to=2023-04-25&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2023-04-03..2023-04-25&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2023-04-03..2023-04-25&type=Issues) | [@kxxt](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akxxt+updated%3A2023-04-03..2023-04-25&type=Issues) | [@minrk](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Aminrk+updated%3A2023-04-03..2023-04-25&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2023-04-03..2023-04-25&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.7.3
 
