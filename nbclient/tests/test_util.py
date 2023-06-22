@@ -38,7 +38,7 @@ def test_nested_asyncio_with_tornado():
     async def some_async_function():
         future: asyncio.Future = asyncio.ensure_future(asyncio.sleep(0.1))
         # the asyncio module, check if tornado likes it:
-        ioloop.add_future(future, lambda f: f.result())  # type:ignore
+        ioloop.add_future(future, lambda f: f.result())  
         await future
         return 42
 
