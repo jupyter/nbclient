@@ -2,7 +2,7 @@ from jupyter_client.manager import AsyncKernelManager
 
 
 class FakeCustomKernelManager(AsyncKernelManager):
-    expected_methods = {'__init__': 0, 'client': 0, 'start_kernel': 0}
+    expected_methods = {'__init__': 0, 'client': 0, 'start_kernel': 0}  # noqa
 
     def __init__(self, *args, **kwargs):
         self.log.info('FakeCustomKernelManager initialized')
