@@ -2,6 +2,8 @@ import unittest
 
 from nbformat import v4 as nbformat
 
+# mypy: disable-error-code="no-untyped-call,no-untyped-def"
+
 
 class NBClientTestsBase(unittest.TestCase):
     def build_notebook(self, with_json_outputs=False):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import concurrent.futures
 import copy
@@ -16,10 +18,11 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
-from flaky import flaky  # type:ignore
-from jupyter_client import KernelClient, KernelManager
+from flaky import flaky  # type:ignore[import]
 from jupyter_client._version import version_info
+from jupyter_client.client import KernelClient
 from jupyter_client.kernelspec import KernelSpecManager
+from jupyter_client.manager import KernelManager
 from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
 from testpath import modified_env
@@ -29,6 +32,8 @@ from nbclient import NotebookClient, execute
 from nbclient.exceptions import CellExecutionError
 
 from .base import NBClientTestsBase
+
+# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 
 addr_pat = re.compile(r'0x[0-9a-f]{7,9}')
 current_dir = os.path.dirname(__file__)
@@ -87,13 +92,13 @@ class AsyncMock(Mock):
     pass
 
 
-def make_future(obj: Any) -> asyncio.Future:
+def make_future(obj: Any) -> asyncio.Future[Any]:
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-    future: asyncio.Future = asyncio.Future(loop=loop)
+    future: asyncio.Future[Any] = asyncio.Future(loop=loop)
     future.set_result(obj)
     return future
 
@@ -557,7 +562,7 @@ def test_start_new_kernel_client_cleans_up_kernel_on_failure():
     assert str(err.value.args[0]) == "Any error"
     assert executor.kc is None
     assert executor.km is None
-    assert not km.has_kernel
+    assert not km.has_kernel  # type:ignore[unreachable]
 
 
 class TestExecute(NBClientTestsBase):
@@ -680,7 +685,7 @@ while True: continue
         async def is_alive():
             return False
 
-        km.is_alive = is_alive  # type:ignore
+        km.is_alive = is_alive  # type:ignore[method-assign]
         # Will be a RuntimeError, TimeoutError, or subclass DeadKernelError
         # depending
         # on if jupyter_client or nbconvert catches the dead client first
@@ -820,7 +825,7 @@ while True: continue
             self.assertNotEqual(call_count, 0, f'{method} was called')
 
     def test_process_message_wrapper(self):
-        outputs: list = []
+        outputs: list[Any] = []
 
         class WrappedPreProc(NotebookClient):
             def process_message(self, msg, cell, cell_index):
