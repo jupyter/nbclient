@@ -303,7 +303,7 @@ def notebook_resources():
 
 def filter_messages_on_error_output(err_output):
     allowed_lines = [
-        # ipykernel migh be installed without debugpy extension
+        # ipykernel might be installed without debugpy extension
         "[IPKernelApp] WARNING | debugpy_stream undefined, debugging will not be enabled",
     ]
     filtered_result = [line for line in err_output.splitlines() if line not in allowed_lines]
