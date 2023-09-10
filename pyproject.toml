@@ -219,4 +219,4 @@ fail-under=100
 exclude = ["nbclient/tests", "docs"]
 
 [tool.repo-review]
-ignore = ["PY007", "PP308", "GH102", "PC140"]
+ignore = ["PY005", "PY007", "PP308", "GH102", "PC140"]
