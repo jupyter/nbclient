@@ -148,7 +148,8 @@ addopts = [
 testpaths = ["nbclient/tests"]
 filterwarnings= [
   # Fail on warnings
-  "error"
+  "error",
+  "module:Jupyter is migrating its paths:DeprecationWarning",
 ]
 asyncio_mode = "auto"
 
