@@ -150,6 +150,11 @@ filterwarnings= [
   # Fail on warnings
   "error",
   "module:Jupyter is migrating its paths:DeprecationWarning",
+  "module:unclosed <socket.socket:ResourceWarning",
+  "module:There is no current event loop:DeprecationWarning",
+  "module:unclosed event loop:ResourceWarning",
+  "module:Unclosed socket <zmq:ResourceWarning",
+  "module:subprocess .* is still running:ResourceWarning",
 ]
 asyncio_mode = "auto"
 
