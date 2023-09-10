@@ -1,7 +1,10 @@
 """nbclient cli."""
+from __future__ import annotations
+
 import logging
 import pathlib
 import sys
+import typing
 from textwrap import dedent
 
 import nbformat
@@ -13,13 +16,15 @@ from nbclient import __version__
 
 from .client import NotebookClient
 
-nbclient_aliases: dict = {
+# mypy: disable-error-code="no-untyped-call"
+
+nbclient_aliases: dict[str, str] = {
     'timeout': 'NbClientApp.timeout',
     'startup_timeout': 'NbClientApp.startup_timeout',
     'kernel_name': 'NbClientApp.kernel_name',
 }
 
-nbclient_flags: dict = {
+nbclient_flags: dict[str, typing.Any] = {
     'allow-errors': (
         {
             'NbClientApp': {
@@ -94,12 +99,12 @@ class NbClientApp(JupyterApp):
         ),
     ).tag(config=True)
 
-    @default('log_level')
-    def _log_level_default(self):
+    @default('log_level')  # type:ignore[misc]
+    def _log_level_default(self) -> int:
         return logging.INFO
 
     @catch_config_error
-    def initialize(self, argv=None):
+    def initialize(self, argv: list[str] | None = None) -> None:
         """Initialize the app."""
         super().initialize(argv)
 
@@ -111,9 +116,10 @@ class NbClientApp(JupyterApp):
             sys.exit(-1)
 
         # Loop and run them one by one
-        [self.run_notebook(path) for path in self.notebooks]
+        for path in self.notebooks:
+            self.run_notebook(path)
 
-    def get_notebooks(self):
+    def get_notebooks(self) -> list[str]:
         """Get the notebooks for the app."""
         # If notebooks were provided from the command line, use those
         if self.extra_args:
@@ -125,7 +131,7 @@ class NbClientApp(JupyterApp):
         # Return what we got.
         return notebooks
 
-    def run_notebook(self, notebook_path):
+    def run_notebook(self, notebook_path: str) -> None:
         """Run a notebook by path."""
         # Log it
         self.log.info(f"Executing {notebook_path}")

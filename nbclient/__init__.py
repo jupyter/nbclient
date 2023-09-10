@@ -1,8 +1,8 @@
 import subprocess
 import sys
 
-from ._version import __version__, version_info  # noqa  # noqa
-from .client import NotebookClient, execute  # noqa: F401
+from ._version import __version__, version_info
+from .client import NotebookClient, execute
 
 
 def _cleanup() -> None:
@@ -16,3 +16,6 @@ if sys.platform == 'win32':
     if sys.version_info < (3, 7):
         subprocess._cleanup = _cleanup
         subprocess._active = None
+
+
+__all__ = ["__version__", "version_info", "NotebookClient", "execute"]

@@ -1,4 +1,6 @@
 """nbclient implementation."""
+from __future__ import annotations
+
 import asyncio
 import atexit
 import base64
@@ -12,8 +14,8 @@ from queue import Empty
 from textwrap import dedent
 from time import monotonic
 
-from jupyter_client import KernelManager
 from jupyter_client.client import KernelClient
+from jupyter_client.manager import KernelManager
 from nbformat import NotebookNode
 from nbformat.v4 import output_from_msg
 from traitlets import Any, Bool, Callable, Dict, Enum, Integer, List, Type, Unicode, default
@@ -32,8 +34,10 @@ from .util import ensure_async, run_hook, run_sync
 _RGX_CARRIAGERETURN = re.compile(r".*\r(?=[^\n])")
 _RGX_BACKSPACE = re.compile(r"[^\n]\b")
 
+# mypy: disable-error-code="no-untyped-call"
 
-def timestamp(msg: t.Optional[t.Dict] = None) -> str:
+
+def timestamp(msg: dict[str, t.Any] | None = None) -> str:
     """Get the timestamp for a message."""
     if msg and 'header' in msg:  # The test mocks don't provide a header, so tolerate that
         msg_header = msg['header']
@@ -72,7 +76,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    timeout_func: t.Callable[..., t.Optional[int]] = Any(
+    timeout_func: t.Callable[..., int | None] | None = Any(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -101,7 +105,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    error_on_timeout: t.Optional[t.Dict] = Dict(
+    error_on_timeout: dict[str, t.Any] | None = Dict(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -146,7 +150,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    allow_error_names: t.List[str] = List(
+    allow_error_names: list[str] = List(
         Unicode(),
         help=dedent(
             """
@@ -184,7 +188,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    extra_arguments: t.List = List(Unicode()).tag(config=True)
+    extra_arguments: list[str] = List(Unicode()).tag(config=True)
 
     kernel_name: str = Unicode(
         '',
@@ -287,7 +291,7 @@ class NotebookClient(LoggingConfigurable):
         config=True, klass=KernelManager, help='The kernel manager class to use.'
     )
 
-    on_notebook_start: t.Optional[t.Callable] = Callable(
+    on_notebook_start: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -299,7 +303,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_notebook_complete: t.Optional[t.Callable] = Callable(
+    on_notebook_complete: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -310,7 +314,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_notebook_error: t.Optional[t.Callable] = Callable(
+    on_notebook_error: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -321,7 +325,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_start: t.Optional[t.Callable] = Callable(
+    on_cell_start: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -333,7 +337,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_execute: t.Optional[t.Callable] = Callable(
+    on_cell_execute: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -344,7 +348,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_complete: t.Optional[t.Callable] = Callable(
+    on_cell_complete: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -356,7 +360,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_executed: t.Optional[t.Callable] = Callable(
+    on_cell_executed: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -368,7 +372,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_error: t.Optional[t.Callable] = Callable(
+    on_cell_error: t.Callable[..., None] | None = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -381,13 +385,13 @@ class NotebookClient(LoggingConfigurable):
     ).tag(config=True)
 
     @default('kernel_manager_class')  # type:ignore[misc]
-    def _kernel_manager_class_default(self) -> t.Type[KernelManager]:
+    def _kernel_manager_class_default(self) -> type[KernelManager]:
         """Use a dynamic default to avoid importing jupyter_client at startup"""
-        from jupyter_client import AsyncKernelManager
+        from jupyter_client import AsyncKernelManager  # type:ignore[attr-defined]
 
         return AsyncKernelManager
 
-    _display_id_map = Dict(
+    _display_id_map: dict[str, t.Any] = Dict(  # type:ignore[assignment]
         help=dedent(
             """
               mapping of locations of outputs with a given display_id
@@ -402,7 +406,7 @@ class NotebookClient(LoggingConfigurable):
         )
     )
 
-    display_data_priority: t.List = List(
+    display_data_priority: list[str] = List(
         [
             'text/html',
             'application/pdf',
@@ -420,7 +424,7 @@ class NotebookClient(LoggingConfigurable):
             """,
     ).tag(config=True)
 
-    resources = Dict(
+    resources: dict[str, t.Any] = Dict(  # type:ignore[assignment]
         help=dedent(
             """
             Additional resources used in the conversion process. For example,
@@ -438,7 +442,7 @@ class NotebookClient(LoggingConfigurable):
         )
     )
 
-    def __init__(self, nb: NotebookNode, km: t.Optional[KernelManager] = None, **kw: t.Any) -> None:
+    def __init__(self, nb: NotebookNode, km: KernelManager | None = None, **kw: t.Any) -> None:
         """Initializes the execution manager.
 
         Parameters
@@ -451,30 +455,30 @@ class NotebookClient(LoggingConfigurable):
         """
         super().__init__(**kw)
         self.nb: NotebookNode = nb
-        self.km: t.Optional[KernelManager] = km
+        self.km: KernelManager | None = km
         self.owns_km: bool = km is None  # whether the NotebookClient owns the kernel manager
-        self.kc: t.Optional[KernelClient] = None
+        self.kc: KernelClient | None = None
         self.reset_execution_trackers()
-        self.widget_registry: t.Dict[str, t.Dict] = {
+        self.widget_registry: dict[str, dict[str, t.Any]] = {
             '@jupyter-widgets/output': {'OutputModel': OutputWidget}
         }
         # comm_open_handlers should return an object with a .handle_msg(msg) method or None
-        self.comm_open_handlers: t.Dict[str, t.Any] = {
+        self.comm_open_handlers: dict[str, t.Any] = {
             'jupyter.widget': self.on_comm_open_jupyter_widget
         }
 
     def reset_execution_trackers(self) -> None:
         """Resets any per-execution trackers."""
-        self.task_poll_for_reply: t.Optional[asyncio.Future] = None
+        self.task_poll_for_reply: asyncio.Future[t.Any] | None = None
         self.code_cells_executed = 0
         self._display_id_map = {}
-        self.widget_state: t.Dict[str, t.Dict] = {}
-        self.widget_buffers: t.Dict[str, t.Dict[t.Tuple[str, ...], t.Dict[str, str]]] = {}
+        self.widget_state: dict[str, dict[str, t.Any]] = {}
+        self.widget_buffers: dict[str, dict[tuple[str, ...], dict[str, str]]] = {}
         # maps to list of hooks, where the last is used, this is used
         # to support nested use of output widgets.
         self.output_hook_stack: t.Any = collections.defaultdict(list)
         # our front-end mimicking Output widgets
-        self.comm_objects: t.Dict[str, t.Any] = {}
+        self.comm_objects: dict[str, t.Any] = {}
 
     def create_kernel_manager(self) -> KernelManager:
         """Creates a new kernel manager.
@@ -575,7 +579,7 @@ class NotebookClient(LoggingConfigurable):
     start_new_kernel_client = run_sync(async_start_new_kernel_client)
 
     @contextmanager
-    def setup_kernel(self, **kwargs: t.Any) -> t.Generator:
+    def setup_kernel(self, **kwargs: t.Any) -> t.Generator[None, None, None]:
         """
         Context manager for setting up the kernel to execute a notebook.
 
@@ -605,7 +609,7 @@ class NotebookClient(LoggingConfigurable):
                 self._cleanup_kernel()
 
     @asynccontextmanager
-    async def async_setup_kernel(self, **kwargs: t.Any) -> t.AsyncGenerator:
+    async def async_setup_kernel(self, **kwargs: t.Any) -> t.AsyncGenerator[None, None]:
         """
         Context manager for setting up the kernel to execute a notebook.
 
@@ -626,7 +630,7 @@ class NotebookClient(LoggingConfigurable):
         # This is necessary as the ioloop has stopped once atexit fires.
         atexit.register(self._cleanup_kernel)
 
-        def on_signal():
+        def on_signal() -> None:
             """Handle signals."""
             self._async_cleanup_kernel_future = asyncio.ensure_future(self._async_cleanup_kernel())
             atexit.unregister(self._cleanup_kernel)
@@ -732,7 +736,7 @@ class NotebookClient(LoggingConfigurable):
                 if buffers:
                     widget['buffers'] = list(buffers.values())
 
-    def _update_display_id(self, display_id: str, msg: t.Dict) -> None:
+    def _update_display_id(self, display_id: str, msg: dict[str, t.Any]) -> None:
         """Update outputs with a given display_id"""
         if display_id not in self._display_id_map:
             self.log.debug("display id %r not in %s", display_id, self._display_id_map)
@@ -758,13 +762,13 @@ class NotebookClient(LoggingConfigurable):
         self,
         msg_id: str,
         cell: NotebookNode,
-        timeout: t.Optional[int],
-        task_poll_output_msg: asyncio.Future,
-        task_poll_kernel_alive: asyncio.Future,
-    ) -> t.Dict:
-        msg: t.Dict
+        timeout: int | None,
+        task_poll_output_msg: asyncio.Future[t.Any],
+        task_poll_kernel_alive: asyncio.Future[t.Any],
+    ) -> dict[str, t.Any]:
+        msg: dict[str, t.Any]
         assert self.kc is not None
-        new_timeout: t.Optional[float] = None
+        new_timeout: float | None = None
         if timeout is not None:
             deadline = monotonic() + timeout
             new_timeout = float(timeout)
@@ -772,7 +776,7 @@ class NotebookClient(LoggingConfigurable):
         while True:
             try:
                 if error_on_timeout_execute_reply:
-                    msg = error_on_timeout_execute_reply
+                    msg = error_on_timeout_execute_reply  # type:ignore[unreachable]
                     msg['parent_header'] = {'msg_id': msg_id}
                 else:
                     msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
@@ -824,7 +828,7 @@ class NotebookClient(LoggingConfigurable):
                 self.task_poll_for_reply.cancel()
                 return
 
-    def _get_timeout(self, cell: t.Optional[NotebookNode]) -> t.Optional[int]:
+    def _get_timeout(self, cell: NotebookNode | None) -> int | None:
         if self.timeout_func is not None and cell is not None:
             timeout = self.timeout_func(cell)
         else:
@@ -836,8 +840,8 @@ class NotebookClient(LoggingConfigurable):
         return timeout
 
     async def _async_handle_timeout(
-        self, timeout: int, cell: t.Optional[NotebookNode] = None
-    ) -> t.Union[None, t.Dict]:
+        self, timeout: int, cell: NotebookNode | None = None
+    ) -> None | dict[str, t.Any]:
         self.log.error("Timeout waiting for execute reply (%is)." % timeout)
         if self.interrupt_on_timeout:
             self.log.error("Interrupting kernel")
@@ -860,8 +864,8 @@ class NotebookClient(LoggingConfigurable):
             raise DeadKernelError("Kernel died")
 
     async def async_wait_for_reply(
-        self, msg_id: str, cell: t.Optional[NotebookNode] = None
-    ) -> t.Optional[t.Dict]:
+        self, msg_id: str, cell: NotebookNode | None = None
+    ) -> dict[str, t.Any] | None:
         """Wait for a message reply."""
         assert self.kc is not None
         # wait for finish, with timeout
@@ -869,7 +873,7 @@ class NotebookClient(LoggingConfigurable):
         cummulative_time = 0
         while True:
             try:
-                msg: t.Dict = await ensure_async(
+                msg: dict[str, t.Any] = await ensure_async(
                     self.kc.shell_channel.get_msg(timeout=self.shell_timeout_interval)
                 )
             except Empty:
@@ -887,13 +891,13 @@ class NotebookClient(LoggingConfigurable):
     # Backwards compatibility naming for papermill
     _wait_for_reply = wait_for_reply
 
-    def _passed_deadline(self, deadline: int) -> bool:
+    def _passed_deadline(self, deadline: int | None) -> bool:
         if deadline is not None and deadline - monotonic() <= 0:
             return True
         return False
 
     async def _check_raise_for_error(
-        self, cell: NotebookNode, cell_index: int, exec_reply: t.Optional[t.Dict]
+        self, cell: NotebookNode, cell_index: int, exec_reply: dict[str, t.Any] | None
     ) -> None:
         if exec_reply is None:
             return None
@@ -917,7 +921,7 @@ class NotebookClient(LoggingConfigurable):
         self,
         cell: NotebookNode,
         cell_index: int,
-        execution_count: t.Optional[int] = None,
+        execution_count: int | None = None,
         store_history: bool = True,
     ) -> NotebookNode:
         """
@@ -1063,8 +1067,8 @@ class NotebookClient(LoggingConfigurable):
     execute_cell = run_sync(async_execute_cell)
 
     def process_message(
-        self, msg: t.Dict, cell: NotebookNode, cell_index: int
-    ) -> t.Optional[NotebookNode]:
+        self, msg: dict[str, t.Any], cell: NotebookNode, cell_index: int
+    ) -> NotebookNode | None:
         """
         Processes a kernel message, updates cell state, and returns the
         resulting output object that was appended to cell.outputs.
@@ -1127,12 +1131,12 @@ class NotebookClient(LoggingConfigurable):
         return None
 
     def output(
-        self, outs: t.List, msg: t.Dict, display_id: str, cell_index: int
-    ) -> t.Optional[NotebookNode]:
+        self, outs: list[NotebookNode], msg: dict[str, t.Any], display_id: str, cell_index: int
+    ) -> NotebookNode | None:
         """Handle output."""
 
         msg_type = msg['msg_type']
-        out: t.Optional[NotebookNode] = None
+        out: NotebookNode | None = None
 
         parent_msg_id = msg['parent_header'].get('msg_id')
         if self.output_hook_stack[parent_msg_id]:
@@ -1161,11 +1165,14 @@ class NotebookClient(LoggingConfigurable):
             output_idx_list = cell_map.setdefault(cell_index, [])
             output_idx_list.append(len(outs))
 
-        outs.append(out)
+        if out:
+            outs.append(out)
 
         return out
 
-    def clear_output(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
+    def clear_output(
+        self, outs: list[NotebookNode], msg: dict[str, t.Any], cell_index: int
+    ) -> None:
         """Clear output."""
         content = msg['content']
 
@@ -1191,7 +1198,9 @@ class NotebookClient(LoggingConfigurable):
             if cell_index in cell_map:
                 cell_map[cell_index] = []
 
-    def handle_comm_msg(self, outs: t.List, msg: t.Dict, cell_index: int) -> None:
+    def handle_comm_msg(
+        self, outs: list[NotebookNode], msg: dict[str, t.Any], cell_index: int
+    ) -> None:
         """Handle a comm message."""
         content = msg['content']
         data = content['data']
@@ -1202,7 +1211,7 @@ class NotebookClient(LoggingConfigurable):
                 if comm_id not in self.widget_buffers:
                     self.widget_buffers[comm_id] = {}
                 # for each comm, the path uniquely identifies a buffer
-                new_buffers: t.Dict[t.Tuple[str, ...], t.Dict[str, str]] = {
+                new_buffers: dict[tuple[str, ...], dict[str, str]] = {
                     tuple(k["path"]): k for k in self._get_buffer_data(msg)
                 }
                 self.widget_buffers[comm_id].update(new_buffers)
@@ -1224,7 +1233,7 @@ class NotebookClient(LoggingConfigurable):
             if comm_id in self.comm_objects:
                 self.comm_objects[comm_id].handle_msg(msg)
 
-    def _serialize_widget_state(self, state: t.Dict) -> t.Dict[str, t.Any]:
+    def _serialize_widget_state(self, state: dict[str, t.Any]) -> dict[str, t.Any]:
         """Serialize a widget state, following format in @jupyter-widgets/schema."""
         return {
             'model_name': state.get('_model_name'),
@@ -1233,7 +1242,7 @@ class NotebookClient(LoggingConfigurable):
             'state': state,
         }
 
-    def _get_buffer_data(self, msg: t.Dict) -> t.List[t.Dict[str, str]]:
+    def _get_buffer_data(self, msg: dict[str, t.Any]) -> list[dict[str, str]]:
         encoded_buffers = []
         paths = msg['content']['data']['buffer_paths']
         buffers = msg['buffers']
@@ -1263,7 +1272,7 @@ class NotebookClient(LoggingConfigurable):
         removed_hook = self.output_hook_stack[msg_id].pop()
         assert removed_hook == hook
 
-    def on_comm_open_jupyter_widget(self, msg: t.Dict) -> t.Optional[t.Any]:
+    def on_comm_open_jupyter_widget(self, msg: dict[str, t.Any]) -> t.Any | None:
         """Handle a jupyter widget comm open."""
         content = msg['content']
         data = content['data']
@@ -1279,8 +1288,8 @@ class NotebookClient(LoggingConfigurable):
 
 def execute(
     nb: NotebookNode,
-    cwd: t.Optional[str] = None,
-    km: t.Optional[KernelManager] = None,
+    cwd: str | None = None,
+    km: KernelManager | None = None,
     **kwargs: t.Any,
 ) -> NotebookNode:
     """Execute a notebook's code, updating outputs within the notebook object.

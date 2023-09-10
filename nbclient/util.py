@@ -2,14 +2,17 @@
 
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import inspect
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
-from jupyter_core.utils import ensure_async, run_sync  # noqa: F401
+from jupyter_core.utils import ensure_async, run_sync
+
+__all__ = ["ensure_async", "run_sync", "run_hook"]
 
 
-async def run_hook(hook: Optional[Callable], **kwargs: Any) -> None:
+async def run_hook(hook: Callable[..., Any] | None, **kwargs: Any) -> None:
     """Run a hook callback."""
     if hook is None:
         return
