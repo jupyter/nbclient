@@ -62,7 +62,7 @@ class NotebookClient(LoggingConfigurable):
     Encompasses a Client for executing cells in a notebook
     """
 
-    timeout: int = Integer(
+    timeout = Integer(
         None,
         allow_none=True,
         help=dedent(
@@ -76,7 +76,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    timeout_func: t.Callable[..., int | None] | None = Any(
+    timeout_func: t.Callable[..., int | None] | None = Any(  # type:ignore[assignment]
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -94,7 +94,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    interrupt_on_timeout: bool = Bool(
+    interrupt_on_timeout = Bool(
         False,
         help=dedent(
             """
@@ -105,7 +105,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    error_on_timeout: dict[str, t.Any] | None = Dict(
+    error_on_timeout = Dict(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -124,7 +124,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    startup_timeout: int = Integer(
+    startup_timeout = Integer(
         60,
         help=dedent(
             """
@@ -135,7 +135,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    allow_errors: bool = Bool(
+    allow_errors = Bool(
         False,
         help=dedent(
             """
@@ -150,7 +150,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    allow_error_names: list[str] = List(
+    allow_error_names = List(
         Unicode(),
         help=dedent(
             """
@@ -161,7 +161,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    force_raise_errors: bool = Bool(
+    force_raise_errors = Bool(
         False,
         help=dedent(
             """
@@ -179,7 +179,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    skip_cells_with_tag: str = Unicode(
+    skip_cells_with_tag = Unicode(
         'skip-execution',
         help=dedent(
             """
@@ -188,9 +188,9 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    extra_arguments: list[str] = List(Unicode()).tag(config=True)
+    extra_arguments = List(Unicode()).tag(config=True)
 
-    kernel_name: str = Unicode(
+    kernel_name = Unicode(
         '',
         help=dedent(
             """
@@ -200,7 +200,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    raise_on_iopub_timeout: bool = Bool(
+    raise_on_iopub_timeout = Bool(
         False,
         help=dedent(
             """
@@ -215,7 +215,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    store_widget_state: bool = Bool(
+    store_widget_state = Bool(
         True,
         help=dedent(
             """
@@ -225,7 +225,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    record_timing: bool = Bool(
+    record_timing = Bool(
         True,
         help=dedent(
             """
@@ -235,7 +235,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    iopub_timeout: int = Integer(
+    iopub_timeout = Integer(
         4,
         allow_none=False,
         help=dedent(
@@ -248,7 +248,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    shell_timeout_interval: int = Integer(
+    shell_timeout_interval = Integer(
         5,
         allow_none=False,
         help=dedent(
@@ -273,7 +273,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    ipython_hist_file: str = Unicode(
+    ipython_hist_file = Unicode(
         default_value=':memory:',
         help="""Path to file to use for SQLite history database for an IPython kernel.
 
@@ -291,7 +291,7 @@ class NotebookClient(LoggingConfigurable):
         config=True, klass=KernelManager, help='The kernel manager class to use.'
     )
 
-    on_notebook_start: t.Callable[..., None] | None = Callable(
+    on_notebook_start = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -303,7 +303,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_notebook_complete: t.Callable[..., None] | None = Callable(
+    on_notebook_complete = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -314,7 +314,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_notebook_error: t.Callable[..., None] | None = Callable(
+    on_notebook_error = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -325,7 +325,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_start: t.Callable[..., None] | None = Callable(
+    on_cell_start = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -337,7 +337,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_execute: t.Callable[..., None] | None = Callable(
+    on_cell_execute = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -348,7 +348,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_complete: t.Callable[..., None] | None = Callable(
+    on_cell_complete = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -360,7 +360,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_executed: t.Callable[..., None] | None = Callable(
+    on_cell_executed = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -372,7 +372,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    on_cell_error: t.Callable[..., None] | None = Callable(
+    on_cell_error = Callable(
         default_value=None,
         allow_none=True,
         help=dedent(
@@ -384,7 +384,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    @default('kernel_manager_class')  # type:ignore[misc]
+    @default('kernel_manager_class')
     def _kernel_manager_class_default(self) -> type[KernelManager]:
         """Use a dynamic default to avoid importing jupyter_client at startup"""
         from jupyter_client import AsyncKernelManager  # type:ignore[attr-defined]
@@ -406,7 +406,7 @@ class NotebookClient(LoggingConfigurable):
         )
     )
 
-    display_data_priority: list[str] = List(
+    display_data_priority = List(
         [
             'text/html',
             'application/pdf',
@@ -494,9 +494,11 @@ class NotebookClient(LoggingConfigurable):
                 self.kernel_name = kn
 
         if not self.kernel_name:
-            self.km = self.kernel_manager_class(config=self.config)
+            self.km = self.kernel_manager_class(config=self.config)  # type:ignore[operator]
         else:
-            self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
+            self.km = self.kernel_manager_class(
+                kernel_name=self.kernel_name, config=self.config
+            )  # type:ignore[operator]
         assert self.km is not None
         return self.km
 

@@ -48,7 +48,7 @@ class NbClientApp(JupyterApp):
 
     description = "An application used to execute notebook files (*.ipynb)"
     notebooks = List([], help="Path of notebooks to convert").tag(config=True)
-    timeout: int = Integer(
+    timeout = Integer(
         None,
         allow_none=True,
         help=dedent(
@@ -59,7 +59,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    startup_timeout: int = Integer(
+    startup_timeout = Integer(
         60,
         help=dedent(
             """
@@ -69,7 +69,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    allow_errors: bool = Bool(
+    allow_errors = Bool(
         False,
         help=dedent(
             """
@@ -81,7 +81,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    skip_cells_with_tag: str = Unicode(
+    skip_cells_with_tag = Unicode(
         'skip-execution',
         help=dedent(
             """
@@ -89,7 +89,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    kernel_name: str = Unicode(
+    kernel_name = Unicode(
         '',
         help=dedent(
             """
@@ -99,7 +99,7 @@ class NbClientApp(JupyterApp):
         ),
     ).tag(config=True)
 
-    @default('log_level')  # type:ignore[misc]
+    @default('log_level')
     def _log_level_default(self) -> int:
         return logging.INFO
 
