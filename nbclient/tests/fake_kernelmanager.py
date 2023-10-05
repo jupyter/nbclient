@@ -1,5 +1,7 @@
 from jupyter_client.manager import AsyncKernelManager
 
+# mypy: disable-error-code="no-untyped-call,no-untyped-def"
+
 
 class FakeCustomKernelManager(AsyncKernelManager):
     expected_methods = {'__init__': 0, 'client': 0, 'start_kernel': 0}  # noqa

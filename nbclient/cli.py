@@ -1,7 +1,10 @@
 """nbclient cli."""
+from __future__ import annotations
+
 import logging
 import pathlib
 import sys
+import typing
 from textwrap import dedent
 
 import nbformat
@@ -13,13 +16,15 @@ from nbclient import __version__
 
 from .client import NotebookClient
 
-nbclient_aliases: dict = {
+# mypy: disable-error-code="no-untyped-call"
+
+nbclient_aliases: dict[str, str] = {
     'timeout': 'NbClientApp.timeout',
     'startup_timeout': 'NbClientApp.startup_timeout',
     'kernel_name': 'NbClientApp.kernel_name',
 }
 
-nbclient_flags: dict = {
+nbclient_flags: dict[str, typing.Any] = {
     'allow-errors': (
         {
             'NbClientApp': {
@@ -43,7 +48,7 @@ class NbClientApp(JupyterApp):
 
     description = "An application used to execute notebook files (*.ipynb)"
     notebooks = List([], help="Path of notebooks to convert").tag(config=True)
-    timeout: int = Integer(
+    timeout = Integer(
         None,
         allow_none=True,
         help=dedent(
@@ -54,7 +59,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    startup_timeout: int = Integer(
+    startup_timeout = Integer(
         60,
         help=dedent(
             """
@@ -64,7 +69,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    allow_errors: bool = Bool(
+    allow_errors = Bool(
         False,
         help=dedent(
             """
@@ -76,7 +81,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    skip_cells_with_tag: str = Unicode(
+    skip_cells_with_tag = Unicode(
         'skip-execution',
         help=dedent(
             """
@@ -84,7 +89,7 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
-    kernel_name: str = Unicode(
+    kernel_name = Unicode(
         '',
         help=dedent(
             """
@@ -95,11 +100,11 @@ class NbClientApp(JupyterApp):
     ).tag(config=True)
 
     @default('log_level')
-    def _log_level_default(self):
+    def _log_level_default(self) -> int:
         return logging.INFO
 
     @catch_config_error
-    def initialize(self, argv=None):
+    def initialize(self, argv: list[str] | None = None) -> None:
         """Initialize the app."""
         super().initialize(argv)
 
@@ -111,9 +116,10 @@ class NbClientApp(JupyterApp):
             sys.exit(-1)
 
         # Loop and run them one by one
-        [self.run_notebook(path) for path in self.notebooks]
+        for path in self.notebooks:
+            self.run_notebook(path)
 
-    def get_notebooks(self):
+    def get_notebooks(self) -> list[str]:
         """Get the notebooks for the app."""
         # If notebooks were provided from the command line, use those
         if self.extra_args:
@@ -125,7 +131,7 @@ class NbClientApp(JupyterApp):
         # Return what we got.
         return notebooks
 
-    def run_notebook(self, notebook_path):
+    def run_notebook(self, notebook_path: str) -> None:
         """Run a notebook by path."""
         # Log it
         self.log.info(f"Executing {notebook_path}")

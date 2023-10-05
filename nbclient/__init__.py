@@ -1,15 +1,4 @@
-import sys
+from ._version import __version__, version_info
+from .client import NotebookClient, execute
 
-from ._version import __version__, version_info  # noqa  # noqa
-from .client import NotebookClient, execute  # noqa: F401
-
-
-def _cleanup() -> None:
-    pass
-
-
-# patch subprocess on Windows for python<3.7
-# see https://bugs.python.org/issue37380
-# the fix for python3.7: https://github.com/python/cpython/pull/15706/files
-if sys.platform == 'win32':
-    pass
+__all__ = ["__version__", "version_info", "NotebookClient", "execute"]

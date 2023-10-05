@@ -4,6 +4,7 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: "0 8 * * *"
 
@@ -18,8 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-      -  name: Run Linters
-         run: |
+      - name: Run Linters
+        run: |
           hatch run typing:test
           hatch run lint:style
           pipx run interrogate -v .
@@ -36,11 +37,12 @@ jobs:
   build:
     name: Build, test and code coverage
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [ '3.8', '3.9', '3.10', "3.11" ]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
         exclude:
           - os: windows-latest
             python-version: 3.8
@@ -113,9 +115,9 @@ jobs:
   check_links:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-    - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
+      - uses: actions/checkout@v4
+      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+      - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
 
   check_release:
     runs-on: ubuntu-latest

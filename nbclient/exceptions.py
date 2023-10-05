@@ -1,5 +1,7 @@
 """Exceptions for nbclient."""
-from typing import Dict, List
+from __future__ import annotations
+
+from typing import Any
 
 from nbformat import NotebookNode
 
@@ -22,7 +24,7 @@ class CellTimeoutError(TimeoutError, CellControlSignal):
     @classmethod
     def error_from_timeout_and_cell(
         cls, msg: str, timeout: int, cell: NotebookNode
-    ) -> "CellTimeoutError":
+    ) -> CellTimeoutError:
         """Create an error from a timeout on a cell."""
         if cell and cell.source:
             src_by_lines = cell.source.strip().split("\n")
@@ -68,9 +70,9 @@ class CellExecutionError(CellControlSignal):
         self.ename = ename
         self.evalue = evalue
 
-    def __reduce__(self) -> tuple:
+    def __reduce__(self) -> tuple[Any]:
         """Reduce implementation."""
-        return type(self), (self.traceback, self.ename, self.evalue)
+        return type(self), (self.traceback, self.ename, self.evalue)  # type:ignore[return-value]
 
     def __str__(self) -> str:
         """Str repr."""
@@ -80,13 +82,13 @@ class CellExecutionError(CellControlSignal):
             return f"{self.ename}: {self.evalue}"
 
     @classmethod
-    def from_cell_and_msg(cls, cell: NotebookNode, msg: Dict) -> "CellExecutionError":
+    def from_cell_and_msg(cls, cell: NotebookNode, msg: dict[str, Any]) -> CellExecutionError:
         """Instantiate from a code cell object and a message contents
         (message is either execute_reply or error)
         """
 
         # collect stream outputs for our error message
-        stream_outputs: List[str] = []
+        stream_outputs: list[str] = []
         for output in cell.outputs:
             if output["output_type"] == "stream":
                 stream_outputs.append(

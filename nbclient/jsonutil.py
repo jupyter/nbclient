@@ -4,6 +4,7 @@
 
 # Copyright (c) IPython Development Team.
 # Distributed under the terms of the Modified BSD License.
+from __future__ import annotations
 
 import math
 import numbers
@@ -11,7 +12,7 @@ import re
 import types
 from binascii import b2a_base64
 from datetime import datetime
-from typing import Dict
+from typing import Any
 
 # -----------------------------------------------------------------------------
 # Globals and constants
@@ -46,7 +47,7 @@ GIF89_64 = b'R0lGODlh'
 PDF64 = b'JVBER'
 
 
-def encode_images(format_dict: Dict) -> Dict[str, str]:
+def encode_images(format_dict: dict[str, str]) -> dict[str, str]:
     """b64-encodes images in a displaypub format dict
 
     Perhaps this should be handled in json_clean itself?
@@ -69,7 +70,7 @@ def encode_images(format_dict: Dict) -> Dict[str, str]:
     return format_dict
 
 
-def json_clean(obj):
+def json_clean(obj: Any) -> Any:
     """Clean an object to ensure it's safe to encode in JSON.
 
     Atomic, immutable objects are returned unmodified.  Sets and tuples are
