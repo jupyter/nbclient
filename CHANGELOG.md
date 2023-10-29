@@ -433,7 +433,7 @@ If you were using these versions for the couple days they were up, move to 0.5.0
 ### Fixes
 
 - Fix `OSError: [WinError 6] The handle is invalid` for windows/python\<3.7 [#77](https://github.com/jupyter/nbclient/pull/77)
-- Async wapper Exceptions no longer loose their caused exception information [#65](https://github.com/jupyter/nbclient/pull/65)
+- Async wrapper Exceptions no longer loose their caused exception information [#65](https://github.com/jupyter/nbclient/pull/65)
 - `extra_arguments` are now configurable by config settings [#66](https://github.com/jupyter/nbclient/pull/66)
 
 ### Operational

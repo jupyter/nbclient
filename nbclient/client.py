@@ -39,13 +39,13 @@ _RGX_BACKSPACE = re.compile(r"[^\n]\b")
 
 def timestamp(msg: dict[str, t.Any] | None = None) -> str:
     """Get the timestamp for a message."""
-    if msg and 'header' in msg:  # The test mocks don't provide a header, so tolerate that
-        msg_header = msg['header']
-        if 'date' in msg_header and isinstance(msg_header['date'], datetime.datetime):
+    if msg and "header" in msg:  # The test mocks don't provide a header, so tolerate that
+        msg_header = msg["header"]
+        if "date" in msg_header and isinstance(msg_header["date"], datetime.datetime):
             try:
                 # reformat datetime into expected format
                 formatted_time = datetime.datetime.strftime(
-                    msg_header['date'], '%Y-%m-%dT%H:%M:%S.%fZ'
+                    msg_header["date"], "%Y-%m-%dT%H:%M:%S.%fZ"
                 )
                 if (
                     formatted_time
@@ -54,7 +54,7 @@ def timestamp(msg: dict[str, t.Any] | None = None) -> str:
             except Exception:  # noqa
                 pass  # fallback to a local time
 
-    return datetime.datetime.utcnow().isoformat() + 'Z'
+    return datetime.datetime.utcnow().isoformat() + "Z"
 
 
 class NotebookClient(LoggingConfigurable):
@@ -180,7 +180,7 @@ class NotebookClient(LoggingConfigurable):
     ).tag(config=True)
 
     skip_cells_with_tag = Unicode(
-        'skip-execution',
+        "skip-execution",
         help=dedent(
             """
             Name of the cell tag to use to denote a cell that should be skipped.
@@ -191,7 +191,7 @@ class NotebookClient(LoggingConfigurable):
     extra_arguments = List(Unicode()).tag(config=True)
 
     kernel_name = Unicode(
-        '',
+        "",
         help=dedent(
             """
             Name of kernel to use to execute the cells.
@@ -261,8 +261,8 @@ class NotebookClient(LoggingConfigurable):
     ).tag(config=True)
 
     shutdown_kernel = Enum(
-        ['graceful', 'immediate'],
-        default_value='graceful',
+        ["graceful", "immediate"],
+        default_value="graceful",
         help=dedent(
             """
             If ``graceful`` (default), then the kernel is given time to clean
@@ -274,7 +274,7 @@ class NotebookClient(LoggingConfigurable):
     ).tag(config=True)
 
     ipython_hist_file = Unicode(
-        default_value=':memory:',
+        default_value=":memory:",
         help="""Path to file to use for SQLite history database for an IPython kernel.
 
         The specific value ``:memory:`` (including the colon
@@ -288,7 +288,7 @@ class NotebookClient(LoggingConfigurable):
     ).tag(config=True)
 
     kernel_manager_class = Type(
-        config=True, klass=KernelManager, help='The kernel manager class to use.'
+        config=True, klass=KernelManager, help="The kernel manager class to use."
     )
 
     on_notebook_start = Callable(
@@ -384,7 +384,7 @@ class NotebookClient(LoggingConfigurable):
         ),
     ).tag(config=True)
 
-    @default('kernel_manager_class')
+    @default("kernel_manager_class")
     def _kernel_manager_class_default(self) -> type[KernelManager]:
         """Use a dynamic default to avoid importing jupyter_client at startup"""
         from jupyter_client import AsyncKernelManager  # type:ignore[attr-defined]
@@ -408,14 +408,14 @@ class NotebookClient(LoggingConfigurable):
 
     display_data_priority = List(
         [
-            'text/html',
-            'application/pdf',
-            'text/latex',
-            'image/svg+xml',
-            'image/png',
-            'image/jpeg',
-            'text/markdown',
-            'text/plain',
+            "text/html",
+            "application/pdf",
+            "text/latex",
+            "image/svg+xml",
+            "image/png",
+            "image/jpeg",
+            "text/markdown",
+            "text/plain",
         ],
         help="""
             An ordered list of preferred output type, the first
@@ -460,11 +460,11 @@ class NotebookClient(LoggingConfigurable):
         self.kc: KernelClient | None = None
         self.reset_execution_trackers()
         self.widget_registry: dict[str, dict[str, t.Any]] = {
-            '@jupyter-widgets/output': {'OutputModel': OutputWidget}
+            "@jupyter-widgets/output": {"OutputModel": OutputWidget}
         }
         # comm_open_handlers should return an object with a .handle_msg(msg) method or None
         self.comm_open_handlers: dict[str, t.Any] = {
-            'jupyter.widget': self.on_comm_open_jupyter_widget
+            "jupyter.widget": self.on_comm_open_jupyter_widget
         }
 
     def reset_execution_trackers(self) -> None:
@@ -489,16 +489,14 @@ class NotebookClient(LoggingConfigurable):
             Kernel manager whose client class is asynchronous.
         """
         if not self.kernel_name:
-            kn = self.nb.metadata.get('kernelspec', {}).get('name')
+            kn = self.nb.metadata.get("kernelspec", {}).get("name")
             if kn is not None:
                 self.kernel_name = kn
 
         if not self.kernel_name:
             self.km = self.kernel_manager_class(config=self.config)  # type:ignore[operator]
         else:
-            self.km = self.kernel_manager_class(
-                kernel_name=self.kernel_name, config=self.config
-            )  # type:ignore[operator]
+            self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)  # type:ignore[operator]
         assert self.km is not None
         return self.km
 
@@ -511,7 +509,7 @@ class NotebookClient(LoggingConfigurable):
                 await ensure_async(self.km.shutdown_kernel(now=now))
         except RuntimeError as e:
             # The error isn't specialized, so we have to check the message
-            if 'No kernel is running!' not in str(e):
+            if "No kernel is running!" not in str(e):
                 raise
         finally:
             # Remove any state left over even if we failed to stop the kernel
@@ -534,20 +532,20 @@ class NotebookClient(LoggingConfigurable):
             accepted by ``AsyncKernelManager.start_kernel()``, which includes ``cwd``.
         """
         assert self.km is not None
-        resource_path = self.resources.get('metadata', {}).get('path') or None
-        if resource_path and 'cwd' not in kwargs:
+        resource_path = self.resources.get("metadata", {}).get("path") or None
+        if resource_path and "cwd" not in kwargs:
             kwargs["cwd"] = resource_path
 
         has_history_manager_arg = any(
-            arg.startswith('--HistoryManager.hist_file') for arg in self.extra_arguments
+            arg.startswith("--HistoryManager.hist_file") for arg in self.extra_arguments
         )
         if (
-            hasattr(self.km, 'ipykernel')
+            hasattr(self.km, "ipykernel")
             and self.km.ipykernel
             and self.ipython_hist_file
             and not has_history_manager_arg
         ):
-            self.extra_arguments += [f'--HistoryManager.hist_file={self.ipython_hist_file}']
+            self.extra_arguments += [f"--HistoryManager.hist_file={self.ipython_hist_file}"]
 
         await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
 
@@ -569,7 +567,7 @@ class NotebookClient(LoggingConfigurable):
         except Exception as e:
             self.log.error(
                 "Error occurred while starting new kernel client for kernel {}: {}".format(
-                    getattr(self.km, 'kernel_id', None), str(e)
+                    getattr(self.km, "kernel_id", None), str(e)
                 )
             )
             await self._async_cleanup_kernel()
@@ -592,7 +590,7 @@ class NotebookClient(LoggingConfigurable):
         """
         # by default, cleanup the kernel client if we own the kernel manager
         # and keep it alive if we don't
-        cleanup_kc = kwargs.pop('cleanup_kc', self.owns_km)
+        cleanup_kc = kwargs.pop("cleanup_kc", self.owns_km)
 
         # Can't use run_until_complete on an asynccontextmanager function :(
         if self.km is None:
@@ -624,7 +622,7 @@ class NotebookClient(LoggingConfigurable):
         """
         # by default, cleanup the kernel client if we own the kernel manager
         # and keep it alive if we don't
-        cleanup_kc = kwargs.pop('cleanup_kc', self.owns_km)
+        cleanup_kc = kwargs.pop("cleanup_kc", self.owns_km)
         if self.km is None:
             self.km = self.create_kernel_manager()
 
@@ -698,12 +696,12 @@ class NotebookClient(LoggingConfigurable):
             msg_id = await ensure_async(self.kc.kernel_info())
             info_msg = await self.async_wait_for_reply(msg_id)
             if info_msg is not None:
-                if 'language_info' in info_msg['content']:
-                    self.nb.metadata['language_info'] = info_msg['content']['language_info']
+                if "language_info" in info_msg["content"]:
+                    self.nb.metadata["language_info"] = info_msg["content"]["language_info"]
                 else:
                     raise RuntimeError(
                         'Kernel info received message content has no "language_info" key. '
-                        'Content is:\n' + str(info_msg['content'])
+                        "Content is:\n" + str(info_msg["content"])
                     )
             for index, cell in enumerate(self.nb.cells):
                 # Ignore `'execution_count' in content` as it's always 1
@@ -721,22 +719,22 @@ class NotebookClient(LoggingConfigurable):
         """Set with widget metadata."""
         if self.widget_state:
             self.nb.metadata.widgets = {
-                'application/vnd.jupyter.widget-state+json': {
-                    'state': {
+                "application/vnd.jupyter.widget-state+json": {
+                    "state": {
                         model_id: self._serialize_widget_state(state)
                         for model_id, state in self.widget_state.items()
-                        if '_model_name' in state
+                        if "_model_name" in state
                     },
-                    'version_major': 2,
-                    'version_minor': 0,
+                    "version_major": 2,
+                    "version_minor": 0,
                 }
             }
             for key, widget in self.nb.metadata.widgets[
-                'application/vnd.jupyter.widget-state+json'
-            ]['state'].items():
+                "application/vnd.jupyter.widget-state+json"
+            ]["state"].items():
                 buffers = self.widget_buffers.get(key)
                 if buffers:
-                    widget['buffers'] = list(buffers.values())
+                    widget["buffers"] = list(buffers.values())
 
     def _update_display_id(self, display_id: str, msg: dict[str, t.Any]) -> None:
         """Update outputs with a given display_id"""
@@ -744,8 +742,8 @@ class NotebookClient(LoggingConfigurable):
             self.log.debug("display id %r not in %s", display_id, self._display_id_map)
             return
 
-        if msg['header']['msg_type'] == 'update_display_data':
-            msg['header']['msg_type'] = 'display_data'
+        if msg["header"]["msg_type"] == "update_display_data":
+            msg["header"]["msg_type"] = "display_data"
 
         try:
             out = output_from_msg(msg)
@@ -754,11 +752,11 @@ class NotebookClient(LoggingConfigurable):
             return
 
         for cell_idx, output_indices in self._display_id_map[display_id].items():
-            cell = self.nb['cells'][cell_idx]
-            outputs = cell['outputs']
+            cell = self.nb["cells"][cell_idx]
+            outputs = cell["outputs"]
             for output_idx in output_indices:
-                outputs[output_idx]['data'] = out['data']
-                outputs[output_idx]['metadata'] = out['metadata']
+                outputs[output_idx]["data"] = out["data"]
+                outputs[output_idx]["metadata"] = out["metadata"]
 
     async def _async_poll_for_reply(
         self,
@@ -779,12 +777,12 @@ class NotebookClient(LoggingConfigurable):
             try:
                 if error_on_timeout_execute_reply:
                     msg = error_on_timeout_execute_reply  # type:ignore[unreachable]
-                    msg['parent_header'] = {'msg_id': msg_id}
+                    msg["parent_header"] = {"msg_id": msg_id}
                 else:
                     msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
-                if msg['parent_header'].get('msg_id') == msg_id:
+                if msg["parent_header"].get("msg_id") == msg_id:
                     if self.record_timing:
-                        cell['metadata']['execution']['shell.execute_reply'] = timestamp(msg)
+                        cell["metadata"]["execution"]["shell.execute_reply"] = timestamp(msg)
                     try:
                         await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
                     except (asyncio.TimeoutError, Empty):
@@ -813,7 +811,7 @@ class NotebookClient(LoggingConfigurable):
         assert self.kc is not None
         while True:
             msg = await ensure_async(self.kc.iopub_channel.get_msg(timeout=None))
-            if msg['parent_header'].get('msg_id') == parent_msg_id:
+            if msg["parent_header"].get("msg_id") == parent_msg_id:
                 try:
                     # Will raise CellExecutionComplete when completed
                     self.process_message(msg, cell, cell_index)
@@ -885,7 +883,7 @@ class NotebookClient(LoggingConfigurable):
                     await self._async_handle_timeout(timeout, cell)
                     break
             else:
-                if msg['parent_header'].get('msg_id') == msg_id:
+                if msg["parent_header"].get("msg_id") == msg_id:
                     return msg
         return None
 
@@ -904,13 +902,13 @@ class NotebookClient(LoggingConfigurable):
         if exec_reply is None:
             return None
 
-        exec_reply_content = exec_reply['content']
-        if exec_reply_content['status'] != 'error':
+        exec_reply_content = exec_reply["content"]
+        if exec_reply_content["status"] != "error":
             return None
 
         cell_allows_errors = (not self.force_raise_errors) and (
             self.allow_errors
-            or exec_reply_content.get('ename') in self.allow_error_names
+            or exec_reply_content.get("ename") in self.allow_error_names
             or "raises-exception" in cell.metadata.get("tags", [])
         )
         await run_hook(
@@ -963,7 +961,7 @@ class NotebookClient(LoggingConfigurable):
 
         await run_hook(self.on_cell_start, cell=cell, cell_index=cell_index)
 
-        if cell.cell_type != 'code' or not cell.source.strip():
+        if cell.cell_type != "code" or not cell.source.strip():
             self.log.debug("Skipping non-executing cell %s", cell_index)
             return cell
 
@@ -972,7 +970,7 @@ class NotebookClient(LoggingConfigurable):
             return cell
 
         if self.record_timing:  # clear execution metadata prior to execution
-            cell['metadata']['execution'] = {}
+            cell["metadata"]["execution"] = {}
 
         self.log.debug("Executing cell:\n%s", cell.source)
 
@@ -1019,7 +1017,7 @@ class NotebookClient(LoggingConfigurable):
                 raise
 
         if execution_count:
-            cell['execution_count'] = execution_count
+            cell["execution_count"] = execution_count
         await run_hook(
             self.on_cell_executed, cell=cell, cell_index=cell_index, execute_reply=exec_reply
         )
@@ -1063,7 +1061,7 @@ class NotebookClient(LoggingConfigurable):
 
         await self._check_raise_for_error(cell, cell_index, exec_reply)
 
-        self.nb['cells'][cell_index] = cell
+        self.nb["cells"][cell_index] = cell
         return cell
 
     execute_cell = run_sync(async_execute_cell)
@@ -1097,37 +1095,37 @@ class NotebookClient(LoggingConfigurable):
           Once a message arrives which indicates computation completeness.
 
         """
-        msg_type = msg['msg_type']
+        msg_type = msg["msg_type"]
         self.log.debug("msg_type: %s", msg_type)
-        content = msg['content']
+        content = msg["content"]
         self.log.debug("content: %s", content)
 
-        display_id = content.get('transient', {}).get('display_id', None)
-        if display_id and msg_type in {'execute_result', 'display_data', 'update_display_data'}:
+        display_id = content.get("transient", {}).get("display_id", None)
+        if display_id and msg_type in {"execute_result", "display_data", "update_display_data"}:
             self._update_display_id(display_id, msg)
 
         # set the prompt number for the input and the output
-        if 'execution_count' in content:
-            cell['execution_count'] = content['execution_count']
+        if "execution_count" in content:
+            cell["execution_count"] = content["execution_count"]
 
         if self.record_timing:
-            if msg_type == 'status':
-                if content['execution_state'] == 'idle':
-                    cell['metadata']['execution']['iopub.status.idle'] = timestamp(msg)
-                elif content['execution_state'] == 'busy':
-                    cell['metadata']['execution']['iopub.status.busy'] = timestamp(msg)
-            elif msg_type == 'execute_input':
-                cell['metadata']['execution']['iopub.execute_input'] = timestamp(msg)
+            if msg_type == "status":
+                if content["execution_state"] == "idle":
+                    cell["metadata"]["execution"]["iopub.status.idle"] = timestamp(msg)
+                elif content["execution_state"] == "busy":
+                    cell["metadata"]["execution"]["iopub.status.busy"] = timestamp(msg)
+            elif msg_type == "execute_input":
+                cell["metadata"]["execution"]["iopub.execute_input"] = timestamp(msg)
 
-        if msg_type == 'status':
-            if content['execution_state'] == 'idle':
+        if msg_type == "status":
+            if content["execution_state"] == "idle":
                 raise CellExecutionComplete()
-        elif msg_type == 'clear_output':
+        elif msg_type == "clear_output":
             self.clear_output(cell.outputs, msg, cell_index)
-        elif msg_type.startswith('comm'):
+        elif msg_type.startswith("comm"):
             self.handle_comm_msg(cell.outputs, msg, cell_index)
         # Check for remaining messages we don't process
-        elif msg_type not in ['execute_input', 'update_display_data']:
+        elif msg_type not in ["execute_input", "update_display_data"]:
             # Assign output as our processed "result"
             return self.output(cell.outputs, msg, display_id, cell_index)
         return None
@@ -1137,10 +1135,10 @@ class NotebookClient(LoggingConfigurable):
     ) -> NotebookNode | None:
         """Handle output."""
 
-        msg_type = msg['msg_type']
+        msg_type = msg["msg_type"]
         out: NotebookNode | None = None
 
-        parent_msg_id = msg['parent_header'].get('msg_id')
+        parent_msg_id = msg["parent_header"].get("msg_id")
         if self.output_hook_stack[parent_msg_id]:
             # if we have a hook registered, it will override our
             # default output behaviour (e.g. OutputWidget)
@@ -1155,7 +1153,7 @@ class NotebookClient(LoggingConfigurable):
             return None
 
         if self.clear_before_next_output:
-            self.log.debug('Executing delayed clear_output')
+            self.log.debug("Executing delayed clear_output")
             outs[:] = []
             self.clear_display_id_mapping(cell_index)
             self.clear_before_next_output = False
@@ -1176,9 +1174,9 @@ class NotebookClient(LoggingConfigurable):
         self, outs: list[NotebookNode], msg: dict[str, t.Any], cell_index: int
     ) -> None:
         """Clear output."""
-        content = msg['content']
+        content = msg["content"]
 
-        parent_msg_id = msg['parent_header'].get('msg_id')
+        parent_msg_id = msg["parent_header"].get("msg_id")
         if self.output_hook_stack[parent_msg_id]:
             # if we have a hook registered, it will override our
             # default clear_output behaviour (e.g. OutputWidget)
@@ -1186,11 +1184,11 @@ class NotebookClient(LoggingConfigurable):
             hook.clear_output(outs, msg, cell_index)
             return
 
-        if content.get('wait'):
-            self.log.debug('Wait to clear output')
+        if content.get("wait"):
+            self.log.debug("Wait to clear output")
             self.clear_before_next_output = True
         else:
-            self.log.debug('Immediate clear output')
+            self.log.debug("Immediate clear output")
             outs[:] = []
             self.clear_display_id_mapping(cell_index)
 
@@ -1204,12 +1202,12 @@ class NotebookClient(LoggingConfigurable):
         self, outs: list[NotebookNode], msg: dict[str, t.Any], cell_index: int
     ) -> None:
         """Handle a comm message."""
-        content = msg['content']
-        data = content['data']
-        if self.store_widget_state and 'state' in data:  # ignore custom msg'es
-            self.widget_state.setdefault(content['comm_id'], {}).update(data['state'])
-            if 'buffer_paths' in data and data['buffer_paths']:
-                comm_id = content['comm_id']
+        content = msg["content"]
+        data = content["data"]
+        if self.store_widget_state and "state" in data:  # ignore custom msg'es
+            self.widget_state.setdefault(content["comm_id"], {}).update(data["state"])
+            if "buffer_paths" in data and data["buffer_paths"]:
+                comm_id = content["comm_id"]
                 if comm_id not in self.widget_buffers:
                     self.widget_buffers[comm_id] = {}
                 # for each comm, the path uniquely identifies a buffer
@@ -1219,41 +1217,41 @@ class NotebookClient(LoggingConfigurable):
                 self.widget_buffers[comm_id].update(new_buffers)
         # There are cases where we need to mimic a frontend, to get similar behaviour as
         # when using the Output widget from Jupyter lab/notebook
-        if msg['msg_type'] == 'comm_open':
-            target = msg['content'].get('target_name')
+        if msg["msg_type"] == "comm_open":
+            target = msg["content"].get("target_name")
             handler = self.comm_open_handlers.get(target)
             if handler:
-                comm_id = msg['content']['comm_id']
+                comm_id = msg["content"]["comm_id"]
                 comm_object = handler(msg)
                 if comm_object:
                     self.comm_objects[comm_id] = comm_object
             else:
-                self.log.warning(f'No handler found for comm target {target!r}')
-        elif msg['msg_type'] == 'comm_msg':
-            content = msg['content']
-            comm_id = msg['content']['comm_id']
+                self.log.warning(f"No handler found for comm target {target!r}")
+        elif msg["msg_type"] == "comm_msg":
+            content = msg["content"]
+            comm_id = msg["content"]["comm_id"]
             if comm_id in self.comm_objects:
                 self.comm_objects[comm_id].handle_msg(msg)
 
     def _serialize_widget_state(self, state: dict[str, t.Any]) -> dict[str, t.Any]:
         """Serialize a widget state, following format in @jupyter-widgets/schema."""
         return {
-            'model_name': state.get('_model_name'),
-            'model_module': state.get('_model_module'),
-            'model_module_version': state.get('_model_module_version'),
-            'state': state,
+            "model_name": state.get("_model_name"),
+            "model_module": state.get("_model_module"),
+            "model_module_version": state.get("_model_module_version"),
+            "state": state,
         }
 
     def _get_buffer_data(self, msg: dict[str, t.Any]) -> list[dict[str, str]]:
         encoded_buffers = []
-        paths = msg['content']['data']['buffer_paths']
-        buffers = msg['buffers']
+        paths = msg["content"]["data"]["buffer_paths"]
+        buffers = msg["buffers"]
         for path, buffer in zip(paths, buffers):
             encoded_buffers.append(
                 {
-                    'data': base64.b64encode(buffer).decode('utf-8'),
-                    'encoding': 'base64',
-                    'path': path,
+                    "data": base64.b64encode(buffer).decode("utf-8"),
+                    "encoding": "base64",
+                    "path": path,
                 }
             )
         return encoded_buffers
@@ -1276,13 +1274,13 @@ class NotebookClient(LoggingConfigurable):
 
     def on_comm_open_jupyter_widget(self, msg: dict[str, t.Any]) -> t.Any | None:
         """Handle a jupyter widget comm open."""
-        content = msg['content']
-        data = content['data']
-        state = data['state']
-        comm_id = msg['content']['comm_id']
-        module = self.widget_registry.get(state['_model_module'])
+        content = msg["content"]
+        data = content["data"]
+        state = data["state"]
+        comm_id = msg["content"]["comm_id"]
+        module = self.widget_registry.get(state["_model_module"])
         if module:
-            widget_class = module.get(state['_model_name'])
+            widget_class = module.get(state["_model_name"])
             if widget_class:
                 return widget_class(comm_id, state, self.kc, self)
         return None
@@ -1312,5 +1310,5 @@ def execute(
     """
     resources = {}
     if cwd is not None:
-        resources['metadata'] = {'path': cwd}
+        resources["metadata"] = {"path": cwd}
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()

@@ -19,16 +19,16 @@ from .client import NotebookClient
 # mypy: disable-error-code="no-untyped-call"
 
 nbclient_aliases: dict[str, str] = {
-    'timeout': 'NbClientApp.timeout',
-    'startup_timeout': 'NbClientApp.startup_timeout',
-    'kernel_name': 'NbClientApp.kernel_name',
+    "timeout": "NbClientApp.timeout",
+    "startup_timeout": "NbClientApp.startup_timeout",
+    "kernel_name": "NbClientApp.kernel_name",
 }
 
 nbclient_flags: dict[str, typing.Any] = {
-    'allow-errors': (
+    "allow-errors": (
         {
-            'NbClientApp': {
-                'allow_errors': True,
+            "NbClientApp": {
+                "allow_errors": True,
             },
         },
         "Errors are ignored and execution is continued until the end of the notebook.",
@@ -42,7 +42,7 @@ class NbClientApp(JupyterApp):
     """
 
     version = Unicode(__version__)
-    name = 'jupyter-execute'
+    name = "jupyter-execute"
     aliases = nbclient_aliases
     flags = nbclient_flags
 
@@ -82,7 +82,7 @@ class NbClientApp(JupyterApp):
         ),
     ).tag(config=True)
     skip_cells_with_tag = Unicode(
-        'skip-execution',
+        "skip-execution",
         help=dedent(
             """
             Name of the cell tag to use to denote a cell that should be skipped.
@@ -90,7 +90,7 @@ class NbClientApp(JupyterApp):
         ),
     ).tag(config=True)
     kernel_name = Unicode(
-        '',
+        "",
         help=dedent(
             """
             Name of kernel to use to execute the cells.
@@ -99,7 +99,7 @@ class NbClientApp(JupyterApp):
         ),
     ).tag(config=True)
 
-    @default('log_level')
+    @default("log_level")
     def _log_level_default(self) -> int:
         return logging.INFO
 
@@ -156,7 +156,7 @@ class NbClientApp(JupyterApp):
             skip_cells_with_tag=self.skip_cells_with_tag,
             allow_errors=self.allow_errors,
             kernel_name=self.kernel_name,
-            resources={'metadata': {'path': path}},
+            resources={"metadata": {"path": path}},
         )
 
         # Run it
