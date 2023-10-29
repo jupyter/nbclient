@@ -22,7 +22,7 @@ import sys
 
 import nbclient
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(".."))
 
 # -- General configuration ------------------------------------------------
 
@@ -34,12 +34,12 @@ sys.path.insert(0, os.path.abspath('..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.napoleon',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
     # 'autodoc_traits',  # TODO
-    'myst_parser',
+    "myst_parser",
 ]
 
 try:
@@ -49,23 +49,23 @@ try:
 except ImportError:
     pass
 
-autodoc_mock_imports = ['pytest', 'nbconvert', 'testpath']
+autodoc_mock_imports = ["pytest", "nbconvert", "testpath"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'nbclient'
-copyright = '2020, Project Jupyter'  # noqa
-author = 'Project Jupyter'
+project = "nbclient"
+copyright = "2020, Project Jupyter"  # noqa
+author = "Project Jupyter"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -73,7 +73,7 @@ author = 'Project Jupyter'
 #
 
 # The short X.Y version.
-version = '.'.join(nbclient.__version__.split('.')[0:2])
+version = ".".join(nbclient.__version__.split(".")[0:2])
 
 # The full version, including alpha/beta/rc tags.
 release = nbclient.__version__
@@ -88,22 +88,22 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'UPDATE.md']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "UPDATE.md"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
-default_role = 'any'
+default_role = "any"
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_book_theme'
+html_theme = "sphinx_book_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -115,12 +115,13 @@ html_theme_options = {
     "repository_url": "https://github.com/jupyter/nbclient",
     "repository_branch": "master",
     "use_edit_page_button": True,
+    "navigation_with_keys": False,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -131,7 +132,7 @@ html_title = "nbclient"
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'nclientdoc'
+htmlhelp_basename = "nclientdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -154,14 +155,14 @@ htmlhelp_basename = 'nclientdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [(master_doc, 'nbclient.tex', 'nbclient Documentation', 'jupyter team', 'manual')]
+latex_documents = [(master_doc, "nbclient.tex", "nbclient Documentation", "jupyter team", "manual")]
 
 
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'nbclient', 'nbclient Documentation', [author], 1)]
+man_pages = [(master_doc, "nbclient", "nbclient Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -172,23 +173,23 @@ man_pages = [(master_doc, 'nbclient', 'nbclient Documentation', [author], 1)]
 texinfo_documents = [
     (
         master_doc,
-        'nbclient',
-        'nbclient Documentation',
+        "nbclient",
+        "nbclient Documentation",
         author,
-        'nbclient',
-        'One line description of project.',
-        'Miscellaneous',
+        "nbclient",
+        "One line description of project.",
+        "Miscellaneous",
     )
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/', None)}
+intersphinx_mapping = {"python": ("https://docs.python.org/", None)}
 
 
 def setup(app):
     here = os.path.abspath(os.path.dirname(__file__))
-    dest = os.path.join(here, 'changelog.md')
-    shutil.copy(os.path.join(here, '..', 'CHANGELOG.md'), dest)
+    dest = os.path.join(here, "changelog.md")
+    shutil.copy(os.path.join(here, "..", "CHANGELOG.md"), dest)
 
     autogen_config = os.path.join(here, "autogen_config.py")
     prev_dir = os.getcwd()

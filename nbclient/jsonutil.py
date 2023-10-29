@@ -34,17 +34,17 @@ datetime.strptime("1", "%d")
 
 
 # constants for identifying png/jpeg data
-PNG = b'\x89PNG\r\n\x1a\n'
+PNG = b"\x89PNG\r\n\x1a\n"
 # front of PNG base64-encoded
-PNG64 = b'iVBORw0KG'
-JPEG = b'\xff\xd8'
+PNG64 = b"iVBORw0KG"
+JPEG = b"\xff\xd8"
 # front of JPEG base64-encoded
-JPEG64 = b'/9'
+JPEG64 = b"/9"
 # constants for identifying gif data
-GIF_64 = b'R0lGODdh'
-GIF89_64 = b'R0lGODlh'
+GIF_64 = b"R0lGODdh"
+GIF89_64 = b"R0lGODlh"
 # front of PDF base64-encoded
-PDF64 = b'JVBER'
+PDF64 = b"JVBER"
 
 
 def encode_images(format_dict: dict[str, str]) -> dict[str, str]:
@@ -119,10 +119,10 @@ def json_clean(obj: Any) -> Any:
         return obj
 
     if isinstance(obj, bytes):
-        return b2a_base64(obj).decode('ascii')
+        return b2a_base64(obj).decode("ascii")
 
     if isinstance(obj, container_to_list) or (
-        hasattr(obj, '__iter__') and hasattr(obj, '__next__')
+        hasattr(obj, "__iter__") and hasattr(obj, "__next__")
     ):
         obj = list(obj)
 
@@ -137,8 +137,8 @@ def json_clean(obj: Any) -> Any:
         nkeys_collapsed = len(set(map(str, obj)))
         if nkeys != nkeys_collapsed:
             raise ValueError(
-                'dict cannot be safely converted to JSON: '
-                'key collision would lead to dropped values'
+                "dict cannot be safely converted to JSON: "
+                "key collision would lead to dropped values"
             )
         # If all OK, proceed by making the new dict that will be json-safe
         out = {}

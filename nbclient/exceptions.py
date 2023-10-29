@@ -101,15 +101,15 @@ class CellExecutionError(CellControlSignal):
             stream_outputs.append("------------------")
         stream_output: str = "\n".join(stream_outputs)
 
-        tb = '\n'.join(msg.get('traceback', []) or [])
+        tb = "\n".join(msg.get("traceback", []) or [])
         return cls(
             exec_err_msg.format(
                 cell=cell,
                 stream_output=stream_output,
                 traceback=tb,
             ),
-            ename=msg.get('ename', '<Error>'),
-            evalue=msg.get('evalue', ''),
+            ename=msg.get("ename", "<Error>"),
+            evalue=msg.get("evalue", ""),
         )
 
 

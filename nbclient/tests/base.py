@@ -11,23 +11,23 @@ class NBClientTestsBase(unittest.TestCase):
 
         outputs = [
             nbformat.new_output("stream", name="stdout", text="a"),
-            nbformat.new_output("display_data", data={'text/plain': 'b'}),
+            nbformat.new_output("display_data", data={"text/plain": "b"}),
             nbformat.new_output("stream", name="stdout", text="c"),
             nbformat.new_output("stream", name="stdout", text="d"),
             nbformat.new_output("stream", name="stderr", text="e"),
             nbformat.new_output("stream", name="stderr", text="f"),
-            nbformat.new_output("display_data", data={'image/png': 'Zw=='}),  # g
-            nbformat.new_output("display_data", data={'application/pdf': 'aA=='}),  # h
+            nbformat.new_output("display_data", data={"image/png": "Zw=="}),  # g
+            nbformat.new_output("display_data", data={"application/pdf": "aA=="}),  # h
         ]
         if with_json_outputs:
             outputs.extend(
                 [
-                    nbformat.new_output("display_data", data={'application/json': [1, 2, 3]}),  # j
+                    nbformat.new_output("display_data", data={"application/json": [1, 2, 3]}),  # j
                     nbformat.new_output(
-                        "display_data", data={'application/json': {'a': 1, 'c': {'b': 2}}}
+                        "display_data", data={"application/json": {"a": 1, "c": {"b": 2}}}
                     ),  # k
-                    nbformat.new_output("display_data", data={'application/json': 'abc'}),  # l
-                    nbformat.new_output("display_data", data={'application/json': 15.03}),  # m
+                    nbformat.new_output("display_data", data={"application/json": "abc"}),  # l
+                    nbformat.new_output("display_data", data={"application/json": 15.03}),  # m
                 ]
             )
 
@@ -40,7 +40,7 @@ class NBClientTestsBase(unittest.TestCase):
 
     def build_resources(self):
         """Build an empty resources dictionary."""
-        return {'metadata': {}}
+        return {"metadata": {}}
 
     @classmethod
     def merge_dicts(cls, *dict_args):
