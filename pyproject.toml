@@ -205,7 +205,7 @@ ignore-property-decorators=true
 ignore-nested-functions=true
 ignore-nested-classes=true
 fail-under=100
-exclude = ["nbclient/tests", "docs"]
+exclude = ["tests", "docs"]
 
 [tool.repo-review]
 ignore = ["PY005", "PY007", "GH102"]
