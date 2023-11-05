@@ -494,9 +494,9 @@ class NotebookClient(LoggingConfigurable):
                 self.kernel_name = kn
 
         if not self.kernel_name:
-            self.km = self.kernel_manager_class(config=self.config)  # type:ignore[operator]
+            self.km = self.kernel_manager_class(config=self.config)
         else:
-            self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)  # type:ignore[operator]
+            self.km = self.kernel_manager_class(kernel_name=self.kernel_name, config=self.config)
         assert self.km is not None
         return self.km
 

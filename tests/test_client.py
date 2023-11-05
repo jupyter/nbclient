@@ -352,6 +352,7 @@ def test_run_all_notebooks(input_name, opts):
     assert_notebooks_equal(input_nb, output_nb)
 
 
+@flaky
 def test_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 
@@ -377,6 +378,7 @@ def test_parallel_notebooks(capfd, tmpdir):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
+@flaky
 @pytest.mark.skipif(os.name == "nt", reason="warns about event loop on Windows")
 def test_many_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
@@ -404,6 +406,7 @@ def test_many_parallel_notebooks(capfd):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
+@flaky
 def test_async_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 

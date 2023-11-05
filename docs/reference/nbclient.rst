@@ -4,10 +4,6 @@ nbclient package
 Subpackages
 -----------
 
-.. toctree::
-
-   nbclient.tests
-
 Submodules
 ----------
 
