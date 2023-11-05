@@ -47,7 +47,7 @@ class NbClientApp(JupyterApp):
     flags = nbclient_flags
 
     description = "An application used to execute notebook files (*.ipynb)"
-    notebooks = List([], help="Path of notebooks to convert").tag(config=True)
+    notebooks = List(Unicode(), help="Path of notebooks to convert").tag(config=True)
     timeout = Integer(
         None,
         allow_none=True,
