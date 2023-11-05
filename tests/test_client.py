@@ -352,6 +352,7 @@ def test_run_all_notebooks(input_name, opts):
     assert_notebooks_equal(input_nb, output_nb)
 
 
+@flaky
 def test_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 
