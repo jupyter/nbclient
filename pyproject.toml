@@ -84,6 +84,7 @@ path = "nbclient/_version.py"
 [tool.hatch.build.targets.sdist]
 include = [
     "/nbclient",
+    "/tests"
 ]
 
 [tool.hatch.envs.docs]
