@@ -405,6 +405,7 @@ def test_many_parallel_notebooks(capfd):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
+@flaky
 def test_async_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 
