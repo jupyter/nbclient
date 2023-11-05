@@ -136,6 +136,7 @@ filterwarnings= [
   "module:zmq.eventloop.ioloop is deprecated:DeprecationWarning",
   "module:subprocess .* is still running:ResourceWarning",
   "module:Unclosed context <zmq:ResourceWarning",
+  "module:datetime.datetime.utc:DeprecationWarning",
 ]
 asyncio_mode = "auto"
 

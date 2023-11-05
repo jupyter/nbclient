@@ -64,7 +64,6 @@ this documentation section will help you.
    :caption: Table of Contents
 
    reference/index.rst
-   reference/nbclient.tests.rst
 
 Indices and tables
 ------------------
