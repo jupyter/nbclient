@@ -2,6 +2,31 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.9.0
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.8.0...31cf1e751935628b2ce8b88b7c00e5b53e9dcfd6))
+
+### Maintenance and upkeep improvements
+
+- Use jupyter releaser [#301](https://github.com/jupyter/nbclient/pull/301) ([@blink1073](https://github.com/blink1073))
+- Clean up lint and move tests out of source [#299](https://github.com/jupyter/nbclient/pull/299) ([@blink1073](https://github.com/blink1073))
+- Adopt ruff format [#298](https://github.com/jupyter/nbclient/pull/298) ([@blink1073](https://github.com/blink1073))
+- Update typings for mypy 1.6 [#297](https://github.com/jupyter/nbclient/pull/297) ([@blink1073](https://github.com/blink1073))
+- Adopt sp-repo-review [#295](https://github.com/jupyter/nbclient/pull/295) ([@blink1073](https://github.com/blink1073))
+- Fix lint error [#289](https://github.com/jupyter/nbclient/pull/289) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+- Bump actions/checkout from 3 to 4 [#293](https://github.com/jupyter/nbclient/pull/293) ([@dependabot](https://github.com/dependabot))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2023-05-22&to=2023-11-07&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2023-05-22..2023-11-07&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adependabot+updated%3A2023-05-22..2023-11-07&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2023-05-22..2023-11-07&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.8.0
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.7.4...cb7b4f7f409bbd06d55cc339afdcdea79da0e199))
@@ -19,8 +44,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2023-04-25&to=2023-05-22&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2023-04-25..2023-05-22&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adependabot+updated%3A2023-04-25..2023-05-22&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2023-04-25..2023-05-22&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.7.4
 
