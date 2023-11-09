@@ -642,7 +642,8 @@ class TestExecute(NBClientTestsBase):
 The message was: Cell execution timed out.
 Here is a preview of the cell contents:
 -------------------
-while True: continue
+while True: 
+    continue
 -------------------
 """,
         )
