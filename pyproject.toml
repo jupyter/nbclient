@@ -199,6 +199,7 @@ ignore = [
 # S101 Use of `assert` detected
 "tests/*" = ["S101"]
 "nbclient/client.py" = ["S101"]
+"*.ipynb" = ["B", "E402", "T201", "F821", "A001", "E722", "S110", "RUF001"]
 
 [tool.interrogate]
 ignore-init-module=true
