@@ -78,8 +78,10 @@ repos:
       - id: ruff
         types_or: [python, jupyter]
         args: ["--fix", "--show-fixes"]
+        exclude: "^tests/files/.*.ipynb"
       - id: ruff-format
         types_or: [python, jupyter]
+        exclude: "^tests/files/.*.ipynb"
 
   - repo: https://github.com/scientific-python/cookie
     rev: "2023.10.27"
