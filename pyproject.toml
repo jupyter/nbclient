@@ -166,7 +166,6 @@ source = ["nbclient"]
 files = "nbclient"
 python_version = "3.8"
 strict = true
-show_error_codes = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
