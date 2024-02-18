@@ -1206,7 +1206,7 @@ class NotebookClient(LoggingConfigurable):
         data = content["data"]
         if self.store_widget_state and "state" in data:  # ignore custom msg'es
             self.widget_state.setdefault(content["comm_id"], {}).update(data["state"])
-            if "buffer_paths" in data and data["buffer_paths"]:
+            if data.get("buffer_paths"):
                 comm_id = content["comm_id"]
                 if comm_id not in self.widget_buffers:
                     self.widget_buffers[comm_id] = {}
