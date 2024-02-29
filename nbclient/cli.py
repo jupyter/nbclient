@@ -162,5 +162,8 @@ class NbClientApp(JupyterApp):
         # Run it
         client.execute()
 
+        # Save it
+        nbformat.write(nb, input_path)
+
 
 main = NbClientApp.launch_instance
