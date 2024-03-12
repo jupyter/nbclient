@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import logging
-import pathlib
 import sys
 import typing
+from pathlib import Path
 from textwrap import dedent
 
 import nbformat
@@ -22,6 +22,7 @@ nbclient_aliases: dict[str, str] = {
     "timeout": "NbClientApp.timeout",
     "startup_timeout": "NbClientApp.startup_timeout",
     "kernel_name": "NbClientApp.kernel_name",
+    "output": "NbClientApp.output_base",
 }
 
 nbclient_flags: dict[str, typing.Any] = {
@@ -32,6 +33,14 @@ nbclient_flags: dict[str, typing.Any] = {
             },
         },
         "Errors are ignored and execution is continued until the end of the notebook.",
+    ),
+    "inplace": (
+        {
+            "NbClientApp": {
+                "inplace": True,
+            },
+        },
+        "Overwrite input notebook with executed results.",
     ),
 }
 
@@ -98,6 +107,29 @@ class NbClientApp(JupyterApp):
             """
         ),
     ).tag(config=True)
+    inplace = Bool(
+        False,
+        help=dedent(
+            """
+            Default is execute notebook without writing the newly executed notebook.
+            If this flag is provided, the newly generated notebook will
+            overwrite the input notebook.
+            """
+        ),
+    ).tag(config=True)
+    output_base = Unicode(
+        None,
+        allow_none=True,
+        help=dedent(
+            """
+            Write executed notebook to this file base name.
+            Supports pattern replacements ``'{notebook_name}'``,
+            the name of the input notebook file without extension.
+            Note that output is always relative to the parent directory of the
+            input notebook.
+            """
+        ),
+    ).tag(config=True)
 
     @default("log_level")
     def _log_level_default(self) -> int:
@@ -114,6 +146,15 @@ class NbClientApp(JupyterApp):
         # If there are none, throw an error
         if not self.notebooks:
             sys.exit(-1)
+
+        # If output, must have single notebook
+        if len(self.notebooks) > 1 and self.output_base is not None:
+            if "{notebook_name}" not in self.output_base:
+                msg = (
+                    "If passing multiple notebooks with `--output=output` option, "
+                    "output string must contain {notebook_name}"
+                )
+                raise ValueError(msg)
 
         # Loop and run them one by one
         for path in self.notebooks:
@@ -136,16 +177,27 @@ class NbClientApp(JupyterApp):
         # Log it
         self.log.info(f"Executing {notebook_path}")
 
-        name = notebook_path.replace(".ipynb", "")
+        input_path = Path(notebook_path).with_suffix(".ipynb")
 
         # Get its parent directory so we can add it to the $PATH
-        path = pathlib.Path(notebook_path).parent.absolute()
+        path = input_path.parent.absolute()
 
-        # Set the input file paths
-        input_path = f"{name}.ipynb"
+        # Optional output of executed notebook
+        if self.inplace:
+            output_path = input_path
+        elif self.output_base:
+            output_path = input_path.parent.joinpath(
+                self.output_base.format(notebook_name=input_path.with_suffix("").name)
+            ).with_suffix(".ipynb")
+        else:
+            output_path = None
+
+        if output_path and not output_path.parent.is_dir():
+            msg = f"Cannot write to directory={output_path.parent} that does not exist"
+            raise ValueError(msg)
 
         # Open up the notebook we're going to run
-        with open(input_path) as f:
+        with input_path.open() as f:
             nb = nbformat.read(f, as_version=4)
 
         # Configure nbclient to run the notebook
@@ -161,6 +213,11 @@ class NbClientApp(JupyterApp):
 
         # Run it
         client.execute()
+
+        # Save it
+        if output_path:
+            self.log.info(f"Save executed results to {output_path}")
+            nbformat.write(nb, output_path)
 
 
 main = NbClientApp.launch_instance
