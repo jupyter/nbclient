@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import logging
-import pathlib
 import sys
 import typing
+from pathlib import Path
 from textwrap import dedent
 
 import nbformat
@@ -177,7 +177,7 @@ class NbClientApp(JupyterApp):
         # Log it
         self.log.info(f"Executing {notebook_path}")
 
-        input_path = pathlib.Path(notebook_path).with_suffix(".ipynb")
+        input_path = Path(notebook_path).with_suffix(".ipynb")
 
         # Get its parent directory so we can add it to the $PATH
         path = input_path.parent.absolute()
