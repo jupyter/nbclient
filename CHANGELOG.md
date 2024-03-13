@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.10.0
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.9.1...3286ae09f41d04fd3354519582750775abc034e5))
+
+### Enhancements made
+
+- Optionally write out executed notebook in jupyter-execute [#307](https://github.com/jupyter/nbclient/pull/307) ([@wpk-nist-gov](https://github.com/wpk-nist-gov))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-03-12&to=2024-03-12&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2024-03-12..2024-03-12&type=Issues) | [@wpk-nist-gov](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Awpk-nist-gov+updated%3A2024-03-12..2024-03-12&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.9.1
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.9.0...6f6aa8cb1a853c81975fcc48fa5cfcc3d37bcddd))
@@ -24,8 +40,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2023-11-07&to=2024-03-12&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2023-11-07..2024-03-12&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adependabot+updated%3A2023-11-07..2024-03-12&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Apre-commit-ci+updated%3A2023-11-07..2024-03-12&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.0
 
