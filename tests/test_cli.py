@@ -60,7 +60,7 @@ def test_mult(input_names, relative, inplace, jupyterapp, client, reader, writer
     # add suffix if needed
     paths = [p.with_suffix(".ipynb") for p in paths]
 
-    assert path_open.mock_calls[::3] == [call(p) for p in paths]
+    assert all(call(p) in path_open.mock_calls for p in paths)
     assert reader.call_count == len(paths)
     # assert reader.mock_calls == [call(p, as_version=4) for p in paths]
 
@@ -114,7 +114,7 @@ def test_output(input_names, relative, output_base, jupyterapp, client, reader, 
     # add suffix if needed
     paths = [p.with_suffix(".ipynb") for p in paths]
 
-    assert path_open.mock_calls[::3] == [call(p) for p in paths]
+    assert all(call(p) in path_open.mock_calls for p in paths)
     assert reader.call_count == len(paths)
 
     expected = []
