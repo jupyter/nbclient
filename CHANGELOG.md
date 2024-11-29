@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.10.1
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.0...e6df5842d471047afcb45595d95a39be549896e4))
+
+### Maintenance and upkeep improvements
+
+- Run docs on ubuntu [#314](https://github.com/jupyter/nbclient/pull/314) ([@blink1073](https://github.com/blink1073))
+
+### Other merged PRs
+
+- avoid deprecation warning for py313 [#320](https://github.com/jupyter/nbclient/pull/320) ([@lucascolley](https://github.com/lucascolley))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-03-13&to=2024-11-29&type=c))
+
+[@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2024-03-13..2024-11-29&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2024-03-13..2024-11-29&type=Issues) | [@lucascolley](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Alucascolley+updated%3A2024-03-13..2024-11-29&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.10.0
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.9.1...3286ae09f41d04fd3354519582750775abc034e5))
@@ -15,8 +35,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-03-12&to=2024-03-12&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2024-03-12..2024-03-12&type=Issues) | [@wpk-nist-gov](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Awpk-nist-gov+updated%3A2024-03-12..2024-03-12&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.1
 
