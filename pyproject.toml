@@ -48,7 +48,7 @@ test = [
     "ipykernel>=6.19.3",
     "ipython",
     "ipywidgets",
-    "nbconvert>=7.0.0",
+    "nbconvert>=7.1.0",
     "pytest-asyncio",
     "pytest-cov>=4.0",
     "pytest>=7.0,<8",
