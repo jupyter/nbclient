@@ -1,6 +1,7 @@
 """Version info."""
+from __future__ import annotations
+
 import re
-from typing import List, Union
 
 __version__ = "0.10.1"
 
@@ -8,7 +9,7 @@ __version__ = "0.10.1"
 pattern = r"(?P<major>\d+).(?P<minor>\d+).(?P<patch>\d+)(?P<rest>.*)"
 match = re.match(pattern, __version__)
 if match:
-    parts: List[Union[int, str]] = [int(match[part]) for part in ["major", "minor", "patch"]]
+    parts: list[int | str] = [int(match[part]) for part in ["major", "minor", "patch"]]
     if match["rest"]:
         parts.append(match["rest"])
 else:
