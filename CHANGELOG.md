@@ -2,6 +2,23 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.10.2
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.1...5a68cb361412d540e23fbc444cda75ede73c16d1))
+
+### Merged PRs
+
+- Drop Python 3.8, test PyPy 3.10 [#323](https://github.com/jupyter/nbclient/pull/323) ([@davidbrochart](https://github.com/davidbrochart))
+- Gracefully handle explicit transient=None [#322](https://github.com/jupyter/nbclient/pull/322) ([@callmephilip](https://github.com/callmephilip))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-11-29&to=2024-12-19&type=c))
+
+[@callmephilip](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Acallmephilip+updated%3A2024-11-29..2024-12-19&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2024-11-29..2024-12-19&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.10.1
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.0...e6df5842d471047afcb45595d95a39be549896e4))
@@ -19,8 +36,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-03-13&to=2024-11-29&type=c))
 
 [@blink1073](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Ablink1073+updated%3A2024-03-13..2024-11-29&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2024-03-13..2024-11-29&type=Issues) | [@lucascolley](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Alucascolley+updated%3A2024-03-13..2024-11-29&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.10.0
 
