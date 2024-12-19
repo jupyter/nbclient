@@ -11,6 +11,7 @@ import sys
 import threading
 import warnings
 from base64 import b64decode, b64encode
+from platform import python_implementation
 from queue import Empty
 from typing import Any
 from unittest.mock import MagicMock, Mock
@@ -325,7 +326,7 @@ def filter_messages_on_error_output(err_output):
         ("Factorials.ipynb", {"kernel_name": "python"}),
         ("HelloWorld.ipynb", {"kernel_name": "python"}),
         ("Inline Image.ipynb", {"kernel_name": "python"}),
-        (
+        pytest.param(
             "Interrupt.ipynb",
             {
                 "kernel_name": "python",
@@ -333,6 +334,7 @@ def filter_messages_on_error_output(err_output):
                 "interrupt_on_timeout": True,
                 "allow_errors": True,
             },
+            marks=pytest.mark.skipif(python_implementation() == "PyPy", reason="PyPy hangs"),
         ),
         ("JupyterWidgets.ipynb", {"kernel_name": "python"}),
         ("Skip Exceptions with Cell Tags.ipynb", {"kernel_name": "python"}),

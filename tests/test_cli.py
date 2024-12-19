@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
 from unittest.mock import call, mock_open, patch
@@ -5,6 +6,11 @@ from unittest.mock import call, mock_open, patch
 import pytest
 
 from nbclient.cli import NbClientApp
+
+if sys.version_info >= (3, 13):
+    PATH_OPEN_CALL_STEP = 4
+else:
+    PATH_OPEN_CALL_STEP = 3
 
 current_dir = Path(__file__).parent.absolute()
 
@@ -60,7 +66,7 @@ def test_mult(input_names, relative, inplace, jupyterapp, client, reader, writer
     # add suffix if needed
     paths = [p.with_suffix(".ipynb") for p in paths]
 
-    assert path_open.mock_calls[::3] == [call(p) for p in paths]
+    assert path_open.mock_calls[::PATH_OPEN_CALL_STEP] == [call(p) for p in paths]
     assert reader.call_count == len(paths)
     # assert reader.mock_calls == [call(p, as_version=4) for p in paths]
 
@@ -114,7 +120,7 @@ def test_output(input_names, relative, output_base, jupyterapp, client, reader, 
     # add suffix if needed
     paths = [p.with_suffix(".ipynb") for p in paths]
 
-    assert path_open.mock_calls[::3] == [call(p) for p in paths]
+    assert path_open.mock_calls[::PATH_OPEN_CALL_STEP] == [call(p) for p in paths]
     assert reader.call_count == len(paths)
 
     expected = []

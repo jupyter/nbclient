@@ -12,7 +12,7 @@ dynamic = [
 description = "A client library for executing notebooks. Formerly nbconvert's ExecutePreprocessor."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8.0"
+requires-python = ">=3.9.0"
 authors = [
     { name = "Jupyter Development Team", email = "jupyter@googlegroups.com" },
 ]
@@ -29,10 +29,11 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "jupyter_client>=6.1.12",
@@ -47,7 +48,7 @@ test = [
     "ipykernel>=6.19.3",
     "ipython",
     "ipywidgets",
-    "nbconvert>=7.0.0",
+    "nbconvert>=7.1.0",
     "pytest-asyncio",
     "pytest-cov>=4.0",
     "pytest>=7.0,<8",
