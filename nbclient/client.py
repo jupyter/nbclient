@@ -1103,8 +1103,8 @@ class NotebookClient(LoggingConfigurable):
         # while it's tempting to go for a more concise
         # display_id = content.get("transient", {}).get("display_id", None)
         # this breaks if transient is explicitly set to None
-        transient = content.get("transient", {})
-        display_id = transient.get("display_id", None) if transient else None
+        transient = content.get("transient")
+        display_id = transient.get("display_id") if transient else None
 
         if display_id and msg_type in {"execute_result", "display_data", "update_display_data"}:
             self._update_display_id(display_id, msg)
