@@ -60,6 +60,7 @@ def timestamp(msg: dict[str, t.Any] | None = None) -> str:
 
 class _DummyFileLock:
     """A dummy filelock.FileLock for use when locking is disabled."""
+
     def acquire(self):
         pass
 
