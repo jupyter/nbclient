@@ -20,13 +20,14 @@ $ pre-commit install
 In your environment `pip install -e '.[test]'` will be needed to be able to
 run all of the tests.
 
-The recommended way to do this is using [tox](https://tox.readthedocs.io/en/latest/):
+You can run the tests using `pytest`:
 
 ```console
-# to list all environments
-$ tox -av
-# to run all tests for a specific environment
-$ tox -e py38
+# to run all tests
+$ pytest
+
+# to run with coverage (used by CI)
+$ pytest -vv --maxfail=2 --cov=nbclient --cov-report=xml -W always
 ```
 
 ## Documentation
