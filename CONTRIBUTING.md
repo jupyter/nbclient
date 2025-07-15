@@ -17,17 +17,14 @@ $ pre-commit install
 
 ## Testing
 
-In your environment `pip install -e '.[test]'` will be needed to be able to
-run all of the tests.
-
-You can run the tests using `pytest`:
+Tests can be run through [`hatch`](https://hatch.pypa.io/) which will automatically manages test environments and dependencies.
 
 ```console
 # to run all tests
-$ pytest
+$ hatch run test:test
 
 # to run with coverage (used by CI)
-$ pytest -vv --maxfail=2 --cov=nbclient --cov-report=xml -W always
+$ hatch run cov:test
 ```
 
 ## Documentation
