@@ -333,7 +333,7 @@ class NotebookClient(LoggingConfigurable):
             A callable which executes when a cell requests input.
             Called with kwargs ``cell`` and ``cell_index``.
             """
-        )
+        ),
     )
 
     on_cell_start = Callable(
@@ -773,18 +773,18 @@ class NotebookClient(LoggingConfigurable):
         self, parent_msg_id: str, cell: NotebookNode, cell_index: int
     ) -> None:
         """Poll for stdin messages (input requests) from the kernel.
-        
+
         This method runs in parallel with _async_poll_output_msg and handles
-        input requests by calling the on_cell_input_request callback and 
+        input requests by calling the on_cell_input_request callback and
         sending the response back to the kernel.
         """
         assert self.kc is not None
-        
+
         while True:
             try:
                 msg = await ensure_async(self.kc.stdin_channel.get_msg(timeout=None))
                 if msg["parent_header"].get("msg_id") == parent_msg_id:
-                    if msg['header']['msg_type'] == 'input_request':
+                    if msg["header"]["msg_type"] == "input_request":
                         response = await ensure_async(
                             self.on_cell_input_request(cell=cell, cell_index=cell_index)
                         )
@@ -1032,14 +1032,14 @@ class NotebookClient(LoggingConfigurable):
         task_poll_output_msg = asyncio.ensure_future(
             self._async_poll_output_msg(parent_msg_id, cell, cell_index)
         )
-        
+
         # Create stdin polling task if input handling is enabled
         task_poll_stdin_msg = None
         if self.on_cell_input_request is not None:
             task_poll_stdin_msg = asyncio.ensure_future(
                 self._async_poll_stdin_msg(parent_msg_id, cell, cell_index)
             )
-        
+
         self.task_poll_for_reply = asyncio.ensure_future(
             self._async_poll_for_reply(
                 parent_msg_id, cell, exec_timeout, task_poll_output_msg, task_poll_kernel_alive
@@ -1063,7 +1063,7 @@ class NotebookClient(LoggingConfigurable):
                         task_poll_stdin_msg.cancel()
             finally:
                 raise
-        
+
         # Cancel stdin task after successful execution
         if task_poll_stdin_msg is not None:
             task_poll_stdin_msg.cancel()

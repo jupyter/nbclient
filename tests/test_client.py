@@ -980,10 +980,10 @@ while True: continue
         with open(filename) as f:
             input_nb = nbformat.read(f, 4)
         executor, hooks = get_executor_with_hooks(nb=input_nb)
-        
+
         # Set up the input request hook to return a mock response
         hooks["on_cell_input_request"].return_value = "Test User"
-        
+
         executor.execute()
         hooks["on_cell_start"].assert_called_once()
         hooks["on_cell_execute"].assert_called_once()
