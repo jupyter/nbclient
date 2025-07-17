@@ -17,7 +17,7 @@ $ pre-commit install
 
 ## Testing
 
-Tests can be run through [`hatch`](https://hatch.pypa.io/) which will automatically manages test environments and dependencies.
+Tests can be run through [`hatch`](https://hatch.pypa.io/) which will automatically manage test environments and dependencies.
 
 ```console
 # to run all tests
