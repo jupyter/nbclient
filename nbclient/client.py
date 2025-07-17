@@ -331,7 +331,7 @@ class NotebookClient(LoggingConfigurable):
         help=dedent(
             """
             A callable which executes when a cell requests input.
-            Called with kwargs ``cell`` and ``cell_index``.
+            Called with kwargs ``cell``, ``cell_index``, and ``input_request``.
             """
         ),
     )
@@ -786,7 +786,7 @@ class NotebookClient(LoggingConfigurable):
                 if msg["parent_header"].get("msg_id") == parent_msg_id:
                     if msg["header"]["msg_type"] == "input_request":
                         response = await ensure_async(
-                            self.on_cell_input_request(cell=cell, cell_index=cell_index)
+                            self.on_cell_input_request(cell=cell, cell_index=cell_index, input_request=msg)
                         )
                         self.kc.input(response)
             except Empty:

@@ -1001,6 +1001,7 @@ while True: continue
         call_args = hooks["on_cell_input_request"].call_args
         assert call_args[1]["cell"] == input_nb.cells[0]  # cell argument
         assert call_args[1]["cell_index"] == 0  # cell_index argument
+        assert "input_request" in call_args[1]  # input_request argument
 
 
 class TestRunCell(NBClientTestsBase):
