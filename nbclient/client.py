@@ -786,7 +786,9 @@ class NotebookClient(LoggingConfigurable):
                 if msg["parent_header"].get("msg_id") == parent_msg_id:
                     if msg["header"]["msg_type"] == "input_request":
                         response = await ensure_async(
-                            self.on_cell_input_request(cell=cell, cell_index=cell_index, input_request=msg)
+                            self.on_cell_input_request(
+                                cell=cell, cell_index=cell_index, input_request=msg
+                            )
                         )
                         self.kc.input(response)
             except Empty:
