@@ -17,16 +17,14 @@ $ pre-commit install
 
 ## Testing
 
-In your environment `pip install -e '.[test]'` will be needed to be able to
-run all of the tests.
-
-The recommended way to do this is using [tox](https://tox.readthedocs.io/en/latest/):
+Tests can be run through [`hatch`](https://hatch.pypa.io/) which will automatically manage test environments and dependencies.
 
 ```console
-# to list all environments
-$ tox -av
-# to run all tests for a specific environment
-$ tox -e py38
+# to run all tests
+$ hatch run test:test
+
+# to run with coverage (used by CI)
+$ hatch run cov:test
 ```
 
 ## Documentation
