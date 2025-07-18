@@ -782,7 +782,7 @@ class NotebookClient(LoggingConfigurable):
 
         while True:
             try:
-                msg = await ensure_async(self.kc.stdin_channel.get_msg(timeout=None))
+                msg = await ensure_async(self.kc.stdin_channel.get_msg(timeout=self.iopub_timeout))
                 if msg["parent_header"].get("msg_id") == parent_msg_id:
                     if msg["header"]["msg_type"] == "input_request":
                         response = await ensure_async(
@@ -794,7 +794,6 @@ class NotebookClient(LoggingConfigurable):
             except Empty:
                 # Yield control to allow cancellation to be processed
                 await asyncio.sleep(0.01)
-                continue
 
     async def _async_poll_for_reply(
         self,
