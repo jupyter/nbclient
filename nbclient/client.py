@@ -643,7 +643,7 @@ class NotebookClient(LoggingConfigurable):
 
         def on_signal() -> None:
             """Handle signals."""
-            self._async_cleanup_kernel_future = asyncio.create_task(self._async_cleanup_kernel())
+            self._async_cleanup_kernel_future = asyncio.ensure_future(self._async_cleanup_kernel())
             atexit.unregister(self._cleanup_kernel)
 
         loop = asyncio.get_event_loop()
@@ -1029,19 +1029,19 @@ class NotebookClient(LoggingConfigurable):
         cell.outputs = []
         self.clear_before_next_output = False
 
-        task_poll_kernel_alive = asyncio.create_task(self._async_poll_kernel_alive())
-        task_poll_output_msg = asyncio.create_task(
+        task_poll_kernel_alive = asyncio.ensure_future(self._async_poll_kernel_alive())
+        task_poll_output_msg = asyncio.ensure_future(
             self._async_poll_output_msg(parent_msg_id, cell, cell_index)
         )
 
         # Create stdin polling task if input handling is enabled
         task_poll_stdin_msg = None
         if self.on_cell_input_request is not None:
-            task_poll_stdin_msg = asyncio.create_task(
+            task_poll_stdin_msg = asyncio.ensure_future(
                 self._async_poll_stdin_msg(parent_msg_id, cell, cell_index)
             )
 
-        self.task_poll_for_reply = asyncio.create_task(
+        self.task_poll_for_reply = asyncio.ensure_future(
             self._async_poll_for_reply(
                 parent_msg_id, cell, exec_timeout, task_poll_output_msg, task_poll_kernel_alive
             )
