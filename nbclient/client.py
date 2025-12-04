@@ -476,7 +476,7 @@ class NotebookClient(LoggingConfigurable):
         self.widget_buffers: dict[str, dict[tuple[str, ...], dict[str, str]]] = {}
         # maps to list of hooks, where the last is used, this is used
         # to support nested use of output widgets.
-        self.output_hook_stack: t.Any = collections.defaultdict(list)
+        self.output_hook_stack: dict[str, list[OutputWidget]] = collections.defaultdict(list)
         # our front-end mimicking Output widgets
         self.comm_objects: dict[str, t.Any] = {}
 
@@ -776,7 +776,7 @@ class NotebookClient(LoggingConfigurable):
         while True:
             try:
                 if error_on_timeout_execute_reply:
-                    msg = error_on_timeout_execute_reply  # type:ignore[unreachable]
+                    msg = error_on_timeout_execute_reply
                     msg["parent_header"] = {"msg_id": msg_id}
                 else:
                     msg = await ensure_async(self.kc.shell_channel.get_msg(timeout=new_timeout))
@@ -1136,7 +1136,11 @@ class NotebookClient(LoggingConfigurable):
         return None
 
     def output(
-        self, outs: list[NotebookNode], msg: dict[str, t.Any], display_id: str, cell_index: int
+        self,
+        outs: list[NotebookNode],
+        msg: dict[str, t.Any],
+        display_id: str | None,
+        cell_index: int,
     ) -> NotebookNode | None:
         """Handle output."""
 
@@ -1148,6 +1152,7 @@ class NotebookClient(LoggingConfigurable):
             # if we have a hook registered, it will override our
             # default output behaviour (e.g. OutputWidget)
             hook = self.output_hook_stack[parent_msg_id][-1]
+            assert display_id is not None
             hook.output(outs, msg, display_id, cell_index)
             return None
 
@@ -1251,7 +1256,7 @@ class NotebookClient(LoggingConfigurable):
         encoded_buffers = []
         paths = msg["content"]["data"]["buffer_paths"]
         buffers = msg["buffers"]
-        for path, buffer in zip(paths, buffers):
+        for path, buffer in zip(paths, buffers, strict=False):
             encoded_buffers.append(
                 {
                     "data": base64.b64encode(buffer).decode("utf-8"),
