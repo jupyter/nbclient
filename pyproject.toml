@@ -42,7 +42,7 @@ dependencies = [
     "traitlets>=5.4",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 test = [
     "flaky",
     "ipykernel>=6.19.3",
@@ -89,18 +89,18 @@ include = [
 ]
 
 [tool.hatch.envs.docs]
-dependency-groups = ["docs"]
+features = ["docs"]
 [tool.hatch.envs.docs.scripts]
 build = "make -C docs html SPHINXOPTS='-W'"
 
 [tool.hatch.envs.test]
-dependency-groups = ["test"]
+features = ["test"]
 [tool.hatch.envs.test.scripts]
 test = "python -m pytest -vv {args}"
 nowarn = "test -W default {args}"
 
 [tool.hatch.envs.cov]
-dependency-groups = ["test"]
+features = ["test"]
 dependencies = ["coverage[toml]", "pytest-cov"]
 [tool.hatch.envs.cov.scripts]
 test = "python -m pytest -vv --cov nbclient --cov-branch --cov-report term-missing:skip-covered {args}"
