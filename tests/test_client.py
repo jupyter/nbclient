@@ -283,7 +283,7 @@ def assert_notebooks_equal(expected, actual):
     actual_cells = actual["cells"]
     assert len(expected_cells) == len(actual_cells)
 
-    for expected_cell, actual_cell in zip(expected_cells, actual_cells):
+    for expected_cell, actual_cell in zip(expected_cells, actual_cells, strict=False):
         # Uncomment these to help debug test failures better
         # from pprint import pprint
         # pprint(expected_cell)
