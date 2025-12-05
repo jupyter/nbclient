@@ -57,6 +57,7 @@ hook_methods = [
     "on_cell_complete",
     "on_cell_executed",
     "on_cell_error",
+    "on_cell_input_request",
     "on_notebook_start",
     "on_notebook_complete",
     "on_notebook_error",
@@ -238,8 +239,10 @@ def prepare_cell_mocks(*messages_input, reply_msg=None):
             executor.kc = MagicMock(
                 iopub_channel=MagicMock(get_msg=message_mock),
                 shell_channel=MagicMock(get_msg=shell_channel_message_mock()),
+                stdin_channel=MagicMock(get_msg=AsyncMock(side_effect=Empty())),
                 execute=MagicMock(return_value=parent_id),
                 is_alive=MagicMock(return_value=make_future(True)),
+                input=MagicMock(),
             )
             executor.parent_id = parent_id
             return func(self, executor, cell_mock, message_mock)
@@ -901,6 +904,7 @@ while True: continue
         hooks["on_cell_complete"].assert_called_once()
         hooks["on_cell_executed"].assert_called_once()
         hooks["on_cell_error"].assert_not_called()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_called_once()
         hooks["on_notebook_complete"].assert_called_once()
         hooks["on_notebook_error"].assert_not_called()
@@ -917,6 +921,7 @@ while True: continue
         hooks["on_cell_complete"].assert_called_once()
         hooks["on_cell_executed"].assert_called_once()
         hooks["on_cell_error"].assert_called_once()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_called_once()
         hooks["on_notebook_complete"].assert_called_once()
         hooks["on_notebook_error"].assert_not_called()
@@ -933,6 +938,7 @@ while True: continue
         hooks["on_cell_complete"].assert_called_once()
         hooks["on_cell_executed"].assert_not_called()
         hooks["on_cell_error"].assert_not_called()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_called_once()
         hooks["on_notebook_complete"].assert_called_once()
         hooks["on_notebook_error"].assert_called_once()
@@ -948,6 +954,7 @@ while True: continue
         hooks["on_cell_complete"].assert_called_once()
         hooks["on_cell_executed"].assert_called_once()
         hooks["on_cell_error"].assert_not_called()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_called_once()
         hooks["on_notebook_complete"].assert_called_once()
         hooks["on_notebook_error"].assert_not_called()
@@ -964,9 +971,37 @@ while True: continue
         hooks["on_cell_complete"].assert_called_once()
         hooks["on_cell_executed"].assert_called_once()
         hooks["on_cell_error"].assert_called_once()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_called_once()
         hooks["on_notebook_complete"].assert_called_once()
         hooks["on_notebook_error"].assert_not_called()
+
+    def test_input_request_hook(self):
+        """Test that on_cell_input_request hook is called when cell requests input"""
+        filename = os.path.join(current_dir, "files", "InputRequest.ipynb")
+        with open(filename) as f:
+            input_nb = nbformat.read(f, 4)
+        executor, hooks = get_executor_with_hooks(nb=input_nb)
+
+        # Set up the input request hook to return a mock response
+        hooks["on_cell_input_request"].return_value = "Test User"
+
+        executor.execute()
+        hooks["on_cell_start"].assert_called_once()
+        hooks["on_cell_execute"].assert_called_once()
+        hooks["on_cell_complete"].assert_called_once()
+        hooks["on_cell_executed"].assert_called_once()
+        hooks["on_cell_error"].assert_not_called()
+        hooks["on_cell_input_request"].assert_called_once()
+        hooks["on_notebook_start"].assert_called_once()
+        hooks["on_notebook_complete"].assert_called_once()
+        hooks["on_notebook_error"].assert_not_called()
+
+        # Verify the callback was called with correct arguments
+        call_args = hooks["on_cell_input_request"].call_args
+        assert call_args[1]["cell"] == input_nb.cells[0]  # cell argument
+        assert call_args[1]["cell_index"] == 0  # cell_index argument
+        assert "input_request" in call_args[1]  # input_request argument
 
 
 class TestRunCell(NBClientTestsBase):
@@ -1763,6 +1798,7 @@ class TestRunCell(NBClientTestsBase):
             cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_OK
         )
         hooks["on_cell_error"].assert_not_called()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
@@ -1793,6 +1829,7 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_cell_error"].assert_called_once_with(
             cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR
         )
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
@@ -1829,6 +1866,7 @@ class TestRunCell(NBClientTestsBase):
             cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_OK
         )
         hooks["on_cell_error"].assert_not_called()
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
@@ -1859,6 +1897,7 @@ class TestRunCell(NBClientTestsBase):
         hooks["on_cell_error"].assert_called_once_with(
             cell=cell_mock, cell_index=0, execute_reply=EXECUTE_REPLY_ERROR
         )
+        hooks["on_cell_input_request"].assert_not_called()
         hooks["on_notebook_start"].assert_not_called()
         hooks["on_notebook_complete"].assert_not_called()
         hooks["on_notebook_error"].assert_not_called()
