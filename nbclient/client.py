@@ -768,10 +768,15 @@ class NotebookClient(LoggingConfigurable):
     ) -> dict[str, t.Any]:
         msg: dict[str, t.Any]
         assert self.kc is not None
-        new_timeout: float | None = None
         if timeout is not None:
             deadline = monotonic() + timeout
             new_timeout = float(timeout)
+        else:
+            # if we call shell_channel.get_msg with None timeout value, sometimes will
+            # block current execution forever so need pass a timeout value, so we
+            # need give a default value and reset the value when timeout value exhausted
+            deadline = monotonic() + 5
+            new_timeout = float(5)
         error_on_timeout_execute_reply = None
         while True:
             try:
@@ -800,7 +805,10 @@ class NotebookClient(LoggingConfigurable):
                         new_timeout = max(0, deadline - monotonic())
             except Empty:
                 # received no message, check if kernel is still alive
-                assert timeout is not None
+                if timeout is None:
+                    deadline = monotonic() + 5
+                    new_timeout = float(5)
+                    continue
                 task_poll_kernel_alive.cancel()
                 await self._async_check_alive()
                 error_on_timeout_execute_reply = await self._async_handle_timeout(timeout, cell)
