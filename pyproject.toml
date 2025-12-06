@@ -36,6 +36,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
+    "filelock>=3.12.0",
     "jupyter_client>=6.1.12",
     "jupyter_core>=4.12,!=5.0.*",
     "nbformat>=5.1.3",
