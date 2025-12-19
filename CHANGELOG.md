@@ -2,6 +2,27 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.10.3
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.2...b42ad03acc0bb1ed26db65ab72ac617679cbbb62))
+
+### Merged PRs
+
+- Drop Python 3.9, test 3.14 and pypy-3.11 [#337](https://github.com/jupyter/nbclient/pull/337) ([@davidbrochart](https://github.com/davidbrochart))
+- correct execution count in test for ipython 9.8 and above [#335](https://github.com/jupyter/nbclient/pull/335) ([@drorspei](https://github.com/drorspei), [@davidbrochart](https://github.com/davidbrochart))
+- Update contribution with pytest instructions, remove tox. [#331](https://github.com/jupyter/nbclient/pull/331) ([@dgrahn](https://github.com/dgrahn), [@davidbrochart](https://github.com/davidbrochart))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-12-19&to=2025-12-19&type=c))
+
+@davidbrochart ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2024-12-19..2025-12-19&type=Issues)) | @dgrahn ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adgrahn+updated%3A2024-12-19..2025-12-19&type=Issues)) | @drorspei ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adrorspei+updated%3A2024-12-19..2025-12-19&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.10.2
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.1...5a68cb361412d540e23fbc444cda75ede73c16d1))
@@ -16,8 +37,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-11-29&to=2024-12-19&type=c))
 
 [@callmephilip](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Acallmephilip+updated%3A2024-11-29..2024-12-19&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2024-11-29..2024-12-19&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.10.1
 
