@@ -1152,7 +1152,6 @@ class NotebookClient(LoggingConfigurable):
             # if we have a hook registered, it will override our
             # default output behaviour (e.g. OutputWidget)
             hook = self.output_hook_stack[parent_msg_id][-1]
-            assert display_id is not None
             hook.output(outs, msg, display_id, cell_index)
             return None
 

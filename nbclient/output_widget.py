@@ -72,7 +72,7 @@ class OutputWidget:
         self._publish_msg("comm_msg", data=data, metadata=metadata, buffers=buffers)
 
     def output(
-        self, outs: list[NotebookNode], msg: dict[str, Any], display_id: str, cell_index: int
+        self, outs: list[NotebookNode], msg: dict[str, Any], display_id: str | None, cell_index: int
     ) -> None:
         """Handle output."""
         if self.clear_before_next_output:
