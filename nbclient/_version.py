@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 
-__version__ = "0.10.3"
+__version__ = "0.10.4"
 
 # Build up version_info tuple for backwards compatibility
 pattern = r"(?P<major>\d+).(?P<minor>\d+).(?P<patch>\d+)(?P<rest>.*)"

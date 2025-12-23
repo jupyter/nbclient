@@ -2,6 +2,25 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.10.4
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.3...af9b77a952b78b2bd548945471114315d202afbf))
+
+### Merged PRs
+
+- Allow `display_id` to be `None` [#338](https://github.com/jupyter/nbclient/pull/338) ([@davidbrochart](https://github.com/davidbrochart), [@YannickJadoul](https://github.com/YannickJadoul), [@slayoo](https://github.com/slayoo))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2025-12-19&to=2025-12-23&type=c))
+
+@davidbrochart ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2025-12-19..2025-12-23&type=Issues)) | @slayoo ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Aslayoo+updated%3A2025-12-19..2025-12-23&type=Issues)) | @YannickJadoul ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3AYannickJadoul+updated%3A2025-12-19..2025-12-23&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.10.3
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.2...b42ad03acc0bb1ed26db65ab72ac617679cbbb62))
@@ -20,8 +39,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2024-12-19&to=2025-12-19&type=c))
 
 @davidbrochart ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2024-12-19..2025-12-19&type=Issues)) | @dgrahn ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adgrahn+updated%3A2024-12-19..2025-12-19&type=Issues)) | @drorspei ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adrorspei+updated%3A2024-12-19..2025-12-19&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.10.2
 
