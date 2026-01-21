@@ -14,6 +14,7 @@ from queue import Empty
 from textwrap import dedent
 from time import monotonic
 
+import filelock
 from jupyter_client.client import KernelClient
 from jupyter_client.manager import KernelManager
 from nbformat import NotebookNode
@@ -55,6 +56,16 @@ def timestamp(msg: dict[str, t.Any] | None = None) -> str:
                 pass  # fallback to a local time
 
     return datetime.datetime.utcnow().isoformat() + "Z"
+
+
+class _DummyFileLock:
+    """A dummy filelock.FileLock for use when locking is disabled."""
+
+    def acquire(self):
+        pass
+
+    def release(self):
+        pass
 
 
 class NotebookClient(LoggingConfigurable):
@@ -291,6 +302,20 @@ class NotebookClient(LoggingConfigurable):
         config=True, klass=KernelManager, help="The kernel manager class to use."
     )
 
+    setup_kernel_lock_file = Unicode(
+        default_value="",
+        help=dedent(
+            """
+            Path of the lock file to hold while a kernel is being started.
+            Holding a lock prevents port clashes when starting local kernels
+            from multiple processes simultaneously.
+
+            Once https://github.com/jupyter/enhancement-proposals/pull/66 a
+            lock will no longer be required.
+            """
+        ),
+    ).tag(config=True)
+
     on_notebook_start = Callable(
         default_value=None,
         allow_none=True,
@@ -466,6 +491,10 @@ class NotebookClient(LoggingConfigurable):
         self.comm_open_handlers: dict[str, t.Any] = {
             "jupyter.widget": self.on_comm_open_jupyter_widget
         }
+        if self.setup_kernel_lock_file:
+            self._setup_kernel_lock = filelock.FileLock(self.setup_kernel_lock_file)
+        else:
+            self._setup_kernel_lock = _DummyFileLock()
 
     def reset_execution_trackers(self) -> None:
         """Resets any per-execution trackers."""
@@ -596,11 +625,15 @@ class NotebookClient(LoggingConfigurable):
         if self.km is None:
             self.km = self.create_kernel_manager()
 
-        if not self.km.has_kernel:
-            self.start_new_kernel(**kwargs)
+        self._setup_kernel_lock.acquire()
+        try:
+            if not self.km.has_kernel:
+                self.start_new_kernel(**kwargs)
 
-        if self.kc is None:
-            self.start_new_kernel_client()
+            if self.kc is None:
+                self.start_new_kernel_client()
+        finally:
+            self._setup_kernel_lock.release()
 
         try:
             yield
@@ -644,11 +677,15 @@ class NotebookClient(LoggingConfigurable):
             # RuntimeError: Raised when add_signal_handler is called outside the main thread
             pass
 
-        if not self.km.has_kernel:
-            await self.async_start_new_kernel(**kwargs)
+        self._setup_kernel_lock.acquire()
+        try:
+            if not self.km.has_kernel:
+                await self.async_start_new_kernel(**kwargs)
 
-        if self.kc is None:
-            await self.async_start_new_kernel_client()
+            if self.kc is None:
+                await self.async_start_new_kernel_client()
+        finally:
+            self._setup_kernel_lock.release()
 
         try:
             yield
