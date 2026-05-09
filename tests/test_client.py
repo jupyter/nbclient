@@ -308,11 +308,16 @@ def notebook_resources():
 
 
 def filter_messages_on_error_output(err_output):
-    allowed_lines = [
+    allowed_prefixes = [
         # ipykernel might be installed without debugpy extension
-        "[IPKernelApp] WARNING | debugpy_stream undefined, debugging will not be enabled",
+        "[IPKernelApp] WARNING | debugpy_stream undefined",
+        # ipykernel warns when kernel runs over TCP without CurveZMQ encryption
+        "[IPKernelApp] WARNING | Kernel is running over TCP without encryption.",
     ]
-    filtered_result = [line for line in err_output.splitlines() if line not in allowed_lines]
+    filtered_result = [
+        line for line in err_output.splitlines()
+        if not any(line.startswith(prefix) for prefix in allowed_prefixes)
+    ]
 
     return os.linesep.join(filtered_result)
 
