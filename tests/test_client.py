@@ -315,7 +315,8 @@ def filter_messages_on_error_output(err_output):
         "[IPKernelApp] WARNING | Kernel is running over TCP without encryption.",
     ]
     filtered_result = [
-        line for line in err_output.splitlines()
+        line
+        for line in err_output.splitlines()
         if not any(line.startswith(prefix) for prefix in allowed_prefixes)
     ]
 
