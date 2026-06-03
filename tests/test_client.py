@@ -319,7 +319,6 @@ def filter_messages_on_error_output(err_output):
         for line in err_output.splitlines()
         if not any(line.startswith(prefix) for prefix in allowed_prefixes)
     ]
-    lines = err_output.splitlines()
     # Known benign race condition: kernel sends a status message on a socket already
     # closed during parallel shutdown. Filter the entire traceback block.
     in_zmq_traceback = False
