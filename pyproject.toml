@@ -74,7 +74,6 @@ jupyter-execute = "nbclient.cli:main"
 
 [project.urls]
 Documentation = "https://nbclient.readthedocs.io"
-Funding = "https://numfocus.org/"
 Homepage = "https://jupyter.org"
 Source = "https://github.com/jupyter/nbclient"
 Tracker = "https://github.com/jupyter/nbclient/issues"
