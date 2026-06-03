@@ -323,18 +323,17 @@ def filter_messages_on_error_output(err_output):
     # Known benign race condition: kernel sends a status message on a socket already
     # closed during parallel shutdown. Filter the entire traceback block.
     in_zmq_traceback = False
-    filtered_result = []
-    for line in lines:
+    final_filtered_result = []
+    for line in filtered_result:
         if "ERROR:tornado.general:Uncaught exception in ZMQStream callback" in line:
             in_zmq_traceback = True
         if in_zmq_traceback:
             if "zmq.error.ZMQError: Socket operation on non-socket" in line:
                 in_zmq_traceback = False
             continue
-        if line not in allowed_lines:
-            filtered_result.append(line)
+        final_filtered_result.append(line)
 
-    return os.linesep.join(filtered_result)
+    return os.linesep.join(final_filtered_result)
 
 
 @pytest.mark.parametrize(
