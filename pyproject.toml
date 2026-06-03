@@ -173,7 +173,6 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 module = [
-    "async_generator.*",
     "testpath",
     "xmltodict",
 ]
