@@ -19,7 +19,6 @@ from unittest.mock import MagicMock, Mock
 import nbformat
 import pytest
 import xmltodict
-from flaky import flaky  # type:ignore[import-untyped]
 from jupyter_client._version import version_info
 from jupyter_client.client import KernelClient
 from jupyter_client.kernelspec import KernelSpecManager
@@ -372,7 +371,7 @@ def test_run_all_notebooks(input_name, opts):
     assert_notebooks_equal(input_nb, output_nb)
 
 
-@flaky
+@pytest.mark.flaky
 def test_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 
@@ -398,7 +397,7 @@ def test_parallel_notebooks(capfd, tmpdir):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
-@flaky
+@pytest.mark.flaky
 @pytest.mark.skipif(os.name == "nt", reason="warns about event loop on Windows")
 def test_many_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
@@ -426,7 +425,7 @@ def test_many_parallel_notebooks(capfd):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
-@flaky
+@pytest.mark.flaky
 def test_async_parallel_notebooks(capfd, tmpdir):
     """Two notebooks should be able to be run simultaneously without problems.
 
@@ -453,7 +452,7 @@ def test_async_parallel_notebooks(capfd, tmpdir):
     assert filter_messages_on_error_output(captured.err) == ""
 
 
-@flaky
+@pytest.mark.flaky
 def test_many_async_parallel_notebooks(capfd):
     """Ensure that when many IPython kernels are run in parallel, nothing awful happens.
 
@@ -691,7 +690,7 @@ while True: continue
             assert info_msg is not None
             assert "name" in info_msg["content"]["language_info"]
 
-    @flaky
+    @pytest.mark.flaky
     def test_kernel_death_after_timeout(self):
         """Check that an error is raised when the kernel is_alive is false after a cell timed out"""
         filename = os.path.join(current_dir, "files", "Interrupt.ipynb")
