@@ -312,7 +312,20 @@ def filter_messages_on_error_output(err_output):
         # ipykernel might be installed without debugpy extension
         "[IPKernelApp] WARNING | debugpy_stream undefined, debugging will not be enabled",
     ]
-    filtered_result = [line for line in err_output.splitlines() if line not in allowed_lines]
+    lines = err_output.splitlines()
+    # Known benign race condition: kernel sends a status message on a socket already
+    # closed during parallel shutdown. Filter the entire traceback block.
+    in_zmq_traceback = False
+    filtered_result = []
+    for line in lines:
+        if "ERROR:tornado.general:Uncaught exception in ZMQStream callback" in line:
+            in_zmq_traceback = True
+        if in_zmq_traceback:
+            if "zmq.error.ZMQError: Socket operation on non-socket" in line:
+                in_zmq_traceback = False
+            continue
+        if line not in allowed_lines:
+            filtered_result.append(line)
 
     return os.linesep.join(filtered_result)
 
