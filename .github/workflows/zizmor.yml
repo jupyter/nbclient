@@ -1,0 +1,30 @@
+name: zizmor
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: zizmor GitHub Actions audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # to read the workflows
+      security-events: write # to upload SARIF results to the Security tab
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+        with:
+          # Audit the workflow files in this repository.
+          inputs: .github/workflows/
+          # PRs from forks get a read-only token that cannot upload SARIF to code
+          # scanning, so disable the upload there to avoid a permission failure.
+          # zizmor still runs on fork PRs and reports findings in the job logs.
+          advanced-security: ${{ github.event.pull_request.head.repo.fork != true }}
