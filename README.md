@@ -1,7 +1,6 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter/nbclient/main?filepath=binder%2Frun_nbclient.ipynb)
 [![Build Status](https://github.com/jupyter/nbclient/workflows/CI/badge.svg)](https://github.com/jupyter/nbclient/actions)
 [![Documentation Status](https://readthedocs.org/projects/nbclient/badge/?version=latest)](https://nbclient.readthedocs.io/en/latest/?badge=latest)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 # nbclient
 
@@ -31,7 +30,7 @@ See [ReadTheDocs](https://nbclient.readthedocs.io/en/latest/) for more in-depth 
 
 ## Python Version Support
 
-This library currently supports Python 3.6+ versions. As minor Python
+This library currently supports Python 3.10+ versions. As minor Python
 versions are officially sunset by the Python org, nbclient will similarly
 drop support in the future.
 
