@@ -2,6 +2,34 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.11.0
+
+([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.4...f1c8b4317842048937dfd39d44fdb499d14d8760))
+
+### Maintenance and upkeep improvements
+
+- Minor cleanup and bump minimal versions. [#347](https://github.com/jupyter/nbclient/pull/347) ([@Carreau](https://github.com/Carreau), [@krassowski](https://github.com/krassowski))
+
+### Other merged PRs
+
+- no-numfocus funding + Zizmor [#345](https://github.com/jupyter/nbclient/pull/345) ([@Carreau](https://github.com/Carreau), [@Yann-P](https://github.com/Yann-P), [@krassowski](https://github.com/krassowski))
+- ignore parallel closing error [#343](https://github.com/jupyter/nbclient/pull/343) ([@Carreau](https://github.com/Carreau), [@krassowski](https://github.com/krassowski))
+- Remove out of date badges about Python version. [#342](https://github.com/jupyter/nbclient/pull/342) ([@Carreau](https://github.com/Carreau))
+- Ignore new warning from ipykernel about encryption [#341](https://github.com/jupyter/nbclient/pull/341) ([@krassowski](https://github.com/krassowski), [@Carreau](https://github.com/Carreau), [@minrk](https://github.com/minrk))
+- drop leftover ref. to async_generator [#340](https://github.com/jupyter/nbclient/pull/340) ([@a-detiste](https://github.com/a-detiste), [@Carreau](https://github.com/Carreau))
+- Replace `@flaky.flaky` decorate with pytest marker [#334](https://github.com/jupyter/nbclient/pull/334) ([@mgorny](https://github.com/mgorny), [@Carreau](https://github.com/Carreau))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2025-12-23&to=2026-06-05&type=c))
+
+@a-detiste ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Aa-detiste+updated%3A2025-12-23..2026-06-05&type=Issues)) | @Carreau ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3ACarreau+updated%3A2025-12-23..2026-06-05&type=Issues)) | @krassowski ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Akrassowski+updated%3A2025-12-23..2026-06-05&type=Issues)) | @mgorny ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Amgorny+updated%3A2025-12-23..2026-06-05&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Aminrk+updated%3A2025-12-23..2026-06-05&type=Issues)) | @Yann-P ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3AYann-P+updated%3A2025-12-23..2026-06-05&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.10.4
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.3...af9b77a952b78b2bd548945471114315d202afbf))
@@ -18,8 +46,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/jupyter/nbclient/graphs/contributors?from=2025-12-19&to=2025-12-23&type=c))
 
 @davidbrochart ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Adavidbrochart+updated%3A2025-12-19..2025-12-23&type=Issues)) | @slayoo ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3Aslayoo+updated%3A2025-12-19..2025-12-23&type=Issues)) | @YannickJadoul ([activity](https://github.com/search?q=repo%3Ajupyter%2Fnbclient+involves%3AYannickJadoul+updated%3A2025-12-19..2025-12-23&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.10.3
 
