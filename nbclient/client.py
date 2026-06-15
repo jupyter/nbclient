@@ -811,6 +811,10 @@ class NotebookClient(LoggingConfigurable):
         assert self.kc is not None
         while True:
             msg = await ensure_async(self.kc.iopub_channel.get_msg(timeout=None))
+            if msg["msg_type"] == "status" and msg["content"].get("execution_state") == "dead":
+                assert self.task_poll_for_reply is not None
+                self.task_poll_for_reply.cancel()
+                return
             if msg["parent_header"].get("msg_id") == parent_msg_id:
                 try:
                     # Will raise CellExecutionComplete when completed
