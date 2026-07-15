@@ -588,6 +588,28 @@ def test_start_new_kernel_client_cleans_up_kernel_on_failure():
     assert not km.has_kernel  # type:ignore[unreachable]
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "expected_kwargs"),
+    [
+        ({}, {}),
+        ({"cleanup_kc": None}, {}),
+        ({"cleanup_kc": True}, {"cleanup_kc": True}),
+        ({"cleanup_kc": False}, {"cleanup_kc": False}),
+    ],
+    ids=["default", "none", "true", "false"],
+)
+def test_execute_function_cleanup_kc(monkeypatch, kwargs, expected_kwargs):
+    notebook = nbformat.v4.new_notebook()
+    executed_notebook = nbformat.v4.new_notebook()
+    execute_mock = MagicMock(return_value=executed_notebook)
+    monkeypatch.setattr(NotebookClient, "execute", execute_mock)
+
+    result = execute(notebook, km=MagicMock(spec=KernelManager), **kwargs)
+
+    execute_mock.assert_called_once_with(**expected_kwargs)
+    assert result is executed_notebook
+
+
 class TestExecute(NBClientTestsBase):
     """Contains test functions for execute.py"""
 

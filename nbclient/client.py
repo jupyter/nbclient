@@ -1299,6 +1299,7 @@ def execute(
     nb: NotebookNode,
     cwd: str | None = None,
     km: KernelManager | None = None,
+    cleanup_kc: bool | None = None,
     **kwargs: t.Any,
 ) -> NotebookNode:
     """Execute a notebook's code, updating outputs within the notebook object.
@@ -1314,10 +1315,16 @@ def execute(
       If supplied, the kernel will run in this directory
     km : AsyncKernelManager, optional
       If supplied, the specified kernel manager will be used for code execution.
+    cleanup_kc : bool, optional
+      Whether to stop the kernel client's channels and shut down the kernel after execution.
+      If ``None`` or omitted, ``NotebookClient.execute`` retains its default behavior.
     kwargs :
       Any other options for NotebookClient, e.g. timeout, kernel_name
     """
     resources = {}
     if cwd is not None:
         resources["metadata"] = {"path": cwd}
-    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+    client = NotebookClient(nb=nb, resources=resources, km=km, **kwargs)
+    if cleanup_kc is None:
+        return client.execute()
+    return client.execute(cleanup_kc=cleanup_kc)
