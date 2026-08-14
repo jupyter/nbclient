@@ -1427,6 +1427,34 @@ class TestRunCell(NBClientTestsBase):
 
     @prepare_cell_mocks(
         {
+            "msg_type": "execute_result",
+            "header": {"msg_type": "execute_result"},
+            "content": {
+                "transient": None,
+                "metadata": {"metafoo": "metabar"},
+                "data": {"foo": "bar"},
+                "execution_count": 42,
+            },
+        }
+    )
+    def test_execute_result_with_transient_none_message(self, executor, cell_mock, message_mock):
+        executor.execute_cell(cell_mock, 0)
+        # An execute followed by an idle
+        assert message_mock.call_count == 2
+        assert cell_mock.execution_count == 42
+        # A transient: None payload must not crash and must not register a display id
+        assert cell_mock.outputs == [
+            {
+                "output_type": "execute_result",
+                "metadata": {"metafoo": "metabar"},
+                "data": {"foo": "bar"},
+                "execution_count": 42,
+            }
+        ]
+        assert not executor._display_id_map
+
+    @prepare_cell_mocks(
+        {
             "msg_type": "display_data",
             "header": {"msg_type": "display_data"},
             "content": {"metadata": {"metafoo": "metabar"}, "data": {"foo": "bar"}},
