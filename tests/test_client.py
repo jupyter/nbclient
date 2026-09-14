@@ -596,6 +596,12 @@ class TestExecute(NBClientTestsBase):
     def test_constructor(self):
         NotebookClient(nbformat.v4.new_notebook())
 
+    def test_constructor_creates_kernel_manager(self):
+        executor = NotebookClient(nbformat.v4.new_notebook(), kernel_name="python3")
+
+        assert executor.km is not None
+        assert executor.km.kernel_name == "python3"
+
     def test_populate_language_info(self):
         nb = nbformat.v4.new_notebook()  # Certainly has no language_info.
         executor = NotebookClient(nb, kernel_name="python")
