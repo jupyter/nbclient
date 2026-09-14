@@ -6,6 +6,10 @@
 
 ([Full Changelog](https://github.com/jupyter/nbclient/compare/v0.10.4...f1c8b4317842048937dfd39d44fdb499d14d8760))
 
+### Bug fixes
+
+- Create a kernel manager during `NotebookClient` initialization when one is not provided. [#325](https://github.com/jupyter/nbclient/issues/325)
+
 ### Maintenance and upkeep improvements
 
 - Minor cleanup and bump minimal versions. [#347](https://github.com/jupyter/nbclient/pull/347) ([@Carreau](https://github.com/Carreau), [@krassowski](https://github.com/krassowski))

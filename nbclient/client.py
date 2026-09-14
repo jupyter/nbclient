@@ -456,6 +456,8 @@ class NotebookClient(LoggingConfigurable):
         super().__init__(**kw)
         self.nb: NotebookNode = nb
         self.km: KernelManager | None = km
+        if self.km is None:
+            self.create_kernel_manager()
         self.owns_km: bool = km is None  # whether the NotebookClient owns the kernel manager
         self.kc: KernelClient | None = None
         self.reset_execution_trackers()
