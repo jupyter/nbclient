@@ -903,19 +903,55 @@ class NotebookClient(LoggingConfigurable):
             return None
 
         exec_reply_content = exec_reply["content"]
-        if exec_reply_content["status"] != "error":
-            return None
+        if exec_reply_content["status"] == "error":
+            error_content: dict[str, t.Any] = exec_reply_content
+        else:
+            # Some failures are reported on the iopub channel instead of in the
+            # execute_reply, which then still says "ok". A cell magic that
+            # raises is the common case: the kernel publishes an error output
+            # and replies "ok". Look for that output so the failure is not
+            # silently swallowed.
+            error_contents = self._error_output_contents(cell)
+            if not error_contents:
+                return None
+            if self.force_raise_errors:
+                error_content = error_contents[0]
+            else:
+                # A cell can report more than one error. The first error whose
+                # name is not allowed is the one that stops the execution, the
+                # same way the kernel stops on the first error it does not
+                # allow.
+                error_content = next(
+                    (
+                        content
+                        for content in error_contents
+                        if content.get("ename") not in self.allow_error_names
+                    ),
+                    error_contents[0],
+                )
 
         cell_allows_errors = (not self.force_raise_errors) and (
             self.allow_errors
-            or exec_reply_content.get("ename") in self.allow_error_names
+            or error_content.get("ename") in self.allow_error_names
             or "raises-exception" in cell.metadata.get("tags", [])
         )
         await run_hook(
             self.on_cell_error, cell=cell, cell_index=cell_index, execute_reply=exec_reply
         )
         if not cell_allows_errors:
-            raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+            raise CellExecutionError.from_cell_and_msg(cell, error_content)
+
+    def _error_output_contents(self, cell: NotebookNode) -> list[dict[str, t.Any]]:
+        """Return the content of every error output of a cell."""
+        return [
+            {
+                "ename": output.get("ename", "<Error>"),
+                "evalue": output.get("evalue", ""),
+                "traceback": output.get("traceback", []),
+            }
+            for output in cell.outputs
+            if output.get("output_type") == "error"
+        ]
 
     async def async_execute_cell(
         self,

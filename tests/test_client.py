@@ -1617,7 +1617,14 @@ class TestRunCell(NBClientTestsBase):
         }
     )
     def test_error_message(self, executor, cell_mock, message_mock):
-        executor.execute_cell(cell_mock, 0)
+        # The kernel replied "ok" but published an error output: the failure is
+        # real and must not be swallowed. See
+        # https://github.com/jupyter/nbclient/issues/245
+        with self.assertRaises(CellExecutionError) as exc:
+            executor.execute_cell(cell_mock, 0)
+        # The error is taken from the error output
+        assert exc.exception.ename == "foo"
+        assert exc.exception.evalue == "bar"
         # An error followed by an idle
         assert message_mock.call_count == 2
         # Should also consume the message stream
@@ -1663,8 +1670,14 @@ class TestRunCell(NBClientTestsBase):
         },
     )
     def test_error_message_only(self, executor, cell_mock, message_mock):
-        # Should NOT raise
-        executor.execute_cell(cell_mock, 0)
+        # The kernel replied "ok" but published an error output: the failure is
+        # real and must not be swallowed. See
+        # https://github.com/jupyter/nbclient/issues/245
+        with self.assertRaises(CellExecutionError) as exc:
+            executor.execute_cell(cell_mock, 0)
+        # The error is taken from the error output
+        assert exc.exception.ename == "foo"
+        assert exc.exception.evalue == "bar"
 
         # An error followed by an idle
         assert message_mock.call_count == 2
@@ -1672,6 +1685,200 @@ class TestRunCell(NBClientTestsBase):
         assert cell_mock.outputs == [
             {"output_type": "error", "ename": "foo", "evalue": "bar", "traceback": ["Boom"]}
         ]
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "bar", "traceback": ["Boom"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # OK
+            "content": {"status": "ok"},
+        },
+    )
+    def test_error_message_only_allow_errors(self, executor, cell_mock, message_mock):
+        executor.allow_errors = True
+        executor.on_cell_error = MagicMock()
+        # Should NOT raise
+        executor.execute_cell(cell_mock, 0)
+
+        # The error was detected, so the hook ran even though the error was
+        # suppressed.
+        executor.on_cell_error.assert_called_once()
+
+        # An error followed by an idle
+        assert message_mock.call_count == 2
+        # Should also consume the message stream
+        assert cell_mock.outputs == [
+            {"output_type": "error", "ename": "foo", "evalue": "bar", "traceback": ["Boom"]}
+        ]
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "bar", "traceback": ["Boom"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # OK
+            "content": {"status": "ok"},
+        },
+    )
+    def test_error_message_only_allow_error_names(self, executor, cell_mock, message_mock):
+        executor.allow_error_names = ["foo"]
+        executor.on_cell_error = MagicMock()
+        # Should NOT raise
+        executor.execute_cell(cell_mock, 0)
+
+        # The error was detected, so the hook ran even though the error was
+        # suppressed.
+        executor.on_cell_error.assert_called_once()
+
+        # An error followed by an idle
+        assert message_mock.call_count == 2
+        # Should also consume the message stream
+        assert cell_mock.outputs == [
+            {"output_type": "error", "ename": "foo", "evalue": "bar", "traceback": ["Boom"]}
+        ]
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "bar", "traceback": ["Boom"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # OK
+            "content": {"status": "ok"},
+        },
+    )
+    def test_error_message_only_raises_exception_tag(self, executor, cell_mock, message_mock):
+        cell_mock.metadata["tags"] = ["raises-exception"]
+        executor.on_cell_error = MagicMock()
+        # Should NOT raise
+        executor.execute_cell(cell_mock, 0)
+
+        # The error was detected, so the hook ran even though the error was
+        # suppressed.
+        executor.on_cell_error.assert_called_once()
+
+        # An error followed by an idle
+        assert message_mock.call_count == 2
+        # Should also consume the message stream
+        assert cell_mock.outputs == [
+            {"output_type": "error", "ename": "foo", "evalue": "bar", "traceback": ["Boom"]}
+        ]
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "bar", "traceback": ["Boom"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # ERROR, but with a different error than the one on iopub
+            "content": {
+                "status": "error",
+                "ename": "from_reply",
+                "evalue": "from_reply",
+                "traceback": ["FromReply"],
+            },
+        },
+    )
+    def test_error_and_error_status_messages_precedence(self, executor, cell_mock, message_mock):
+        # When the execute_reply reports the error, it is authoritative: it is
+        # the kernel's own description of the failure.
+        with self.assertRaises(CellExecutionError) as exc:
+            executor.execute_cell(cell_mock, 0)
+
+        assert exc.exception.ename == "from_reply"
+        assert exc.exception.evalue == "from_reply"
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "bar", "traceback": ["Boom"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # ERROR
+            "content": {"status": "error"},
+        },
+    )
+    def test_error_message_only_force_raise_errors(self, executor, cell_mock, message_mock):
+        # force_raise_errors overrides every way of allowing the error
+        executor.allow_errors = True
+        executor.allow_error_names = ["foo"]
+        cell_mock.metadata["tags"] = ["raises-exception"]
+        executor.force_raise_errors = True
+
+        with self.assertRaises(CellExecutionError):
+            executor.execute_cell(cell_mock, 0)
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "first", "traceback": ["First"]},
+        },
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "bar", "evalue": "second", "traceback": ["Second"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # OK
+            "content": {"status": "ok"},
+        },
+    )
+    def test_multiple_errors_allow_error_names(self, executor, cell_mock, message_mock):
+        # "foo" is allowed, "bar" is not: the error that is not allowed is the
+        # one that stops the execution.
+        executor.allow_error_names = ["foo"]
+
+        with self.assertRaises(CellExecutionError) as exc:
+            executor.execute_cell(cell_mock, 0)
+
+        assert exc.exception.ename == "bar"
+        assert exc.exception.evalue == "second"
+
+    @prepare_cell_mocks(
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "foo", "evalue": "first", "traceback": ["First"]},
+        },
+        {
+            "msg_type": "error",
+            "header": {"msg_type": "error"},
+            "content": {"ename": "bar", "evalue": "second", "traceback": ["Second"]},
+        },
+        reply_msg={
+            "msg_type": "execute_reply",
+            "header": {"msg_type": "execute_reply"},
+            # OK
+            "content": {"status": "ok"},
+        },
+    )
+    def test_multiple_errors_all_allowed(self, executor, cell_mock, message_mock):
+        # Every error is allowed, so nothing stops the execution.
+        executor.allow_error_names = ["foo", "bar"]
+
+        # Should NOT raise
+        executor.execute_cell(cell_mock, 0)
 
     @prepare_cell_mocks(
         reply_msg={
