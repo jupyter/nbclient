@@ -197,7 +197,7 @@ class NbClientApp(JupyterApp):
             raise ValueError(msg)
 
         # Open up the notebook we're going to run
-        with input_path.open() as f:
+        with input_path.open(encoding="utf-8") as f:
             nb = nbformat.read(f, as_version=4)
 
         # Configure nbclient to run the notebook
