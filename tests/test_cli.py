@@ -4,6 +4,7 @@ from subprocess import CalledProcessError, check_output
 from unittest.mock import call, mock_open, patch
 
 import pytest
+from nbformat import v4, write
 
 from nbclient.cli import NbClientApp
 
@@ -66,7 +67,7 @@ def test_mult(input_names, relative, inplace, jupyterapp, client, reader, writer
     # add suffix if needed
     paths = [p.with_suffix(".ipynb") for p in paths]
 
-    assert path_open.mock_calls[::PATH_OPEN_CALL_STEP] == [call(p) for p in paths]
+    assert path_open.mock_calls[::PATH_OPEN_CALL_STEP] == [call(p, encoding="utf-8") for p in paths]
     assert reader.call_count == len(paths)
     # assert reader.mock_calls == [call(p, as_version=4) for p in paths]
 
@@ -120,7 +121,7 @@ def test_output(input_names, relative, output_base, jupyterapp, client, reader, 
     # add suffix if needed
     paths = [p.with_suffix(".ipynb") for p in paths]
 
-    assert path_open.mock_calls[::PATH_OPEN_CALL_STEP] == [call(p) for p in paths]
+    assert path_open.mock_calls[::PATH_OPEN_CALL_STEP] == [call(p, encoding="utf-8") for p in paths]
     assert reader.call_count == len(paths)
 
     expected = []
@@ -167,6 +168,27 @@ def test_bad_output_dir(jupyterapp, client, reader, writer, path_open):
         c.initialize()
 
     assert "Cannot write to directory" in str(e.value)
+
+
+def test_read_utf8_notebook(tmp_path, monkeypatch, client):
+    source = "print('caf\u00e9, \u4e16\u754c')"
+    notebook_path = tmp_path / "unicode.ipynb"
+    write(v4.new_notebook(cells=[v4.new_code_cell(source)]), notebook_path)
+
+    # Simulate a non-UTF-8 locale while still reading the actual notebook bytes.
+    path_open = Path.open
+
+    def open_with_locale_encoding(path, *args, **kwargs):
+        if kwargs.get("encoding") is None:
+            kwargs["encoding"] = "cp1252"
+        return path_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", open_with_locale_encoding)
+
+    NbClientApp().run_notebook(str(notebook_path))
+
+    assert client.call_args.args[0].cells[0].source == source
+    client.return_value.execute.assert_called_once_with()
 
 
 # simple runner from command line
