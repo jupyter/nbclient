@@ -30,7 +30,7 @@ See [ReadTheDocs](https://nbclient.readthedocs.io/en/latest/) for more in-depth 
 
 ## Python Version Support
 
-This library currently supports Python 3.10+ versions. As minor Python
+This library currently supports Python 3.11+ versions. As minor Python
 versions are officially sunset by the Python org, nbclient will similarly
 drop support in the future.
 
