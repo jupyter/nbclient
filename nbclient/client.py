@@ -785,7 +785,7 @@ class NotebookClient(LoggingConfigurable):
                         cell["metadata"]["execution"]["shell.execute_reply"] = timestamp(msg)
                     try:
                         await asyncio.wait_for(task_poll_output_msg, self.iopub_timeout)
-                    except (asyncio.TimeoutError, Empty):
+                    except (TimeoutError, Empty):
                         if self.raise_on_iopub_timeout:
                             task_poll_kernel_alive.cancel()
                             raise CellTimeoutError.error_from_timeout_and_cell(
